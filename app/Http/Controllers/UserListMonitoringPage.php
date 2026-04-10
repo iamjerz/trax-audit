@@ -49,4 +49,10 @@ class UserListMonitoringPage extends Controller
         $data = $this->getUsersData();
         return view('coachingform', $data);
     }
+
+    public function SelectionUserList()
+    {
+        $data = $this->getUsersData();
+        return view('extension.selection', $data);
+    }
 }

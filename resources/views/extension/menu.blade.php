@@ -17,12 +17,14 @@
                     <ul class="list-group list-group-flush">
                         <button type="button" id="recon-form" class="list-group-item list-group-item-action"><i class="bx bx-caret-right"></i> Recon Call Register</button>
                         <button type="button" id="qa-form"class="list-group-item list-group-item-action"><i class="bx bx-caret-right"></i> QA Monitoring</button>
-                        <button type="button" class="list-group-item list-group-item-action">Triad</button>
-                        <button type="button" class="list-group-item list-group-item-action" disabled>Coaching</button>
+                        <button type="button" id="coaching-form" class="list-group-item list-group-item-action"><i class="bx bx-caret-right"></i> Coaching</button>
+                        <button type="button" id="triad-form" class="list-group-item list-group-item-action"><i class="bx bx-caret-right"></i> Triad</button>
+                        
                     </ul>
                 </div>
 
             </div>
+            
         </div>
     </div>
 </div>

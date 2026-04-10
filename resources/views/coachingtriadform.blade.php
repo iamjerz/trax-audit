@@ -299,7 +299,7 @@ function TriadCoach(){
 }
 
 $(document).ready(function() {
-    $(document).on('click', '#submit', async function() {
+    $(document).on('click', '#submit-triad', async function() {
         
         const coaching_reference = document.getElementById('coaching-reference')?.value;
         const TriadForm = {

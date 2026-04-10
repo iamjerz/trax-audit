@@ -190,21 +190,6 @@ function appendCoachingReference(ldaId) {
 }
 
 
-// function appendTicketInformation(ticketid) {
-
-//     fetch(`/api/triad-ticket?id=${ticketid}`)
-//         .then(res => res.text()) // ✅ FIX HERE
-//         .then(response => {
-
-//             console.log("RAW API:", response);
-//             $('#page-body').html(response);
-//         })
-//         .catch(err => {
-//             console.error('API error:', err);
-//         });
-// }
-
-
 function appendTicketInformation(ticketid) {
     $.ajax({
         url: '/api/coaching-ticket',
@@ -287,7 +272,7 @@ function GrowCoaching(){
 
 
 $(document).ready(function() {
-    $(document).on('click', '#submit', async function() {
+    $(document).on('click', '#submit-coaching', async function() {
         
         const coaching_reference = document.getElementById('coaching-reference')?.value || '';
         const CoachingForm = {

@@ -176,4 +176,9 @@ Route::middleware(['ms.jwt'])->group(function () {
     Route::get('api/forms/menu', function () {
         return view('extension.menu');
     })->name('menu');
+
+    Route::get('api/forms/selection', [UserListMonitoringPage::class, 'SelectionUserList']);
+    // Route::get('api/forms/selection', function () {
+    //     return view('extension.selection');
+    // })->name('menu');
 });

@@ -1,8 +1,8 @@
-<div class="card">
+<!-- <div class="card">
     <div class="card-body">
         TEST
     </div>
-</div>
+</div> -->
 <div class="card">
     <div class="card-header">
         <h4 class="card-title text-black">Triad Coaching Plan</h4>		
@@ -152,7 +152,7 @@
             </div>
 
             <div class="col-lg-4">
-                <button class="btn btn-primary w-50" id="submit">Submit</button>
+                <button class="btn btn-primary w-50" id="submit-triad">Submit</button>
             </div>
             
         </div>

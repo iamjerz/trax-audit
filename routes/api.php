@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\ReconActionItemController;
 use App\Http\Controllers\Api\AuditController;
 use App\Http\Controllers\Api\TriadItemController;
 use App\Http\Controllers\Api\CoachingController;
+use App\Http\Controllers\Api\CoachingFormController;
+use App\Http\Controllers\Api\CoachingTriadController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -35,6 +37,11 @@ Route::middleware(['ms.jwt'])->group(function () {
     
 
     Route::post('/coaching', [CoachingController::class, 'store']);
+
+    // view form
+    Route::get('/forms/coaching-ticket', [CoachingFormController::class, 'coachingTicketInformation']);
+    Route::get('/forms/triad-ticket', [CoachingTriadController::class, 'triadTicketInformation']);
+    Route::get('/selection/ticket', [CoachingTriadController::class, 'coachingRef']);
 });
 
 
