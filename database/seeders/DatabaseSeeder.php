@@ -20,7 +20,9 @@ class DatabaseSeeder extends Seeder
         // User::factory()->count(1)->create([
         //     'password' => bcrypt('password'),
         // ]);
-
+        $this->call([
+            DummySeeder::class,
+        ]);
 
         
     }

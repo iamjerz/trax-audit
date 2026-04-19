@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\TriadItemController;
 use App\Http\Controllers\Api\CoachingController;
 use App\Http\Controllers\Api\CoachingFormController;
 use App\Http\Controllers\Api\CoachingTriadController;
-use App\Http\Controllers\Api\ClientCodeApiController;
+use App\Http\Controllers\Api\ComboController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -43,7 +43,8 @@ Route::middleware(['ms.jwt'])->group(function () {
     Route::get('/forms/coaching-ticket', [CoachingFormController::class, 'coachingTicketInformation']);
     Route::get('/forms/triad-ticket', [CoachingTriadController::class, 'triadTicketInformation']);
     Route::get('/selection/ticket', [CoachingTriadController::class, 'coachingRef']);
-    Route::get('/dropdown/client-code', [ClientCodeApiController::class, 'clientCode']);
+    Route::get('/dropdown/client-code', [ComboController::class, 'clientCode']);
+    Route::get('/dropdown/carrier-code', [ComboController::class, 'carrierCode']);
 });
 
 

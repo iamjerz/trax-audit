@@ -37,9 +37,9 @@
                     <div class="mb-3">
                         <div class="mb-3">
                             <label for="choices-single-default" class="form-label font-size-13">Audit Sup Email</label>
-                            <select class="form-control choices-js" name="auditSupEmail" id="audit-sup-email" placeholder="This is a search placeholder" required>
+                            <select class="form-control choices-js" data-trigger name="auditSupEmail" id="audit-sup-email" placeholder="This is a search placeholder" required>
                                 <option value="" disabled selected></option>
-                                @foreach($Users as $item)
+                                @foreach($users as $item)
                                     <option value="{{ $item->email }}">{{ $item->email }}</option>
                                 @endforeach
                             </select>
@@ -48,10 +48,10 @@
                     <div class="mb-3">
                         <div class="mb-3">
                             <label for="choices-single-default" class="form-label font-size-13">Client Code</label>
-                            <select class="form-control choices-js" name="clientCode" id="client-code" placeholder="This is a search placeholder" required>
+                            <select class="form-control choices-js" data-trigger name="clientCode" id="client-code" placeholder="This is a search placeholder" required>
                                 <option value="" disabled selected></option>
-                                @foreach($ClientCode as $item)
-                                    <option value="{{ $item->name }}">{{ $item->name }}</option>
+                                @foreach($carrier_code_dr as $item)
+                                    <option value="{{ $item['client_code'] }}">{{ $item['client_code'] }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -59,9 +59,9 @@
                     <div class="mb-3">
                         <div class="mb-3">
                             <label for="choices-single-default" class="form-label font-size-13">Carrier Code</label>
-                            <select class="form-control choices-js" name="carrierCode" id="carrier-code" placeholder="This is a search placeholder" required>
+                            <select class="form-control choices-js" data-trigger name="carrier-code" id="carrier-code" placeholder="This is a search placeholder" required>
                                 <option value="" disabled selected></option>
-                                @foreach($CarrierCode as $item)
+                                @foreach($carrierCodes as $item)
                                     <option value="{{ $item->name }}">{{ $item->name }}</option>
                                 @endforeach
                             </select>
@@ -71,11 +71,11 @@
                     <div class="mb-3">
                         <div class="mb-3">
                             <label for="choices-single-default" class="form-label font-size-13">Region</label>
-                            <select class="form-control choices-js" name="region" id="region" placeholder="This is a search placeholder" required>
+                            <select class="form-control choices-js" data-trigger name="region" id="region" placeholder="This is a search placeholder" required>
                                 <option value="" disabled selected></option>
-                                @foreach($Region as $item)
-                                    <option value="{{ $item->name }}">{{ $item->name }}</option>
-                                @endforeach
+                                <option value="AMR">AMR</option>
+                                <option value="EMEA">EMEA</option>
+                                <option value="APAC">APAC</option>
                             </select>
                         </div>
                     </div>
@@ -95,13 +95,15 @@
                     <div class="mb-3">
                         <div class="mb-3">
                             <label for="choices-single-default" class="form-label font-size-13">Status</label>
-                            <select class="form-control choices-js" name="status" id="status" placeholder="This is a search placeholder" required>
+                            <select class="form-control choices-js" data-trigger name="status" id="status" placeholder="This is a search placeholder" required>
                                 <option value="" disabled selected></option>
-                                @foreach($Status as $item)
-                                    <option value="{{ $item->name }}">{{ $item->name }}</option>
-                                @endforeach
+                                <option value="To Do">To Do</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Closed">Closed</option>
                             </select>
                         </div>
+
                     </div>
 
                     <div class="d-grid gap-2">

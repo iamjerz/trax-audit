@@ -23,7 +23,7 @@ use App\Http\Controllers\Api\QaMonitoringFormController;
 use App\Http\Controllers\Api\CoachingFormController;
 use App\Http\Controllers\Api\TriadItemController;
 use App\Http\Controllers\Api\CoachingController;
-
+use App\Http\Controllers\Api\ReconTiketController;
 
 /*
 |--------------------------------------------------------------------------
@@ -139,7 +139,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/triad-ticket', [CoachingTriadController::class, 'triadTicketInformation']);
     // Coaching Ticket Information API
     Route::get('/api/coaching-ticket', [CoachingFormController::class, 'coachingTicketInformation']);
-
+    
     // Extra Body for Page
 
     // Individual Eval
@@ -153,6 +153,13 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::post('/coaching', [CoachingController::class, 'store']);
+
+
+    Route::get('/recon-ticket', [ReconTiketController::class, 'index']);
+    Route::get('/recon-data', [ReconTiketController::class, 'displayTicket']);
+    Route::get('/recon-ticket-view/{id}', [ReconTiketController::class, 'fullDetails']);
+    Route::post('/recon-ticket-add-comment', [ReconTiketController::class, 'addCommentToTicket']);
+    
 });
 /*
 |--------------------------------------------------------------------------
@@ -168,6 +175,9 @@ Route::middleware('auth')->group(function () {
 // })->name('recon');
 Route::get('api/forms/qa', [QaMonitoringFormController::class, 'index']);
 Route::get('api/login/verify', [LoginVerifyController::class, 'validateMicrosoftToken']);
+
+
+
 
 Route::middleware(['ms.jwt'])->group(function () {
     Route::get('api/field/{name}', [DefaultFieldApi::class, 'index']);

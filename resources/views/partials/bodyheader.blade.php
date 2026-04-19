@@ -158,6 +158,15 @@
                     </ul>
                 </li>
 
+                <li>
+                    <a href="/recon-ticket">
+                        <i class="bx bx-food-menu icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-calendar">Action Register</span>
+                    </a>
+                    
+                </li>
+                
+
                 <!-- Name Divider -->
                 <li class="menu-title" data-key="t-applications">Administrator </li>
                 <li>

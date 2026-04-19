@@ -12,6 +12,8 @@ class UsersImport implements ToModel, WithHeadingRow, WithUpserts
 {
     public function model(array $row)
     {
+
+    set_time_limit(300);
         return new User([
             'employeeid'        => $row['employeeid'],
             'first_name'        => $row['first_name'],
