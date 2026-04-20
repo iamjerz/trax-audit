@@ -55,4 +55,5 @@ class UserListMonitoringPage extends Controller
         $data = $this->getUsersData();
         return view('extension.selection', $data);
     }
+    
 }

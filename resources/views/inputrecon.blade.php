@@ -46,7 +46,16 @@
 
         new gridjs.Grid({
         columns: [
-            'Submission ID',
+            {
+                name: 'Submission ID',
+                formatter: (cell) => {
+                    return gridjs.html(`
+                        <a href="/recon-ticket-view/${cell}" class="text-primary fw-bold">
+                            ${cell}
+                        </a>
+                    `);
+                }
+            },
             'Recon Date',
             'Client Code',
             'Carrier Code',

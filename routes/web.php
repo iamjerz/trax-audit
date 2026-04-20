@@ -159,7 +159,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/recon-data', [ReconTiketController::class, 'displayTicket']);
     Route::get('/recon-ticket-view/{id}', [ReconTiketController::class, 'fullDetails']);
     Route::post('/recon-ticket-add-comment', [ReconTiketController::class, 'addCommentToTicket']);
-    
+    Route::get('/recon-view-comment/{id}', [ReconTiketController::class, 'viewComment']);
+    Route::post('/recon/assignto/{id}', [ReconTiketController::class, 'insertAssignTo']);
+    Route::post('/recon/status-change/{id}', [ReconTiketController::class, 'ChangeStatus']);
 });
 /*
 |--------------------------------------------------------------------------

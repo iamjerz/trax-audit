@@ -5,11 +5,29 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use App\Models\User;
 
 class ReconTiketController extends Controller
 {
     //
+    public function getUsersData()
+    {
+        return [
+            'logisticsUsers' => User::select('employeeid', 'first_name', 'last_name')
+                ->where('position', 'Logistics Data Analyst')
+                ->orderBy('first_name')
+                ->get(),
+
+            'supervisors' => User::select('employeeid', 'first_name', 'last_name')
+                ->where('position', '!=', 'Logistics Data Analyst')
+                ->orderBy('first_name')
+                ->get(),
+
+            'allusers' => User::select('employeeid', 'first_name', 'last_name')
+                ->orderBy('first_name')
+                ->get(),
+        ];
+    }
 
     public function index(){
 
@@ -17,25 +35,28 @@ class ReconTiketController extends Controller
     }
     public function fullDetails($id)
     {
+
+        $usersData = $this->getUsersData();
+
+
         $data = DB::table('recon_action_items')
             ->where('submission_id', $id)
             ->first();
-        $comment = DB::table('recon_item_comments as ric')
-            ->leftJoin('users as u', 'ric.employeeid', '=', 'u.employeeid')
-            ->where('ric.submission_id', $id)
-            ->select(
-                'ric.*',
-                'u.first_name as employee_first_name',
-                'u.last_name as employee_last_name',
-            )
-            ->orderBy('ric.id', 'desc') // 👈 DESC here
-            ->get();
-        return view("individualrecon", compact('data', 'comment'));
+
+        $assignTo = DB::table('users as u')
+        ->join('recon_action_items as r', 'r.assigned_to', '=', 'u.employeeid')
+        ->select('u.first_name as FirstName', 'u.last_name as LastName')
+        ->where('r.submission_id', $id)
+        ->first(); 
+        return view("individualrecon", compact('data', 'usersData', 'assignTo'));
     }
 
 
     public function displayTicket(Request $request)
     {
+        $user_email = auth()->user()->email;
+        $user_position = auth()->user()->position;
+        $user_employeeid = auth()->user()->employeeid;
         $limit = $request->input('limit', 10);
         $offset = $request->input('offset', 0);
         $search = $request->input('search');
@@ -53,10 +74,16 @@ class ReconTiketController extends Controller
             });
         }
 
-        // ✅ IMPORTANT: count AFTER filtering
+        // ✅ APPLY ROLE FILTER FIRST
+        if ($user_position == "Logistics Data Analyst") {
+            $query->where('lda_email', $user_email)
+                ->orWhere('assigned_to', $user_employeeid);
+        }
+
+        // ✅ NOW count is correct
         $total = $query->count();
 
-        // ✅ get paginated data
+        // ✅ PAGINATED DATA
         $users = $query
             ->orderBy('id', 'desc')
             ->offset($offset)
@@ -69,6 +96,57 @@ class ReconTiketController extends Controller
             'offset' => $offset,
             'data' => $users
         ]);
+    }
+
+    
+
+
+
+
+    public function viewComment($id)
+    {
+        $comment = DB::table('recon_item_comments as ric')
+            ->leftJoin('users as u', 'ric.employeeid', '=', 'u.employeeid')
+            ->where('ric.submission_id', $id)
+            ->select(
+                'ric.*',
+                'u.first_name as employee_first_name',
+                'u.last_name as employee_last_name',
+            )
+            ->orderBy('ric.id', 'desc') // 👈 DESC here
+            ->get();
+        
+        return view("sub.reconcomment", compact('comment'));
+    }
+
+
+    public function insertAssignTo(Request $request, $id)
+    {
+        $updated = DB::table('recon_action_items')
+            ->where('submission_id', $id)
+            ->update([
+                'assigned_to' => $request->input('assigned_to')
+            ]);
+
+        if ($updated) {
+
+            $old_user = DB::table('users')
+                ->where('employeeid', $request->input('assigned_to'))
+                ->first();
+
+
+            $this->logComment($id, "Assigned to {$old_user->first_name} {$old_user->last_name}");
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Assignment updated successfully'
+            ]);
+        }
+
+        return response()->json([
+            'status' => 404,
+            'message' => 'Record not found or no changes made'
+        ], 404);
     }
 
     public function addCommentToTicket(Request $request)
@@ -85,5 +163,51 @@ class ReconTiketController extends Controller
             'created_at'    => now(),
             'updated_at'    => now()
         ]);
+    }
+
+
+
+    private function logComment($submission_id, $comment)
+    {
+        DB::table('recon_item_comments')->insert([
+            'submission_id' => $submission_id,
+            'comments'      => $comment,
+            'employeeid'    => auth()->user()->employeeid,
+            'created_at'    => now(),
+            'updated_at'    => now()
+        ]);
+    }
+
+    public function ChangeStatus(Request $request, $id)
+    {
+        $old = DB::table('recon_action_items')
+            ->where('submission_id', $id)
+            ->value('status');
+
+
+        $updated = DB::table('recon_action_items')
+            ->where('submission_id', $id)
+            ->update([
+                'status' => $request->input('status')
+            ]);
+
+        if ($updated) {
+
+        
+            $this->logComment($id, "Status changed from $old to " . $request->input('status'));
+            return response()->json([
+                'status' => 200,
+                'message' => 'Assignment updated successfully'
+            ]);
+
+
+
+            // call the addCommentToTicket to log in the comment
+        }
+
+        return response()->json([
+            'status' => 404,
+            'message' => 'Record not found or no changes made'
+        ], 404);
     }
 }
