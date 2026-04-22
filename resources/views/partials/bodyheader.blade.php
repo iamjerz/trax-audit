@@ -37,7 +37,7 @@
         <div class="d-flex">
             <div class="dropdown d-inline-block">
                 <button type="button" class="btn header-item user text-start d-flex align-items-center" id="page-header-user-dropdown-v" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <img class="rounded-circle header-profile-user" src="{{ asset('assets/images/users/avatar-3.jpg') }}" alt="Header Avatar">
+                    <img class="rounded-circle header-profile-user" src="https://www.traxtech.com/hubfs/Artboard%201.png" alt="Header Avatar">
                     <span class="d-none d-xl-inline-block ms-2 fw-medium font-size-15">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</span>
                 </button>
 
