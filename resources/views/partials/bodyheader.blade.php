@@ -99,19 +99,27 @@
         <div id="sidebar-menu">
             <!-- Left Menu Start -->
             <ul class="metismenu list-unstyled" id="side-menu">
+                <li>
+                    <a href="/homepage">
+                        <i class="bx bx-home-alt icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-calendar">Main</span>
+                    </a>
+                    
+                </li>
                 <li class="menu-title" data-key="t-menu">Dashboard</li>
 
                 <li>
-                    <a href="javascript: void(0);">
-                        <i class="bx bx-home-alt icon nav-icon"></i>
+                    <a href="javascript: void(0);" class="has-arrow">
+                        <i class="bx bxs-dashboard icon nav-icon"></i>
                         <span class="menu-item" data-key="t-dashboard">Dashboard</span>
                     </a>
                     <ul class="sub-menu" aria-expanded="false">
-                        <li><a href="/dashboard" data-key="t-ecommerce">QA Monitoring</a></li>
+                        <li><a href="/dashboard-qa" data-key="t-ecommerce">QA Monitoring</a></li>
+                        <li><a href="/dashboard-recon" data-key="t-sales">Action Register</a></li>
                         <li><a href="/dashboard-triad" data-key="t-sales">Triad</a></li>
                     </ul>
                 </li>
-
+                <li class="menu-title" data-key="t-menu">Forms</li>
                 <li>
                     <a href="/monitoringform">
                         <i class="bx bx-food-menu icon nav-icon"></i>

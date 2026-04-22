@@ -24,7 +24,7 @@ use App\Http\Controllers\Api\CoachingFormController;
 use App\Http\Controllers\Api\TriadItemController;
 use App\Http\Controllers\Api\CoachingController;
 use App\Http\Controllers\Api\ReconTiketController;
-
+use App\Http\Controllers\Api\DashboardReconController;
 /*
 |--------------------------------------------------------------------------
 | Root
@@ -32,7 +32,7 @@ use App\Http\Controllers\Api\ReconTiketController;
 */
 Route::get('/', function () {
     return Auth::check()
-        ? redirect()->route('dashboard')
+        ? redirect()->route('homepage')
         : redirect()->route('login');
 });
 
@@ -46,7 +46,9 @@ Route::get('/', function () {
 Route::middleware('guest')->group(function () {
 
     Route::get('/login', function () {
-        return view('login');
+        return Auth::check()
+            ? redirect()->route('homepage')
+            : view('login');
     })->name('login');
 
     Route::post('/login', [LoginController::class, 'authenticate'])
@@ -59,10 +61,13 @@ Route::middleware('guest')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
-    // Dashboard Page
-    Route::get('/dashboard', function () {
+    // Dashboard QA Monitoring Page
+    Route::get('/homepage', function () {
+        return view('homepage');
+    })->name('homepage');
+    Route::get('/dashboard-qa', function () {
         return view('dashboard');
-    })->name('dashboard');
+    });
     // Create Form Page
     Route::get('/formbuilder', function () {
         return view('formbuilder');
@@ -154,7 +159,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/coaching', [CoachingController::class, 'store']);
 
-
+    // For Recon
     Route::get('/recon-ticket', [ReconTiketController::class, 'index']);
     Route::get('/recon-data', [ReconTiketController::class, 'displayTicket']);
     Route::get('/recon-ticket-view/{id}', [ReconTiketController::class, 'fullDetails']);
@@ -162,6 +167,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/recon-view-comment/{id}', [ReconTiketController::class, 'viewComment']);
     Route::post('/recon/assignto/{id}', [ReconTiketController::class, 'insertAssignTo']);
     Route::post('/recon/status-change/{id}', [ReconTiketController::class, 'ChangeStatus']);
+    Route::get('/dashboard-recon', [DashboardReconController::class, 'index']);
+    Route::get('/dashboard-recon-cards', [DashboardReconController::class, 'CardCount']);
+    Route::get('/dashboard-recon-table-top10', [DashboardReconController::class, 'Top10Breakdown']);
+    Route::get('/dashboard-recon-chart-clientcode', [DashboardReconController::class, 'TopClientsChart']);
+    Route::get('/dashboard-recon-chart-carriercode', [DashboardReconController::class, 'TopCarriers']);
+
 });
 /*
 |--------------------------------------------------------------------------

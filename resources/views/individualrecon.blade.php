@@ -317,7 +317,7 @@
                     const employeeid = document.getElementById('assign-to').value;
                     console.log("EmployeeID::" , employeeid)
                     console.log("Ticket ID: ",id )
-                    const res = await fetch(`http://127.0.0.1:8000/recon/assignto/${id}`, {
+                    const res = await fetch(`/recon/assignto/${id}`, {
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
@@ -377,7 +377,7 @@
                 try {
                     const id = window.location.pathname.split('/').filter(Boolean).pop();
 
-                    const res = await fetch(`http://127.0.0.1:8000/recon/status-change/${id}`, {
+                    const res = await fetch(`/recon/status-change/${id}`, {
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': document

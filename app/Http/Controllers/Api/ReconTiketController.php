@@ -54,48 +54,66 @@ class ReconTiketController extends Controller
 
     public function displayTicket(Request $request)
     {
-        $user_email = auth()->user()->email;
-        $user_position = auth()->user()->position;
-        $user_employeeid = auth()->user()->employeeid;
-        $limit = $request->input('limit', 10);
-        $offset = $request->input('offset', 0);
-        $search = $request->input('search');
+        try {
+            $user_email = auth()->user()->email;
+            $user_position = auth()->user()->position;
+            $user_employeeid = auth()->user()->employeeid;
 
-        $query = DB::table('recon_action_items');
+            $limit = $request->input('limit', 10);
+            $offset = $request->input('offset', 0);
+            $search = $request->input('search');
 
-        // 🔍 APPLY SEARCH
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('submission_id', 'like', "%$search%")
-                ->orWhere('client_code', 'like', "%$search%")
-                ->orWhere('carrier_code', 'like', "%$search%")
-                ->orWhere('region', 'like', "%$search%")
-                ->orWhere('status', 'like', "%$search%");
-            });
+            $query = DB::table('recon_action_items')
+                ->leftJoin('users', 'recon_action_items.lda_email', '=', 'users.email')
+                ->select(
+                    'recon_action_items.*',
+                    DB::raw("users.first_name || ' ' || users.last_name as full_name")
+                );
+
+            // 🔍 SEARCH (PostgreSQL-safe with ILIKE)
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('recon_action_items.submission_id', 'ilike', "%{$search}%")
+                    ->orWhere('recon_action_items.client_code', 'ilike', "%{$search}%")
+                    ->orWhere('recon_action_items.carrier_code', 'ilike', "%{$search}%")
+                    ->orWhere('recon_action_items.region', 'ilike', "%{$search}%")
+                    ->orWhere('recon_action_items.status', 'ilike', "%{$search}%")
+
+                    // 🔥 NAME SEARCH
+                    ->orWhere('users.first_name', 'ilike', "%{$search}%")
+                    ->orWhere('users.last_name', 'ilike', "%{$search}%")
+                    ->orWhere(DB::raw("users.first_name || ' ' || users.last_name"), 'ilike', "%{$search}%");
+                });
+            }
+
+            // 👤 ROLE FILTER
+            if ($user_position == "Logistics Data Analyst") {
+                $query->where(function ($q) use ($user_email, $user_employeeid) {
+                    $q->where('recon_action_items.lda_email', $user_email)
+                    ->orWhere('recon_action_items.assigned_to', $user_employeeid);
+                });
+            }
+
+            // ✅ COUNT
+            $total = (clone $query)->count();
+
+            // ✅ DATA
+            $data = $query
+                ->orderBy('recon_action_items.id', 'desc')
+                ->offset($offset)
+                ->limit($limit)
+                ->get();
+
+            return response()->json([
+                'data' => $data,
+                'total' => $total
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        // ✅ APPLY ROLE FILTER FIRST
-        if ($user_position == "Logistics Data Analyst") {
-            $query->where('lda_email', $user_email)
-                ->orWhere('assigned_to', $user_employeeid);
-        }
-
-        // ✅ NOW count is correct
-        $total = $query->count();
-
-        // ✅ PAGINATED DATA
-        $users = $query
-            ->orderBy('id', 'desc')
-            ->offset($offset)
-            ->limit($limit)
-            ->get();
-
-        return response()->json([
-            'total' => $total,
-            'limit' => $limit,
-            'offset' => $offset,
-            'data' => $users
-        ]);
     }
 
     
