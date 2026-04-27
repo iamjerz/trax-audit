@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     new gridjs.Grid({
         columns: [
             { name: "ID", hidden: true },
+            "Employee ID",
             "Email",
             "First Name",
             "Last Name",
@@ -60,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             then: data => data.map(user => [
                 user.id,
+                user.employeeid,
                 user.email,
                 user.first_name,
                 user.last_name,

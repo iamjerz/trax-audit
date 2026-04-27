@@ -16,7 +16,7 @@ class UserController extends Controller
             abort(403);
         }
 
-        return User::select('id', 'first_name', 'last_name', 'email', 'position', 'department', 'role', 'status')
+        return User::select('id', 'employeeid', 'first_name', 'last_name', 'email', 'position', 'department', 'role', 'status')
             ->orderBy('id', 'desc')
             ->get();
     }
