@@ -6,9 +6,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\TriadItems;
 use App\Models\User;
-
+use Illuminate\Support\Str;
 class TriadItemController extends Controller
 {
+    function generateReference()
+    {
+        return 'TRIAD-' . now()->format('YmdHis') . '-' . Str::random(4);
+    }
 
     public function store(Request $request)
     {
@@ -53,13 +57,20 @@ class TriadItemController extends Controller
             ], 401);
         }
 
-        $triad = TriadItems::updateOrCreate(
-            ['reference' => $validated['Reference']],
-            [
-                'triad' => $validated['Triad'],
-                'created_by' => $employeeid
-            ]
-        );
+        // $triad = TriadItems::updateOrCreate(
+        //     ['reference' => $validated['Reference']],
+        //     [
+        //         'triad' => $validated['Triad'],
+        //         'created_by' => $employeeid
+        //     ]
+        // );
+
+        $triad = TriadItems::create([
+            'reference' => $validated['Reference'],
+            'reference_id' => $this->generateReference(),
+            'triad' => $validated['Triad'],
+            'created_by' => $employeeid
+        ]);
 
         return response()->json([
             'message' => 'Saved successfully',

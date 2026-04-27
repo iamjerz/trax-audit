@@ -9,6 +9,8 @@ class Coaching extends Model
     //
     protected $fillable = [
         'reference',
+        'reference_type',
+        'reference_id',
         'smart',
         'grow',
         'created_by'

@@ -1,404 +1,175 @@
-employeeid,first_name,last_name,position,department,supervisor_id,email
-1679,Tyrone,Peterson,Account Executive,Sales & Marketing,1769,tyrone.peterson@traxtech.com
-752,Vicky,Huff,Accountant,Finance,1008,vicky.huff@traxtech.com
-1572,Genard Paul,Mante,Administrative Officer,Human Resources,121,Genard.Mante@traxtech.com
-1669,Rachel,Webb,AP Support,Finance,1008,rachel.webb@traxtech.com
-1704,Grace Marie,Siglos,Associate Audit Rules Developer,PMO,357,Grace.Siglos@traxtech.com
-1701,Hazel,Bolo,Associate Audit Rules Developer,PMO,357,hazel.bolo@traxtech.com
-1700,Re-chelle,Bering,Associate Audit Rules Developer,PMO,357,re-chelle.bering@traxtech.com
-1706,Jhariza,Sampang,Associate Audit Rules Developer,PMO,357,jhariza.sampang@traxtech.com
-1739,Richard Philip,Caalaman,Associate Audit Rules Developer,PMO,357,Richard.Caalaman@traxtech.com
-886,Jeward,Lopez,Associate Global Rules Developer,Engineering,246,jeward.lopez@traxtech.com
-1766,Prince Jul,Dao-ayan,Associate Software Engineer,Engineering,1745,prince.dao-ayan@traxtech.com
-1765,Wendale Franz,Dy,Associate Software Engineer,Engineering,1783,Wendale.Dy@traxtech.com
-232,Jimmy,Galan,Audit Analyst,PMO,192,jimmy.galan@traxtech.com
-220,Jazzell,Edulan,Audit Analyst,PMO,192,jazzell.edulan@traxtech.com
-689,Moila Jaica,Dela Rosa,Audit Analyst,PMO,192,Moila.Delarosa@traxtech.com
-936,Christine,Abina,Audit Analyst,PMO,192,christine.abina@traxtech.com
-1049,Denuel Joberson,Del Puerto,Audit Analyst,PMO,192,denuel.delpuerto@traxtech.com
-1360,Jo-An,Deñega,Audit Analyst,PMO,192,Jo-an.Denega@traxtech.com
-1565,Femie-lyn,Pacaldo,Audit Analyst,PMO,192,femie.pacaldo@traxtech.com
-1478,Cris John,Bacquial,Audit Analyst,Audit Management,1044,Cris.Bacquial@traxtech.com
-312,Philip,Tolentin,Audit Analyst,Audit Management,289,philip.tolentin@traxtech.com
-1624,Arthur Allain,Olea,Audit Analyst,Audit Management,289,Arthur.Olea@traxtech.com
-1840,Moruni,Rudinas,Audit Analyst,Audit Management,289,Moruni.Rudinas@traxtech.com
-1523,Christopher,Artisin,Audit SME,Audit Management,143,christopher.artisin@traxtech.com
-1641,Jesus Jr,Alon,Audit SME,Audit Management,143,Jesus.Alon@traxtech.com
-1671,Bela Joy,Camello,Audit SME,Audit Management,1044,Bela.Camello@traxtech.com
-1682,Sharmine,Rentucan,Audit SME,Audit Management,1044,sharmine.rentucan@traxtech.com
-650,David,Alvarez Quirós,Audit Supervisor,Audit Management,143,david.alvarez@traxtech.com
-688,Lera Jean Batino,Alvarez,Audit Supervisor,Audit Management,143,Lera.Alvarez@traxtech.com
-897,Emerose Sanchez,Estrera,Audit Supervisor,Audit Management,143,emerose.estrera@traxtech.com
-1776,Maria Cristina Rosales,Caancan,Audit Supervisor,Audit Management,143,Maria.Caancan@traxtech.com
-1778,Ar-Jay Velasco,Ayroso,Audit Supervisor,Audit Management,143,Ar-jay.Ayroso@traxtech.com
-835,Jeffrey Hernandez,Cavintoy,Audit Supervisor,Audit Management,1044,jeffrey.cavintoy@traxtech.com
-822,Lindy,Yang,Audit Supervisor,Audit Management,1044,lindy.yang@traxtech.com
-646,Emmanuel Iyog,Boltiador,Audit Supervisor,Audit Management,1044,emmanuel.boltiador@traxtech.com
-937,Raphael-Rainer Sotto,Unabia,Audit Supervisor,Audit Management,1044,raphael.unabia@traxtech.com
-1078,John Michael Novela,Diva,Audit Supervisor,Audit Management,1044,John.Diva@traxtech.com
-1089,Luelyn Poyales,Añasco,Audit Supervisor,Audit Management,1044,Luelyn.Anasco@traxtech.com
-1586,Nilo Tabonan,Tejones,Audit Supervisor,Audit Management,1044,nilo.tejones@traxtech.com
-279,Maria Jogel Mandal,Cabatas,Audit Supervisor,Audit Management,567,Jogel.Cabatas@Traxtech.Com
-282,Maria Dennessa,Adolfo,Audit Supervisor,Audit Management,567,Maria.Adolfo@Traxtech.Com
-982,Whilliam Primacio,Piñas,Audit Supervisor,Audit Management,567,whilliam.pinas@traxtech.com
-1536,Ana Shielamae,Ymas,Auditor,Audit Management,797,Ana.Repaja@traxtech.com
-256,Keith Riche,Tecson,Business Analyst,Financial Class,718,Keith.Tecson@Traxtech.Com
-223,Jecille Gador,Nambatac,Carrier Deployment Services Manager,PMO,285,jecille.gador@traxtech.com
-1529,Vilmer,Sepulveda,Carrier Onboarding Coordinator,PMO,223,vilmer.sepulveda@traxtech.com
-1601,Cidcliff,Locaylocay,Carrier Onboarding Coordinator,PMO,223,cidcliff.locaylocay@traxtech.com
-1614,Jeno,Baba,Carrier Onboarding Coordinator,PMO,223,jeno.baba@traxtech.com
-1634,Eli John,Maricuelo,Carrier Onboarding Coordinator,PMO,223,Eli.Maricuelo@traxtech.com
-1690,John Kenneth,Jumawan,Carrier Onboarding Coordinator,PMO,223,John.Jumawan@traxtech.com
-1699,Richelie,Ouano,Carrier Onboarding Coordinator,PMO,223,richelie.ouano@traxtech.com
-1711,Hydei,Alerta,Carrier Onboarding Coordinator,PMO,223,hydei.alerta@traxtech.com
-1710,Rolaida,Antigo,Carrier Onboarding Coordinator,PMO,223,rolaida.antigo@traxtech.com
-1736,Dave James,Montecillo,Carrier Onboarding Coordinator,PMO,223,dave.montecillo@traxtech.com
-1757,Charles Emmari,Chua,Carrier Onboarding Coordinator,PMO,223,charles.chua@traxtech.com
-1771,Charity Mae,Buaya,Carrier Onboarding Coordinator,PMO,223,charity.buaya@traxtech.com
-1658,Blake Kaempfer,Tablak,CEO,Executive,202601,bkt@traxtech.com
-1635,John,Vallely,Chief Operating Officer,Executive,1658,john.vallely@traxtech.com
-1685,Jason Samuel,Westigard,Chief Product Officer,Engineering,1658,jason.westigard@traxtech.com
-778,Sandra,Castro,Claims Coordinator,Audit Management,799,sandy.castro@traxtech.com
-1015,Alexis,Browner,Collection Specialist,Finance,1008,alexis.browner@traxtech.com
-993,Anna Kristina,Barboño,Company Nurse/Administrative Assistant,Human Resources,121,anna.barbono@traxtech.com
-1008,Jennifer,Fishel,Corporate Controller,Finance,615,jennifer.fishel@traxtech.com
-723,Tracie,Pittman-Perry,Cost Allocation and Match Specialist,Financial Class,718,tracie.pittman-perry@traxtech.com
-140,Bruce,Omamalin,Cost Allocation and Match Specialist,Financial Class,718,bruce.omamalin@traxtech.com
-221,Jean Carla,Acharon,Cost Allocation and Match Specialist,Financial Class,718,Jean.Acharon@traxtech.Com
-1458,Gretel,Valverde,Cost Allocation and Match Specialist,Financial Class,718,grettel.val@traxtech.com
-1598,Kevin Daniel,Salas,Cost Allocation and Match Specialist,Financial Class,718,kevin.salas@traxtech.com
-870,William,Efird,Cost Allocation and Match Specialist,Data Management,901,william.efird@traxtech.com
-713,Juan,Larin,Cost Allocation Architect,PMO,741,juan.larin@traxtech.com
-1524,Aldia,Jugan,Cost Allocation Architect,PMO,741,aldia.jugan@traxtech.com
-1720,Karina,Fonseca,Cost Allocation Specialist,Financial Class,718,karina.fonseca@traxtech.com
-460,Silvia,Vargas Aguero,Customer Operations Coordinator,CRM & Base Support,463,silvia.vargas@traxtech.com
-1507,Yozuar,Delgado Garro,Customer Operations Coordinator,CRM & Base Support,463,yozuar.delgado@traxtech.com
-1496,Genesis,Gutierrez,Customer Operations Coordinator,CRM & Base Support,463,genesis.gutierrez@traxtech.com
-1555,María,Cascante Bonilla,Customer Operations Coordinator,CRM & Base Support,463,maria.cascante@traxtech.com
-725,Angel,Cohen,Customer Operations Coordinator,CRM & Base Support,901,angel.cohen@traxtech.com
-120,Anne,Walker,Customer Operations Coordinator,CRM & Base Support,901,katie.walker@traxtech.com
-1354,Dwayne,Holmes,Customer Operations Coordinator,CRM & Base Support,901,dwayne.holmes@traxtech.com
-1492,Lakeshia,Hampton,Customer Operations Coordinator,CRM & Base Support,901,lakeshia.hampton@traxtech.com
-732,Chantal,Jodhabier,Customer Operations Coordinator,CRM & Base Support,1517,chantal.jodhabier@traxtech.com
-1105,Gerald Ian,Santos,Customer Operations Coordinator,CRM & Base Support,1517,Gerald.Santos@traxtech.com
-1663,Sruthi,AnilKumar Vidhya,Customer Operations Coordinator,CRM & Base Support,1517,sruthi.vidhya@traxtech.com
-1804,Simeon,Lourier,Customer Operations Coordinator,CRM & Base Support,1517,simeon.lourier@traxtech.com
-197,Gela,Mar,Customer Operations Coordinator,CRM & Base Support,717,gela.mar@traxtech.com
-1574,Rachel,Sun,Customer Operations Coordinator,CRM & Base Support,717,rachel.sun@traxtech.com
-896,Glenn Ryan,Cardona,Customer Operations Coordinator,CRM & Base Support,717,glenn.cardona@traxtech.com
-1430,Stone,He,Customer Operations Coordinator,CRM & Base Support,717,stone.he@traxtech.com
-1537,Jess,Zhang,Customer Operations Coordinator,CRM & Base Support,717,jess.zhang@traxtech.com
-1575,Rebecca,Zhang,Customer Operations Coordinator,CRM & Base Support,717,rebecca.zhang@traxtech.com
-717,Viola,Liao,Customer Operations Manager - APAC,CRM & Base Support,714,viola.liao@traxtech.com
-1517,Michele,Brogna,Customer Operations Manager - EMEA,CRM & Base Support,714,michele.brogna@traxtech.com
-463,Hazel Vanessa,Villalobos Siles,Customer Operations Manager - LATAM,CRM & Base Support,714,hazel.villalobos@traxtech.com
-901,Hillary,Harris,Customer Operations Supervisor - AMR,CRM & Base Support,714,hillary.harris@traxtech.com
-720,Jewel,Allison,Customer Operations Team Lead,CRM & Base Support,901,jewel.allison@traxtech.com
-751,Ruth,Hernandez,Data Entry Analyst,Data Management,799,ruth.hernandez@traxtech.com
-1340,Leticia,Rivera,Data Entry Analyst,Data Management,799,leticia.rivera@traxtech.com
-1667,Mary Rose,Apundar,Data Integration Analyst,PMO,1057,Mary.Apundar@traxtech.com
-776,Rosela,Prudente,Data Integration Engineer,Product Management,174,rosela.prudente@traxtech.com
-1695,Anne Lorre Jane,Felias,Data Integration Specialist,PMO,698,Anne.Felias@traxtech.com
-1696,Rudolfh,Alarba,Data Integration Specialist,PMO,698,rudolfh.alarba@traxtech.com
-1749,Jack Willard,Navarra,Data Integration Specialist,PMO,698,jack.navarra@traxtech.com
-1803,Joyce Mae,Catubig,Data Integration Specialist,PMO,698,Joyce.Catubig@traxtech.com
-1703,Auremar,Ancajas,Data Integration Specialist,PMO,1057,auremar.ancajas@traxtech.com
-1715,Aldwin Philip,Codilla,Data Integration Specialist,PMO,1057,aldwin.codilla@traxtech.com
-1748,Julliene,Sicad,Data Integration Specialist,PMO,1057,julliene.sicad@traxtech.com
-698,Cheryll Amores,Abellanosa,Data Integration Supervisor,PMO,329,cheryll.abellanosa@traxtech.com
-1057,Rex Connell Ramirez,Codilla,Data Integration Supervisor,PMO,329,rex.codilla@traxtech.com
-229,Jerry,Pang,Database Administrator,Engineering,451,jerry.pang@traxtech.com
-307,Orwell,Reyes,Database Administrator,Engineering,451,orwell.reyes@traxtech.com
-458,Alexander,Rueda Guerra,Database Administrator,Engineering,451,alex.rueda@traxtech.com
-335,Rod Falcon,Plaza,Devops Engineer,DevOps Engineering,1290,Rod.Plaza@Traxtech.Com
-1499,Royal Stephen,Florita,Devops Engineer,DevOps Engineering,1290,Royal.Florita@traxtech.com
-1578,Sonali,Rai,Devops Engineer,DevOps Engineering,1290,sonali.rai@traxtech.com
-185,Erin,Oxford,Director,Operations Risk,1635,erin.oxford@traxtech.com
-193,Francis Louie,Te,Director of Engineering,Engineering,242,francis.te@traxtech.com
-242,Jose Cristobal,Gutierrez Mena,Director of Engineering and Architecture,Engineering,1685,Jose.Gutierrez@Traxtech.Com
-194,Freecy Tinaja,Asoy,Director of Quality and Platform Operations,Platform Operations,1685,freecy.asoy@traxtech.com
-1755,John,Underwood,Director of Solutions Consulting,Sales & Marketing,1769,john.underwood@traxtech.com
-289,Martin,O'Connor,"Director, Audit Excellence",Audit Management,1635,martin.oconnor@traxtech.com
-485,Marivic,Ebo,EDI Analyst,PMO,1057,marivic.ebo@traxtech.com
-702,Lyndon,Borbon,EDI Analyst,PMO,1057,lyndon.borbon@traxtech.com
-880,Robmin,Secuya,EDI Analyst,PMO,1057,robmin.secuya@traxtech.com
-891,Dariel,Velasco,EDI Analyst,PMO,1057,dariel.velasco@traxtech.com
-1369,John Ryan,Infante,EDI Analyst,PMO,1057,john.infante@traxtech.com
-1351,Alberto,Belda,EDI Specialist,PMO,1057,alberto.belda@traxtech.com
-1355,Elizabeth,Brown,Edit Coordinator,Data Management,799,elizabeth.brown@traxtech.com
-1745,Julius Plantar,Esclamado,Engineering Manager,Engineering,242,julius.esclamado@traxtech.com
-1783,Mark Christian Asegurado,Baliling,Engineering Manager,Engineering,242,mark.baliling@traxtech.com
-1730,Vaughan,Sparkes,Enterprise Account Executive,Sales & Marketing,1769,vaughan.sparkes@traxtech.com
-1791,Jared,Williams,Enterprise Account Executive,Sales & Marketing,1769,jared.williams@traxtech.com
-1847,Michael,Logan,Enterprise Account Executive,Sales & Marketing,1769,Michael.Logan@traxtech.com
-873,Steve,Beda,"EVP, Customer Success",Sales & Marketing,1635,steve.beda@traxtech.com
-615,Elizabeth,Murray,Executive Vice President and Chief Financial Officer,Finance,1658,liz.murray@traxtech.com
-546,April Jane,Hechanova,Financial Analyst,Finance,284,April.Hechanova@traxtech.com
-585,Brenda,Gacasan,Financial Analyst,Finance,284,brenda.gacasan@traxtech.com
-1471,Wendy,Delacruz,Freight Transportation Auditor,Audit Management,797,wendy.delacruz@traxtech.com
-1495,Maria,Donis,Freight Transportation Auditor,Audit Management,797,maria.donis@traxtech.com
-1747,Clayton,Gifford,Global Program Manager,Global Program Management,270,clayton.gifford@traxtech.com
-1762,Nicolas,Sierra,Global Program Manager,Global Program Management,270,nick.sierra@traxtech.com
-888,Dioanna Princess,Molijon,Global Rules Developer,Engineering,246,dioanna.romano@traxtech.com
-1834,Aaron Joshua,Cornejo,Global Rules Developer,Engineering,246,Aaron.Cornejo@traxtech.com
-204,Grace,Espinosa,Global Support Specialist,Operations Risk,658,grace.vicente@traxtech.com
-1626,Rubelyn,Sabania,Global Support Specialist,Operations Risk,658,rubelyn.sabania@traxtech.com
-1142,Nadia,Alone,Global Support Specialist,Operations Risk,701,nadia.alone@traxtech.com
-1519,Jendelyn,Setrina,Global Support Specialist,Operations Risk,701,jendelyn.davis@traxtech.com
-1810,Mariel,Iglesia,Global Support Specialist,Operations Risk,701,Mariel.Iglesia@traxtech.com
-1763,Joseph,Duffey,Head of Corporate Development,Executive,1658,Joseph.Duffey@traxtech.com
-202602,Claudine,Cajes-Masongsong,HR Business Partner,Human Resources,121,claudine.cajes@traxtech.com
-1605,Dhandy Ann,Ambaic,HR Generalist,Human Resources,121,dhandy.ambaic@traxtech.com
-758,Manya,Kyurkchyan,Imaging Analyst,Data Management,799,manya.kyurkchyan@traxtech.com
-775,Genita Yambao,Galang,Ingestion Support Manager,Platform Operations,194,genita.galang@traxtech.com
-1718,Vincent Jeaven,Ramo,Ingestion Support Specialist,Platform Operations,1383,Vincent.Ramo@traxtech.com
-179,Elfie Nikko,Romuga,Ingestion Support Team Lead,Platform Operations,775,Elfie.Romuga@Traxtech.Com
-1383,Eden Liuveras,Palomares,Ingestion Support Team Lead - AMR,Platform Operations,775,eden.palomares@traxtech.com
-461,Juan,Vargas Rojas,Integration Developer,PMO,710,juan.vargas@traxtech.com
-453,Roberto,Espinoza Aguero,Integration Developer,PMO,710,roberto.espinoza@traxtech.com
-235,Joesil,Gemarino,IT Support,DevOps Engineering,1097,joesil.gemarino@traxtech.com
-1097,Harry,Harness,IT Support Manager,IT,202601,harry.harness@traxtech.com
-639,Melvin Rey,Orofeo,Learning and Development Lead,Human Resources,873,melvin.orofeo@traxtech.com
-1604,Shiela Mae,Litub,Logistics Data Analyst,Audit Management,1778,Shiela.Tejano@traxtech.com
-1672,Randel,Jaculbe,Logistics Data Analyst,Audit Management,1778,randel.jaculbe@traxtech.com
-1724,Joy Mabelle,Poraso,Logistics Data Analyst,Audit Management,1778,Joy.Poraso@traxtech.com
-1798,Cherry Mae,Quillosa,Logistics Data Analyst,Audit Management,1778,Cherry.Quillosa@traxtech.com
-1796,Joselito,Sarona,Logistics Data Analyst,Audit Management,1778,Joselito.Sarona@traxtech.com
-1795,Kent Micheal,Geyrozaga,Logistics Data Analyst,Audit Management,1778,Kent.Geyrozaga@traxtech.com
-1806,Janelle,Polinga,Logistics Data Analyst,Audit Management,1778,Janelle.Polinga@traxtech.com
-1813,Cristine Edsa,Quirante,Logistics Data Analyst,Audit Management,1778,Cristine.Quirante@traxtech.com
-1817,Jennielou,Gesalan,Logistics Data Analyst,Audit Management,1778,jennielou.gesalan@traxtech.com
-1820,Joannah Mary,Sedigo,Logistics Data Analyst,Audit Management,1778,joannah.sedigo@traxtech.com
-1842,Nicole Ched,Ceballos,Logistics Data Analyst,Audit Management,1778,nicole.ceballos@traxtech.com
-1841,Vince Carlo,Mendoza,Logistics Data Analyst,Audit Management,1778,vince.mendoza@traxtech.com
-794,Lusine,Sarkhoshyan,Logistics Data Analyst,Audit Management,797,lusine.sarkhoshyan@traxtech.com
-795,Melanya,Shirinyan,Logistics Data Analyst,Audit Management,797,melanya.shirinyan@traxtech.com
-792,Dustin,Graham,Logistics Data Analyst,Audit Management,797,dustin.graham@traxtech.com
-1714,Nancy,Cason,Logistics Data Analyst,Audit Management,797,nancy.cason@traxtech.com
-1787,Irone Kim,Tolibao,Logistics Data Analyst,Audit Management,797,Irone.Tolibao@traxtech.com
-1822,Jifford,Balungcas,Logistics Data Analyst,Audit Management,797,Jifford.Jifford@traxtech.com
-1466,Carol,Herrera,Logistics Data Analyst,Audit Management,650,carol.herrera@traxtech.com
-1459,David,Peralta,Logistics Data Analyst,Audit Management,650,david.peralta@traxtech.com
-1684,Leonardo,Ugalde,Logistics Data Analyst,Audit Management,650,leonardo.ugalde@traxtech.com
-1767,Jonathan,Porras Guillen,Logistics Data Analyst,Audit Management,650,jonathan.porras@traxtech.com
-1770,Bryan,Leiton Salas,Logistics Data Analyst,Audit Management,650,bryan.leiton@traxtech.com
-1642,Alvinne,Cruz,Logistics Data Analyst,Audit Management,897,alvinne.cruz@traxtech.com
-1756,Ericca,Amores,Logistics Data Analyst,Audit Management,897,ericca.amores@traxtech.com
-1792,Rafael,Chaw,Logistics Data Analyst,Audit Management,897,Rafael.Chaw@traxtech.com
-1808,Jasmine,Nalam,Logistics Data Analyst,Audit Management,897,Jasmine.Nalam@traxtech.com
-1819,Lloyd Jay,Baclaan,Logistics Data Analyst,Audit Management,897,lloyd.baclaan@traxtech.com
-1826,Jesica,Acalain,Logistics Data Analyst,Audit Management,897,jessica.acalain@traxtech.com
-1823,Joseph Jr.,Amistad,Logistics Data Analyst,Audit Management,897,joseph.amistad@traxtech.com
-1835,Hannah Gwen,De La Cerna,Logistics Data Analyst,Audit Management,897,Hannah.DeLaCerna@traxtech.com
-1673,Jeanelle Vianca,Apolinar,Logistics Data Analyst,Audit Management,646,Jeanelle.Apolinar@traxtech.com
-1800,Kristine Thea,Arocha,Logistics Data Analyst,Audit Management,646,Kristine.Arocha@traxtech.com
-1824,Leo Roque,Sabando III,Logistics Data Analyst,Audit Management,646,leo.sabando@traxtech.com
-1836,Hannah,Egoc,Logistics Data Analyst,Audit Management,646,Hannah.Egoc@traxtech.com
-1844,Kyle Francis,Daño,Logistics Data Analyst,Audit Management,646,Francis.Dano@traxtech.com
-787,Lynebeth,Decin,Logistics Data Analyst,Audit Management,835,lynebeth.decin@traxtech.com
-817,Daniela,Bossi,Logistics Data Analyst,Audit Management,835,daniela.bossi@traxtech.com
-1099,Karen,Arcillas,Logistics Data Analyst,Audit Management,835,karen.arcillas@traxtech.com
-1381,Jojei,Misa,Logistics Data Analyst,Audit Management,835,jojei.misa@traxtech.com
-1618,Krisleeh Mae,Carpentero,Logistics Data Analyst,Audit Management,835,Krisleeh.Carpentero@traxtech.com
-1721,Marla,Quiros,Logistics Data Analyst,Audit Management,835,marla.quiros@traxtech.com
-1789,John Roque,Pantojan,Logistics Data Analyst,Audit Management,835,john.pantojan@traxtech.com
-1790,Sharnaine Marie,Arobo,Logistics Data Analyst,Audit Management,835,Sharnaine.Arobo@traxtech.com
-1797,Meric Jims,Saragena,Logistics Data Analyst,Audit Management,835,Meric.Saragena@traxtech.com
-1838,Joshua,Calinao,Logistics Data Analyst,Audit Management,835,Joshua.Calinao@traxtech.com
-911,Beverly Ann,Gonesto,Logistics Data Analyst,Audit Management,1078,beverly.gonesto@traxtech.com
-1071,Joanne Gaye,Ababon,Logistics Data Analyst,Audit Management,1078,joanne.ababon@traxtech.com
-1082,Analea,Gutierrez-Gamayon,Logistics Data Analyst,Audit Management,1078,analea.gutierrez@traxtech.com
-1532,Mark Anthony,Amado,Logistics Data Analyst,Audit Management,1078,Mark.Amado@traxtech.com
-1544,Marjette,Niala,Logistics Data Analyst,Audit Management,1078,marjette.maxino@traxtech.com
-1563,Michael,Enecuela,Logistics Data Analyst,Audit Management,1078,michael.enecuela@traxtech.com
-1639,Harold,Ortega,Logistics Data Analyst,Audit Management,1078,harold.ortega@traxtech.com
-1738,Rhona Mae,Sarmiento,Logistics Data Analyst,Audit Management,1078,Rhona.Sarmiento@traxtech.com
-1825,Shina Lynne,Paninsoro,Logistics Data Analyst,Audit Management,1078,Shina.Paninsoro@traxtech.com
-1401,Cherssy Kaye,Eviota,Logistics Data Analyst,Audit Management,688,Cherssy.Eviota@traxtech.com
-1540,Mikee,Suico,Logistics Data Analyst,Audit Management,688,mikee.suico@traxtech.com
-1607,Charmaine,Cabañog,Logistics Data Analyst,Audit Management,688,Charmaine.Cabanog@traxtech.com
-1608,Jayson,Sevilla,Logistics Data Analyst,Audit Management,688,jayson.sevilla@traxtech.com
-1664,Kathline,Bendulo,Logistics Data Analyst,Audit Management,688,kathline.bendulo@traxtech.com
-1666,Lesly,Siopan,Logistics Data Analyst,Audit Management,688,lesly.siopan@traxtech.com
-1686,Martilouna,Obejero,Logistics Data Analyst,Audit Management,688,martilouna.obejero@traxtech.com
-1744,Keith,Obedencio,Logistics Data Analyst,Audit Management,688,keith.obedencio@traxtech.com
-823,Jasmine,Zhang,Logistics Data Analyst,Audit Management,822,jasmine.zhang@traxtech.com
-821,Jack,Huang,Logistics Data Analyst,Audit Management,822,jack.huang@traxtech.com
-820,Lori,Guo,Logistics Data Analyst,Audit Management,822,lori.guo@traxtech.com
-819,Jenny,Ke,Logistics Data Analyst,Audit Management,822,jenny.ke@traxtech.com
-1539,Emily,Li,Logistics Data Analyst,Audit Management,822,emily.li@traxtech.com
-1632,Summer,Huang,Logistics Data Analyst,Audit Management,822,summer.huang@traxtech.com
-145,Ceneille Marie,Lacasandili,Logistics Data Analyst,Audit Management,1089,Marie.Lacasandili@Traxtech.Com
-1683,Gamuella,Belanizo,Logistics Data Analyst,Audit Management,1089,gamuella.belanizo@traxtech.com
-1708,Sharleen Mae,Lee,Logistics Data Analyst,Audit Management,1089,Sharleen.Lee@traxtech.com
-1722,Louie Jay,Ompad,Logistics Data Analyst,Audit Management,1089,Louie.Ompad@traxtech.com
-1801,Lanz Rafael,Bacus,Logistics Data Analyst,Audit Management,1089,Lanz.Bacus@traxtech.com
-1816,Maria Ellen,Lovitos,Logistics Data Analyst,Audit Management,1089,maria.lovitos@traxtech.com
-1832,Mike Drezer,Vallejos,Logistics Data Analyst,Audit Management,1089,Mike.Vallejos@traxtech.com
-1594,Jesse Rex,Perez,Logistics Data Analyst,Audit Management,1089,Jesse.Perez@traxtech.com
-1850,Mar Jayson,Go,Logistics Data Analyst,Audit Management,1089,mar.go@traxtech.com
-1851,Lovelie,Olmoguez,Logistics Data Analyst,Audit Management,1089,lovelie.olmoguez@traxtech.com
-991,Richard Paul,Gigante,Logistics Data Analyst,Audit Management,1776,richard.gigante@traxtech.com
-1024,Anamarie,Alvarez,Logistics Data Analyst,Audit Management,1776,anamarie.alvarez@traxtech.com
-1500,Rector,Granaderos,Logistics Data Analyst,Audit Management,1776,rector.granaderos@traxtech.com
-1636,Hui-Ya,Chang,Logistics Data Analyst,Audit Management,1776,hui-ya.chang@traxtech.com
-1742,Christopher,Ongco Jr.,Logistics Data Analyst,Audit Management,1776,Christopher.Ongco@traxtech.com
-1741,Lyra Mae,Largo,Logistics Data Analyst,Audit Management,1776,Lyra.Largo@traxtech.com
-1768,Marc Ramsey,Palo,Logistics Data Analyst,Audit Management,1776,Marc.Palo@traxtech.com
-1786,Reymart,Pepito,Logistics Data Analyst,Audit Management,1776,Reymart.Pepito@traxtech.com
-1799,Helen,Soco,Logistics Data Analyst,Audit Management,1776,Helen.Soco@traxtech.com
-1809,Laurence Niño,Calbo,Logistics Data Analyst,Audit Management,1776,Laurence.Calbo@traxtech.com
-1812,John Mark,Daragosa,Logistics Data Analyst,Audit Management,1776,John.Daragosa@traxtech.com
-1821,Shirnah Marie,Awa,Logistics Data Analyst,Audit Management,1776,Shirnah.Awa@traxtech.com
-1827,Imma Heart,Labagala,Logistics Data Analyst,Audit Management,1776,imma.labagala@traxtech.com
-1828,Arlain Jean,Palalon,Logistics Data Analyst,Audit Management,1776,arlain.palalon@traxtech.com
-1829,Jane,Bolocboloc,Logistics Data Analyst,Audit Management,1776,jane.bolocboloc@traxtech.com
-1843,Marie Kris,Baroman,Logistics Data Analyst,Audit Management,1776,marie.baroman@traxtech.com
-1849,Angela,Alvarez,Logistics Data Analyst,Audit Management,1776,angela.alvarez@traxtech.com
-218,Jay,Pañares,Logistics Data Analyst,Audit Management,1586,Jay.Panares@Traxtech.Com
-261,Kim Obed,Sugarol,Logistics Data Analyst,Audit Management,1586,Kim.Sugarol@Traxtech.Com
-146,Charlene,Ypanto,Logistics Data Analyst,Audit Management,1586,charlene.ypanto@traxtech.com
-629,Mary Michell,Callaghan,Logistics Data Analyst,Audit Management,1586,Mary.Callaghan@traxtech.com
-645,Jennifer,Chong,Logistics Data Analyst,Audit Management,1586,jennifer.chong@traxtech.com
-928,Shiera May,Saberon,Logistics Data Analyst,Audit Management,1586,shiera.saberon@traxtech.com
-997,Patrick,De La Fuente,Logistics Data Analyst,Audit Management,1586,patrick.delafuente@traxtech.com
-1535,Romella,Branzuela,Logistics Data Analyst,Audit Management,1586,romella.branzuela@traxtech.com
-1732,Venus,Tuazon,Logistics Data Analyst,Audit Management,1586,venus.tuazon@traxtech.com
-1793,Kristine Phoebe,Obero,Logistics Data Analyst,Audit Management,1586,Kristine.Obero@traxtech.com
-1794,Regine,Deriada,Logistics Data Analyst,Audit Management,1586,Regine.Deriada@traxtech.com
-1831,Kerstine Shyn,Miral,Logistics Data Analyst,Audit Management,1586,Kerstine.Miral@traxtech.com
-1845,Carl Joshua,Illut,Logistics Data Analyst,Audit Management,1586,Carl.Illut@traxtech.com
-850,Haziel,Manila,Logistics Data Analyst,Audit Management,937,haziel.manila@traxtech.com
-939,John Rey,Sumalpong,Logistics Data Analyst,Audit Management,937,john.sumalpong@traxtech.com
-1022,Mavel,Soriano,Logistics Data Analyst,Audit Management,937,mavel.soriano@traxtech.com
-1117,Robert Lexter,Viado,Logistics Data Analyst,Audit Management,937,Robert.Viado@traxtech.com
-1522,Amado Jr,Durens,Logistics Data Analyst,Audit Management,937,Amado.Durens@traxtech.com
-1645,Mariel,Arranchado,Logistics Data Analyst,Audit Management,937,mariel.arranchado@traxtech.com
-1657,Mary Joy,Jayson,Logistics Data Analyst,Audit Management,937,Mary.Jayson@traxtech.com
-1674,Princess Kieth,Lacbayo,Logistics Data Analyst,Audit Management,937,Princess.Lacbayo@traxtech.com
-1743,Dharleen Mae,Gako,Logistics Data Analyst,Audit Management,937,Dharleen.Gako@traxtech.com
-843,Benjamin III,Fellizar,Logistics Data Analyst,Audit Management,982,benjamin.fellizar@traxtech.com
-1426,Loramae,Retuya,Logistics Data Analyst,Audit Management,982,loramae.tabay@traxtech.com
-1480,Ciara,Amado,Logistics Data Analyst,Audit Management,982,ciara.ramirez@traxtech.com
-1503,John Jayco,Labordo,Logistics Data Analyst,Audit Management,982,John.Labordo@traxtech.com
-1501,Randy,Deguit,Logistics Data Analyst,Audit Management,982,randy.deguit@traxtech.com
-1731,Carlos Jr.,Decipolo,Logistics Data Analyst,Audit Management,982,Carlos.Decipolo@traxtech.com
-1772,Yirlani,Castro Morera,Logistics Data Analyst,Audit Management,982,yirlani.castro@traxtech.com
-121,Annecy Alforque,Gubat,Manager,Human Resources,1635,annecy.gubat@traxtech.com
-718,Cormethia,Walls,Manager - Cost Allocation and Settlement,Financial Class,714,cormethia.walls@traxtech.com
-797,Beatriz,Braxton,"Manager, Audit & Process Improvement",Audit Management,1733,beatriz.braxton@traxtech.com
-192,Floraben Amistoso,Dungog,"Manager, Audit Analyst",PMO,285,floraben.dungog@traxtech.com
-455,Jenny,Rodriguez Bonilla,"Manager, Audit Excellence",Audit Management,289,jenny.rodriguez@traxtech.com
-815,Judy,Adams,"Manager, Data Excellence",Engineering,174,judy.adams@traxtech.com
-329,Rizza Maratas,Fernandez,"Manager, Data Integration",PMO,285,rizza.fernandez@traxtech.com
-799,Heather,Kennedy,"Manager, Operations Workflow",CRM & Base Support,714,heather.kennedy@traxtech.com
-1780,Jhon Mark Gumajob,Bayon,"Manager, Systems Integration",PMO,710,Jhon.Bayon@traxtech.com
-1774,Vy,Tran,Marketing Associate,Sales & Marketing,1839,vy.tran@traxtech.com
-1530,Mary Rose,Dejito,Master Data Specialist,PMO,930,Mary.Dejito@traxtech.com
-1740,Chebe Leo,Salde,Master Data Specialist,PMO,930,Chebe.Salde@traxtech.com
-143,Caren Michelle Torres,Matutinao,Operations Manager,Audit Management,1733,Caren.matutinao@Traxtech.Com
-1044,Lasser Pialago,Rigor,Operations Manager,Audit Management,1733,lasser.rigor@traxtech.com
-1004,Naomi,Nielsen,Payroll Accounting Specialist,Finance,1008,naomi.nielsen@traxtech.com
-190,Fatima Louise Englis,Sasan,Platform Support Manager,Platform Operations,194,Fatima.Sasan@Traxtech.Com
-280,Mac Gyver,Chavez,Platform Support Specialist,Platform Operations,917,Mac.Chavez@Traxtech.Com
-1129,Khairiya,Maunte,Platform Support Specialist,Platform Operations,917,khairiya.maunte@traxtech.com
-643,Krystine Ann Marie,Monterde,Platform Support Specialist,Platform Operations,251,krystine.monterde@traxtech.com
-1759,Kent,Yaun,Platform Support Specialist,Platform Operations,251,kent.yaun@traxtech.com
-459,Jenniffer,Valverde Rivera,Product Manager,Product Management,174,jenniffer.valverde@traxtech.com
-222,Jebelyn,Alanano,Product Manager,Product Management,174,jebelyn.alanano@traxtech.com
-1782,Chelsea,Dorsett,Product Marketing Manager,Sales & Marketing,1839,chelsea.huss@traxtech.com
-1448,Matthew,Halburnt,Program Director,PMO,1693,matt.halburnt@traxtech.com
-709,Connie,Hughes,Project Manager,PMO,710,connie.hughes@traxtech.com
-355,Stephen Jan,Cortez,Project Manager,PMO,710,Stephen.Cortez@Traxtech.Com
-200,Gilda,Impas,Project Manager,PMO,710,gilda.impas@traxtech.com
-918,Jefrey,Ylanan,Project Manager,PMO,710,jefrey.ylanan@traxtech.com
-1761,Russell,Hampton,Project Manager,PMO,710,Russell.Hampton@traxtech.com
-957,Divine Grace,Zaide,QA Engineer,Engineering,772,divine.zaide@traxtech.com
-772,Kirstie Camille Llanes,Ferre,QA Manager,Engineering,194,Kirstie.Ferre@traxtech.com
-1569,Suchiella Mae,Forton,Rate Loading Analyst,Audit Management,701,Suchiella.Forton@traxtech.com
-1520,Cris,Torceno,Rate Loading Associate,PMO,908,cris.torceno@traxtech.com
-1547,Hesarey,Gorgonio,Rate Loading Associate,PMO,908,hesarey.gorgonio@traxtech.com
-1660,Khizzy Mae,Quimson,Rate Loading Associate,PMO,908,Khizzy.Quimson@traxtech.com
-1659,Lovely,Chapa,Rate Loading Associate,PMO,908,lovely.chapa@traxtech.com
-1688,Nesty Rose,Tinambacan,Rate Loading Associate,PMO,908,Nesty.Tinambacan@traxtech.com
-1698,Khimverly,Lapiz,Rate Loading Associate,PMO,908,khimverly.lapiz@traxtech.com
-1735,Joshua,Paras,Rate Loading Associate,PMO,908,joshua.paras@traxtech.com
-908,Ma. Vivincia Bohol,Panilag,Rate Loading Supervisor,PMO,192,vivincia.panilag@traxtech.com
-1211,Jinmar,Tan,Rules Engine Specialist,PMO,908,jinmar.tan@traxtech.com
-1122,James,Valera,"Senior Account Executive, Customer Growth",Sales & Marketing,1839,james.valera@traxtech.com
-257,Kelvin,Jones,Senior Audit Rules Developer,Engineering,246,kelvin.jones@traxtech.com
-340,Ronilo,Timbal,Senior Audit Rules Developer,PMO,357,ronilo.timbal@traxtech.com
-1290,Gaurick,Dhawan,Senior DevOps Engineer,DevOps Engineering,202601,gaurick.dhawan@traxtech.com
-1407,Briana,Kuhlman,Senior Digital Marketing Manager,Sales & Marketing,1839,briana.kuhlman@traxtech.com
-1775,Mark,Savini,Senior Director of Solutions Consulting,Sales & Marketing,1769,mark.savini@traxtech.com
-285,Maricar Jumao-as,Añosa,"Senior Director, Carrier Enablement",PMO,1693,Maricar.Anosa@Traxtech.Com
-1112,Macy,Savage,"Senior Director, Global Client Growth",Sales & Marketing,1769,macy.savage@traxtech.com
-270,Laura,Hay,"Senior Director, Global Program Management",Account Management,1635,laura.hay@traxtech.com
-710,Christine,Jaggars,"Senior Director, Professional Services",PMO,1693,christine.jaggars@traxtech.com
-998,Sharon,Tibon,Senior Global Program Manager,Global Program Management,270,sharon.tibon@traxtech.com
-909,Michael Vincent,Dafun,Senior Global Rules Developer,Engineering,246,michael.dafun@traxtech.com
-328,Ritchel Ortiz,Enerlan,Senior Manager,Audit Management,1733,ritchel.enerlan@traxtech.com
-741,Gary,Pounds,"Senior Manager, Client Enablement",PMO,710,gary.pounds@traxtech.com
-246,Juanito Legaspi,Quinlog Jr.,Senior Rules Developer,Engineering,193,Juanito.Quinlog@Traxtech.Com
-721,Felica,Neal,Senior SME,Audit Management,289,felica.fair@traxtech.com
-338,Roenthauer Reyes,Baduel,Senior Software Engineer,Engineering,242,roenthauer.baduel@traxtech.com
-1754,Genesis,Rufino,Senior Software Engineer,Engineering,1745,genesis.rufino@traxtech.com
-183,Emily,Inoc,Settlement Coordinator,Financial Class,230,emily.inoc@traxtech.com
-925,Catrina,Computo,Settlement Coordinator,Financial Class,230,catrina.empasis@traxtech.com
-1764,Rey Steven,Abella,Settlement Coordinator,Financial Class,230,rey.abella@traxtech.com
-567,Rachelle Ann Tubalado,Rosal,Shared Audit Support Manager,Audit Management,328,Rachelle.Tubalado@traxtech.com
-701,Rohanna Wendy Chiu,Tan,Shared Audit Support Manager,Operations Risk,328,rohanna.tan@traxtech.com
-658,Joemarie Caliao,Anoba,Shared Audit Support Supervisor,Operations Risk,701,joemarie.anoba@traxtech.com
-1356,Angelica,Francisco,Shared Audit Support Supervisor,Operations Risk,701,angelica.francisco@traxtech.com
-863,Ferdinand,Sevilla,Shared Services Auditor,Audit Management,279,ferdinand.sevilla@traxtech.com
-849,Kevin Renz,Malto,Shared Services Auditor,Audit Management,279,kevin.malto@traxtech.com
-1175,Melque Scarlet E.,Aringoy,Shared Services Auditor,Audit Management,279,Melque.Aringoy@traxtech.com
-1128,Penny Mae,Suarez,Shared Services Auditor,Audit Management,279,Penny.Suarez@traxtech.com
-1647,Robert,Eniego,Shared Services Auditor,Audit Management,279,robert.eniego@traxtech.com
-1694,Ceilo,Saberon,Shared Services Auditor,Audit Management,279,ceilo.saberon@traxtech.com
-1719,Charmie,Hermosa,Shared Services Auditor,Audit Management,279,charmie.hermosa@traxtech.com
-1760,John Paul,Soroño,Shared Services Auditor,Audit Management,279,JohnPaul.Sorono@traxtech.com
-1784,Juan Jr,Albiso,Shared Services Auditor,Audit Management,279,Juan.Albiso@traxtech.com
-1785,Pauline Anne,Cañete,Shared Services Auditor,Audit Management,279,Pauline.Canete@traxtech.com
-858,Marvin,Pico,Shared Services Auditor,Audit Management,567,marvin.pico@traxtech.com
-1805,Leihden Grace,Posod,Shared Services Auditor,Audit Management,982,Leihden.Posod@traxtech.com
-1814,Melvin,Paul,Shared Services Auditor,Audit Management,982,Melvin.Paul@traxtech.com
-1837,Rochelle Ann,Ang,Shared Services Auditor,Audit Management,982,Rochelle.Ang@traxtech.com
-488,Francis Kevin,Tejano,Software Engineer,Engineering,1745,Francis.Tejano@traxtech.com
-914,Paul Ryan,Ocampo,Software Engineer,Engineering,1745,paul.ocampo@traxtech.com
-1752,Jerel Roi,Rotoras,Software Engineer,Engineering,1745,Jerel.Rotoras@traxtech.com
-317,Randy,Argonillo,Software Engineer,Engineering,1783,randy.argonillo@traxtech.com
-576,Joselito,Medina,Software Engineer,Engineering,1783,joselito.medina@traxtech.com
-1678,Christian,Asombra,Software Engineer,Engineering,1783,christian.asombra@traxtech.com
-182,Elmar,Rato,Software Engineer,Engineering,338,elmar.rato@traxtech.com
-126,Archie,Balverde,Software Engineer,Engineering,338,archie.balverde@traxtech.com
-169,Decery Joyce,Alterado,Software Engineer,Engineering,338,Decery.Alterado@Traxtech.Com
-1777,Christopher,Myers,Solutions Consultant,Sales & Marketing,1775,christopher.myers@traxtech.com
-740,Kathleen,Pitts,Sr. Business Rules Developer,Financial Class,718,kathy.pitts@traxtech.com
-451,Ricardo,Chicas Romero,Sr. Database Administrator,IT,202601,ricardo.chicas@traxtech.com
-174,Dimitre M,Kurtti,Sr. Director of Product Strategy,Product Management,1685,dimi.kurtti@traxtech.com
-147,Charles,Curbo,Sr. Solution Consultant,Sales & Marketing,1775,bruce.curbo@traxtech.com
-357,Steve Lee,Ong,Supervisor,PMO,192,steve.ong@traxtech.com
-230,Jhobart Bato,Poblete,Supervisor - FPS Settlement,Financial Class,718,jhobart.poblete@traxtech.com
-930,Desiree Suerte,Montenegro,"Supervisor, Master Data",PMO,285,desiree.montenegro@traxtech.com
-1852,Jayven,Toñacao,System Integration Engineer,PMO,1780,jayven.tonacao@traxtech.com
-284,Maria Socorro Ganzo,Dalde,Team Lead,Finance,1008,Socorro.Ganzo@Traxtech.Com
-654,Arlou,Soriño,"Team Lead, Ingestion Support",Platform Operations,775,arlou.sorino@traxtech.com
-251,Julius Ceasar Gabasa,Bitang,"Team Lead, Platform Support",Platform Operations,190,Julius.Bitang@Traxtech.Com
-677,Mariel,Carrillo,"Team Lead, Platform Support",Platform Operations,190,mariel.damasing@traxtech.com
-917,Christian Carusca,Bacalan,"Team Lead, Platform Support",Platform Operations,190,christian.bacalan@traxtech.com
-680,Jalex,Quinga,Tier 2 Engineer,Platform Operations,369,jalex.quinga@traxtech.com
-1534,Arthur John,Pagausa,Tier 2 Engineer,Platform Operations,369,Arthur.Pagausa@traxtech.com
-1619,Christian,Sator,Tier 2 Engineer,Platform Operations,369,christian.sator@traxtech.com
-1788,Marlon,Alonzo,Tier 2 Engineer,Platform Operations,369,Marlon.Alonzo@traxtech.com
-1815,Kenneth,Menchavez,Tier 2 Engineer,Platform Operations,369,kenneth.menchavez@traxtech.com
-369,Yves Bacalla,Calva,Tier 2 Support Manager,Platform Operations,194,yves.calva@traxtech.com
-749,Rebecca,Garcia,TraxPay Manager,Finance,1008,rebecca.garcia@traxtech.com
-1751,Neile Genica,Sy,UI/UX Designer,Engineering,174,Genica.Sy@traxtech.com
-252,June-Marq,Ocaña,Vendor Manager,Data Management,328,June.Ocana@Traxtech.Com
-271,Laurence,Wilson,"Vice President, Sales Ops Excellence & Pricing",Sales & Marketing,1775,brandon.wilson@traxtech.com
-1769,Bill,Edwards,"Vice President, Worldwide Sales",Sales & Marketing,1658,bill.edwards@traxtech.com
-1839,Megan,Caldwell,VP Revenue Operations,Sales & Marketing,1658,megan.caldwell@traxtech.com
-1733,Rio Minda Bihag,Barrameda,"VP, Audit",Operations,1635,rio.barrameda@traxtech.com
-714,Veronique,D'Ambrosi,"VP, Global Client Operations",Data Management,1635,veronique.dambrosi@traxtech.com
-1693,Peter Charles,Manza,"VP, Professional Services",PMO,1635,pete.manza@traxtech.com
+employeeid,first_name,last_name,position,department,supervisor_id,email,1,1
+EMP-202601,Caren Michelle,Matutinao,Audit Manager,Audit Ops,EMP-202773,caren.matutinao@traxtech.com,1,1
+EMP-202602,Lasser,Rigor,Audit Manager,Audit Ops,EMP-202773,lasser.rigor@traxtech.com,1,1
+EMP-202603,Nilo,Tejones,Audit Manager,Audit Ops,EMP-202773,nilo.tejones@traxtech.com,1,1
+EMP-202604,Ritchel,Enerlan,Audit Sr. Manager,Audit Ops,EMP-202773,ritchel.enerlan@traxtech.com,1,1
+EMP-202605,David,Alvarez Quirós,Audit Supervisor,Audit Ops,EMP-202601,david.alvarez@traxtech.com,1,1
+EMP-202606,Maria Cristina,Caancan,Audit Supervisor,Audit Ops,EMP-202601,maria.caancan@traxtech.com,1,1
+EMP-202607,Emerose,Estrera,Audit Supervisor,Audit Ops,EMP-202601,emerose.estrera@traxtech.com,1,1
+EMP-202608,Philip,Tolentin,Audit Supervisor,Audit Ops,EMP-202601,philip.tolentin@traxtech.com,1,1
+EMP-202609,Luelyn,Añasco,Audit Supervisor,Audit Ops,EMP-202602,luelyn.anasco@traxtech.com,1,1
+EMP-202610,Emmanuel,Boltiador,Audit Supervisor,Audit Ops,EMP-202602,emmanuel.boltiador@traxtech.com,1,1
+EMP-202611,Bela Joy,Camello,Audit Supervisor,Audit Ops,EMP-202602,bela.camello@traxtech.com,1,1
+EMP-202612,Jeffrey,Cavintoy,Audit Supervisor,Audit Ops,EMP-202602,jeffrey.cavintoy@traxtech.com,1,1
+EMP-202613,Dhave,Ortiz,Audit Supervisor,Audit Ops,EMP-202602,dhave.ortiz@traxtech.com,1,1
+EMP-202614,Lindy,Yang,Audit Supervisor,Audit Ops,EMP-202602,lindy.yang@traxtech.com,1,1
+EMP-202615,Lera Jean,Alvarez,Audit Supervisor,Audit Ops,EMP-202603,lera.alvarez@traxtech.com,1,1
+EMP-202616,Tetsuya Ar-Jay,Ayroso,Audit Supervisor,Audit Ops,EMP-202603,ar-jay.ayroso@traxtech.com,1,1
+EMP-202617,John Michael,Diva,Audit Supervisor,Audit Ops,EMP-202603,john.diva@traxtech.com,1,1
+EMP-202618,Raphael-Rainer,Unabia,Audit Supervisor,Audit Ops,EMP-202603,raphael.unabia@traxtech.com,1,1
+EMP-202619,Whilliam,Piñas,Audit Supervisor,Audit Ops,EMP-202627,whilliam.pinas@traxtech.com,1,1
+EMP-202620,Melque Scarlet E.,Aringoy,Duplicate,Audit Ops,EMP-202628,melque.aringoy@traxtech.com,1,1
+EMP-202621,Pauline Anne,Cañete,Duplicate,Audit Ops,EMP-202628,pauline.canete@traxtech.com,1,1
+EMP-202622,Robert,Eniego,Duplicate,Audit Ops,EMP-202628,robert.eniego@traxtech.com,1,1
+EMP-202623,Kevin Renz,Malto,Duplicate,Audit Ops,EMP-202628,kevin.malto@traxtech.com,1,1
+EMP-202624,Ceilo,Saberon,Duplicate,Audit Ops,EMP-202628,ceilo.saberon@traxtech.com,1,1
+EMP-202625,Ferdinand,Sevilla,Duplicate,Audit Ops,EMP-202628,ferdinand.sevilla@traxtech.com,1,1
+EMP-202626,Penny Mae B.,Suarez,Duplicate,Audit Ops,EMP-202628,penny.suarez@traxtech.com,1,1
+EMP-202627,Rachelle Ann,Rosal,Duplicate Manager,Audit Ops,EMP-202604,rachelle.tubalado@traxtech.com,1,1
+EMP-202628,Maria Jogel,Cabatas,Duplicate Supervisor,Audit Ops,EMP-202627,jogel.cabatas@traxtech.com,1,1
+EMP-202629,Nadia,Alone,GSS,Audit Ops,EMP-202634,nadia.alone@traxtech.com,1,1
+EMP-202630,Mariel,Iglesia,GSS,Audit Ops,EMP-202634,mariel.iglesia@traxtech.com,1,1
+EMP-202631,Jendelyn,Setrina,GSS,Audit Ops,EMP-202634,jendelyn.davis@traxtech.com,1,1
+EMP-202632,Grace,Espinosa,GSS,Audit Ops,EMP-202635,grace.vicente@traxtech.com,1,1
+EMP-202633,Rubelyn,Sabania,GSS,Audit Ops,EMP-202635,rubelyn.sabania@traxtech.com,1,1
+EMP-202634,Rohanna Wendy,Tan,GSS Manager,Audit Ops,EMP-202604,rohanna.tan@traxtech.com,1,1
+EMP-202635,Joemarie,Anoba,GSS Supervisor,Audit Ops,EMP-202634,joemarie.anoba2@traxtech.com,1,1
+EMP-202636,John Mc Bert,Arriesgado,LDA,Audit Ops,EMP-202616,john.arriesgado@traxtech.com,1,1
+EMP-202637,Kathline,Bendulo,LDA,Audit Ops,EMP-202616,kathline.bendulo@traxtech.com,1,1
+EMP-202638,Nicole Ched,Ceballos,LDA,Audit Ops,EMP-202616,nicole.ceballos@traxtech.com,1,1
+EMP-202639,Princes Windel,Doble,LDA,Audit Ops,EMP-202616,princes.doble@traxtech.com,1,1
+EMP-202640,Jennielou,Gesalan,LDA,Audit Ops,EMP-202616,jennielou.gesalan@traxtech.com,1,1
+EMP-202641,Kent Micheal,Geyrozaga,LDA,Audit Ops,EMP-202616,kent.geyrozaga@traxtech.com,1,1
+EMP-202642,Syver Jake,Jabonero,LDA,Audit Ops,EMP-202616,syver.jabonero@traxtech.com,1,1
+EMP-202643,Randel,Jaculbe,LDA,Audit Ops,EMP-202616,randel.jaculbe@traxtech.com,1,1
+EMP-202644,Martilouna,Obejero,LDA,Audit Ops,EMP-202616,martilouna.obejero@traxtech.com,1,1
+EMP-202645,Joy Mabelle,Poraso,LDA,Audit Ops,EMP-202616,joy.poraso@traxtech.com,1,1
+EMP-202646,Cristine Edsa,Quirante,LDA,Audit Ops,EMP-202616,cristine.quirante@traxtech.com,1,1
+EMP-202647,Joselito,Sarona,LDA,Audit Ops,EMP-202616,joselito.sarona@traxtech.com,1,1
+EMP-202648,Jayson,Sevilla,LDA,Audit Ops,EMP-202616,jayson.sevilla@traxtech.com,1,1
+EMP-202649,Yirlani,Castro Morera,LDA,Audit Ops,EMP-202605,yirlani.castro@traxtech.com,1,1
+EMP-202650,Carol,Herrera,LDA,Audit Ops,EMP-202605,carol.herrera@traxtech.com,1,1
+EMP-202651,Bryan,Leiton Salas,LDA,Audit Ops,EMP-202605,bryan.leiton@traxtech.com,1,1
+EMP-202652,David,Peralta,LDA,Audit Ops,EMP-202605,david.peralta@traxtech.com,1,1
+EMP-202653,Jonathan,Porras Guillen,LDA,Audit Ops,EMP-202605,jonathan.porras@traxtech.com,1,1
+EMP-202654,Leonardo,Ugalde,LDA,Audit Ops,EMP-202605,leonardo.ugalde@traxtech.com,1,1
+EMP-202655,Jesica,Acalain,LDA,Audit Ops,EMP-202607,jesica.acalain@traxtech.com,1,1
+EMP-202656,Joseph Jr.,Amistad,LDA,Audit Ops,EMP-202607,joseph.amistad@traxtech.com,1,1
+EMP-202657,Ericca,Amores,LDA,Audit Ops,EMP-202607,ericca.amores@traxtech.com,1,1
+EMP-202658,Lloyd Jay,Baclaan,LDA,Audit Ops,EMP-202607,lloyd.baclaan@traxtech.com,1,1
+EMP-202659,Rafael,Chaw,LDA,Audit Ops,EMP-202607,rafael.chaw@traxtech.com,1,1
+EMP-202660,Alvinne,Cruz,LDA,Audit Ops,EMP-202607,alvinne.cruz@traxtech.com,1,1
+EMP-202661,Hannah Gwen,De La Cerna,LDA,Audit Ops,EMP-202607,hannah.delacerna@traxtech.com,1,1
+EMP-202662,Jasmine,Nalam,LDA,Audit Ops,EMP-202607,jasmine.nalam@traxtech.com,1,1
+EMP-202663,Christopher,Artisin,LDA,Audit Ops,EMP-202615,christopher.artisin@traxtech.com,1,1
+EMP-202664,Charmaine,Cabañog,LDA,Audit Ops,EMP-202615,charmaine.cabanog@traxtech.com,1,1
+EMP-202665,Cherssy Kaye,Eviota,LDA,Audit Ops,EMP-202615,cherssy.eviota@traxtech.com,1,1
+EMP-202666,Keith,Obedencio,LDA,Audit Ops,EMP-202615,keith.obedencio@traxtech.com,1,1
+EMP-202667,Midsar,Pongase,LDA,Audit Ops,EMP-202615,midsar.pongase@traxtech.com,1,1
+EMP-202668,Lesly,Siopan,LDA,Audit Ops,EMP-202615,lesly.siopan@traxtech.com,1,1
+EMP-202669,Mikee,Suico,LDA,Audit Ops,EMP-202615,mikee.suico@traxtech.com,1,1
+EMP-202670,Lori,Guo,LDA,Audit Ops,EMP-202614,lori.guo@traxtech.com,1,1
+EMP-202671,Jack,Huang,LDA,Audit Ops,EMP-202614,jack.huang@traxtech.com,1,1
+EMP-202672,Summer,Huang,LDA,Audit Ops,EMP-202614,summer.huang@traxtech.com,1,1
+EMP-202673,Jenny,Ke,LDA,Audit Ops,EMP-202614,jenny.ke@traxtech.com,1,1
+EMP-202674,Emily,Li,LDA,Audit Ops,EMP-202614,emily.li@traxtech.com,1,1
+EMP-202675,Jasmine,Zhang,LDA,Audit Ops,EMP-202614,jasmine.zhang@traxtech.com,1,1
+EMP-202676,Anamarie,Alvarez,LDA,Audit Ops,EMP-202606,anamarie.alvarez@traxtech.com,1,1
+EMP-202677,Angela,Alvarez,LDA,Audit Ops,EMP-202606,angela.alvarez@traxtech.com,1,1
+EMP-202678,Shirnah Marie,Awa,LDA,Audit Ops,EMP-202606,shirnah.awa@traxtech.com,1,1
+EMP-202679,Marie Kris,Baroman,LDA,Audit Ops,EMP-202606,marie.baroman@traxtech.com,1,1
+EMP-202680,Jane,Bolocboloc,LDA,Audit Ops,EMP-202606,jane.bolocboloc@traxtech.com,1,1
+EMP-202681,Laurence Niño,Calbo,LDA,Audit Ops,EMP-202606,laurence.calbo@traxtech.com,1,1
+EMP-202682,Hui-Ya,Chang,LDA,Audit Ops,EMP-202606,hui-ya.chang@traxtech.com,1,1
+EMP-202683,John Mark,Daragosa,LDA,Audit Ops,EMP-202606,john.daragosa@traxtech.com,1,1
+EMP-202684,Richard Paul,Gigante,LDA,Audit Ops,EMP-202606,richard.gigante@traxtech.com,1,1
+EMP-202685,Rector,Granaderos,LDA,Audit Ops,EMP-202606,rector.granaderos@traxtech.com,1,1
+EMP-202686,Imma Heart,Labagala,LDA,Audit Ops,EMP-202606,imma.labagala@traxtech.com,1,1
+EMP-202687,Lyra Mae,Largo,LDA,Audit Ops,EMP-202606,lyra.largo@traxtech.com,1,1
+EMP-202688,Christopher,Ongco Jr.,LDA,Audit Ops,EMP-202606,christopher.ongco@traxtech.com,1,1
+EMP-202689,Arlain Jean,Palalon,LDA,Audit Ops,EMP-202606,arlain.palalon@traxtech.com,1,1
+EMP-202690,Marc Ramsey,Palo,LDA,Audit Ops,EMP-202606,marc.palo@traxtech.com,1,1
+EMP-202691,Reymart,Pepito,LDA,Audit Ops,EMP-202606,reymart.pepito@traxtech.com,1,1
+EMP-202692,Helen,Soco,LDA,Audit Ops,EMP-202606,helen.soco@traxtech.com,1,1
+EMP-202693,Lanz Rafael,Bacus,LDA,Audit Ops,EMP-202611,lanz.bacus@traxtech.com,1,1
+EMP-202694,Gamuella,Belanizo,LDA,Audit Ops,EMP-202611,gamuella.belanizo@traxtech.com,1,1
+EMP-202695,Mar Jayson,Go,LDA,Audit Ops,EMP-202611,mar.go@traxtech.com,1,1
+EMP-202696,Ceneille Marie,Lacasandili,LDA,Audit Ops,EMP-202611,marie.lacasandili@traxtech.com,1,1
+EMP-202697,Sharleen Mae,Lee,LDA,Audit Ops,EMP-202611,sharleen.lee@traxtech.com,1,1
+EMP-202698,Maria Ellen,Lovitos,LDA,Audit Ops,EMP-202611,maria.lovitos@traxtech.com,1,1
+EMP-202699,Lovelie,Olmoguez,LDA,Audit Ops,EMP-202611,lovelie.olmoguez@traxtech.com,1,1
+EMP-202700,Louie Jay,Ompad,LDA,Audit Ops,EMP-202611,louie.ompad@traxtech.com,1,1
+EMP-202701,Jesse Rex,Perez,LDA,Audit Ops,EMP-202611,jesse.perez@traxtech.com,1,1
+EMP-202702,Mike Drezer,Vallejos,LDA,Audit Ops,EMP-202611,mike.vallejos@traxtech.com,1,1
+EMP-202703,Rey Ranile,Atil,LDA,Audit Ops,EMP-202613,rey.atil@traxtech.com,1,1
+EMP-202704,Romella,Branzuela,LDA,Audit Ops,EMP-202613,romella.branzuela@traxtech.com,1,1
+EMP-202705,Mary Michell,Callaghan,LDA,Audit Ops,EMP-202613,mary.callaghan@traxtech.com,1,1
+EMP-202706,Jennifer,Chong,LDA,Audit Ops,EMP-202613,jennifer.chong@traxtech.com,1,1
+EMP-202707,Carl Joshua,Illut,LDA,Audit Ops,EMP-202613,carl.illut@traxtech.com,1,1
+EMP-202708,Kristine Phoebe,Obero,LDA,Audit Ops,EMP-202613,kristine.obero@traxtech.com,1,1
+EMP-202709,Jay,Pañares,LDA,Audit Ops,EMP-202613,jay.panares@traxtech.com,1,1
+EMP-202710,Shiera May,Saberon,LDA,Audit Ops,EMP-202613,shiera.saberon@traxtech.com,1,1
+EMP-202711,Kim Obed,Sugarol,LDA,Audit Ops,EMP-202613,kim.sugarol@traxtech.com,1,1
+EMP-202712,Charlene,Ypanto,LDA,Audit Ops,EMP-202613,charlene.ypanto@traxtech.com,1,1
+EMP-202713,Jeanelle Vianca,Apolinar,LDA,Audit Ops,EMP-202610,jeanelle.apolinar@traxtech.com,1,1
+EMP-202714,Kristine Thea,Arocha,LDA,Audit Ops,EMP-202610,kristine.arocha@traxtech.com,1,1
+EMP-202715,Kyle Francis,Daño,LDA,Audit Ops,EMP-202610,francis.dano@traxtech.com,1,1
+EMP-202716,Regine,Deriada,LDA,Audit Ops,EMP-202610,regine.deriada@traxtech.com,1,1
+EMP-202717,Hannah,Egoc,LDA,Audit Ops,EMP-202610,hannah.egoc@traxtech.com,1,1
+EMP-202718,Kerstine Shyn,Miral,LDA,Audit Ops,EMP-202610,kerstine.miral@traxtech.com,1,1
+EMP-202719,Angel Mae,Ramos,LDA,Audit Ops,EMP-202610,angel.ramos@traxtech.com,1,1
+EMP-202720,Leo Roque,Sabando III,LDA,Audit Ops,EMP-202610,leo.sabando@traxtech.com,1,1
+EMP-202721,Venus,Tuazon,LDA,Audit Ops,EMP-202610,venus.tuazon@traxtech.com,1,1
+EMP-202722,Karen,Arcillas,LDA,Audit Ops,EMP-202612,karen.arcillas@traxtech.com,1,1
+EMP-202723,Sharnaine Marie,Arobo,LDA,Audit Ops,EMP-202612,sharnaine.arobo@traxtech.com,1,1
+EMP-202724,Daniela,Bossi,LDA,Audit Ops,EMP-202612,daniela.bossi@traxtech.com,1,1
+EMP-202725,Joshua,Calinao,LDA,Audit Ops,EMP-202612,joshua.calinao@traxtech.com,1,1
+EMP-202726,Krisleeh Mae,Carpentero,LDA,Audit Ops,EMP-202612,krisleeh.carpentero@traxtech.com,1,1
+EMP-202727,Lynebeth,Decin,LDA,Audit Ops,EMP-202612,lynebeth.decin@traxtech.com,1,1
+EMP-202728,Jojei,Misa,LDA,Audit Ops,EMP-202612,jojei.misa@traxtech.com,1,1
+EMP-202729,John Roque,Pantojan,LDA,Audit Ops,EMP-202612,john.pantojan@traxtech.com,1,1
+EMP-202730,Marla,Quiros,LDA,Audit Ops,EMP-202612,marla.quiros@traxtech.com,1,1
+EMP-202731,Meric Jims,Saragena,LDA,Audit Ops,EMP-202612,meric.saragena@traxtech.com,1,1
+EMP-202732,Joanne Gaye,Ababon,LDA,Audit Ops,EMP-202617,joanne.ababon@traxtech.com,1,1
+EMP-202733,Mark Anthony,Amado,LDA,Audit Ops,EMP-202617,mark.amado@traxtech.com,1,1
+EMP-202734,Michael,Enecuela,LDA,Audit Ops,EMP-202617,michael.enecuela@traxtech.com,1,1
+EMP-202735,Beverly Ann,Gonesto,LDA,Audit Ops,EMP-202617,beverly.gonesto@traxtech.com,1,1
+EMP-202736,Analea,Gutierrez-Gamayon,LDA,Audit Ops,EMP-202617,analea.gutierrez@traxtech.com,1,1
+EMP-202737,Marjette,Niala,LDA,Audit Ops,EMP-202617,marjette.maxino@traxtech.com,1,1
+EMP-202738,Harold,Ortega,LDA,Audit Ops,EMP-202617,harold.ortega@traxtech.com,1,1
+EMP-202739,Shina Lynne,Paninsoro,LDA,Audit Ops,EMP-202617,shina.paninsoro@traxtech.com,1,1
+EMP-202740,Rhona Mae,Sarmiento,LDA,Audit Ops,EMP-202617,rhona.sarmiento@traxtech.com,1,1
+EMP-202741,Mariel,Arranchado,LDA,Audit Ops,EMP-202618,mariel.arranchado@traxtech.com,1,1
+EMP-202742,Amado Jr,Durens,LDA,Audit Ops,EMP-202618,amado.durens@traxtech.com,1,1
+EMP-202743,Dharleen Mae,Gako,LDA,Audit Ops,EMP-202618,dharleen.gako@traxtech.com,1,1
+EMP-202744,Mary Joy,Jayson,LDA,Audit Ops,EMP-202618,mary.jayson@traxtech.com,1,1
+EMP-202745,Princess Kieth,Lacbayo,LDA,Audit Ops,EMP-202618,princess.lacbayo@traxtech.com,1,1
+EMP-202746,Haziel,Manila,LDA,Audit Ops,EMP-202618,haziel.manila@traxtech.com,1,1
+EMP-202747,Mavel,Soriano,LDA,Audit Ops,EMP-202618,mavel.soriano@traxtech.com,1,1
+EMP-202748,John Rey,Sumalpong,LDA,Audit Ops,EMP-202618,john.sumalpong@traxtech.com,1,1
+EMP-202749,Robert Lexter,Viado,LDA,Audit Ops,EMP-202618,robert.viado@traxtech.com,1,1
+EMP-202750,Ciara,Amado,LDA,Audit Ops,EMP-202619,ciara.ramirez@traxtech.com,1,1
+EMP-202751,Rochelle Ann,Ang,LDA,Audit Ops,EMP-202619,rochelle.ang@traxtech.com,1,1
+EMP-202752,Carlos Jr.,Decipolo,LDA,Audit Ops,EMP-202619,carlos.decipolo@traxtech.com,1,1
+EMP-202753,Randy,Deguit,LDA,Audit Ops,EMP-202619,randy.deguit@traxtech.com,1,1
+EMP-202754,Benjamin III,Fellizar,LDA,Audit Ops,EMP-202619,benjamin.fellizar@traxtech.com,1,1
+EMP-202755,John Jayco,Labordo,LDA,Audit Ops,EMP-202619,john.labordo@traxtech.com,1,1
+EMP-202756,Melvin,Paul,LDA,Audit Ops,EMP-202619,melvin.paul@traxtech.com,1,1
+EMP-202757,Leihden Grace,Posod,LDA,Audit Ops,EMP-202619,leihden.posod@traxtech.com,1,1
+EMP-202758,Loramae,Tabay,LDA,Audit Ops,EMP-202619,loramae.tabay@traxtech.com,1,1
+EMP-202759,Julius Christian,Ilagan,Ops Analytics Manager,Audit Ops,EMP-202773,julius.ilagan@traxtech.com,1,1
+EMP-202760,Juan Jr,Albiso,Post Audit,Audit Ops,EMP-202628,juan.albiso@traxtech.com,1,1
+EMP-202761,Charmie,Hermosa,Post Audit,Audit Ops,EMP-202628,charmie.hermosa@traxtech.com,1,1
+EMP-202762,Maria Jogel,Cabatas,Post Audit Supervisor,Audit Ops,EMP-202627,jogel.cabatas@traxtech.com,1,1
+EMP-202763,Suchiella Mae,Forton,Rate Loading Analyst,Audit Ops,EMP-202634,suchiella.forton@traxtech.com,1,1
+EMP-202764,Angelica,Francisco,Rate Loading Supervisor,Audit Ops,EMP-202634,angelica.francisco@traxtech.com,1,1
+EMP-202765,Marvin,Pico,Service,Audit Ops,EMP-202627,marvin.pico@traxtech.com,1,1
+EMP-202766,Jesus Jr,Alon,SME,Audit Ops,EMP-202601,jesus.alon@traxtech.com,1,1
+EMP-202767,Moruni,Rudinas,SME,Audit Ops,EMP-202601,moruni.rudinas@traxtech.com,1,1
+EMP-202768,Cris John,Bacquial,SME,Audit Ops,EMP-202602,cris.bacquial@traxtech.com,1,1
+EMP-202769,Sharmine,Rentucan,SME,Audit Ops,EMP-202602,sharmine.rentucan@traxtech.com,1,1
+EMP-202770,Maria Dennessa,Adolfo,SME,Audit Ops,EMP-202627,maria.adolfo@traxtech.com,1,1
+EMP-202771,Arthur Allain,Olea,SME,Audit Ops,EMP-202627,arthur.olea@traxtech.com,1,1
+EMP-202772,June-Marq,Ocaña,Vendor Manager,Audit Ops,EMP-202604,june.ocana@traxtech.com,1,1
+EMP-202773,Rio Minda,Barrameda,"VP, Audit",Audit Ops,EMP-202774,rio.barrameda@traxtech.com,1,1
+EMP-202774,Calites,Jerramy,AI Prompting Engineer,Audit Ops,EMP-202774,jerramy.calites@traxtech.com,1,1

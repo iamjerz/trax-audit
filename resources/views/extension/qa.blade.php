@@ -13,7 +13,7 @@
                     </div>
             <div class="row">
                 <div class="col-lg-12">
-
+                    
                     <div class="card">
                         <div class="card-header bg-primary border-primary">
                             <h4 class="card-title text-white">Trax LDA Quality Audit Form</h4>
@@ -57,14 +57,9 @@
                                 </div>
                                 <div class="col-lg-4 col-md-6">
                                     <div class="mb-3">
-                                        <label for="choices-single-default" class="form-label">Auditors Name <span class="text-danger">*</span></label>
-                                        <select class="form-control choices-js" data-trigger name="auditors-name" id="choices-single-default" placeholder="This is a search placeholder">
-                                            <option value="">Select Auditors Name</option>
-                                            @foreach ($Users as $item)
-                                            <option value="{{ $item->employeeid }}">
-                                                {{ $item->first_name }} {{ $item->last_name }}
-                                            </option>
-                                            @endforeach
+                                        <label for="choices-single-default" class="form-label">Auditor Name <span class="text-danger">*</span></label>
+                                        <select class="form-control choices-js" data-trigger name="auditors-name" id="auditors-name" placeholder="This is a search placeholder">
+                                            <option selected value="{{ $requestor->employeeid }}">{{ $requestor->last_name }} {{ $requestor->first_name }}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -84,20 +79,45 @@
                                 <div class="col-lg-4 col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">Carrier Name <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="" name="carrier-name" placeholder="Enter Carrier Name">
+                                        <!-- <input type="text" class="form-control" id="" name="carrier-name" placeholder="Enter Carrier Name"> -->
+                                        <select class="form-control choices-js" data-trigger name="carrier-name" id="carrier-name" placeholder="This is a search placeholder">
+                                            <option value="">Select Carrier Name</option>
+                                            @foreach($carrierCodeND as $item)
+                                                <option value="{{ $item['carrier_code'] }}">
+                                                    {{ $item['carrier_code'] }}
+                                                </option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                 </div>
 
                                 <div class="col-lg-4 col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">Exception Status <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="" name="exception-status" placeholder="Enter Exception Status">
+                                        <!-- <input type="text" class="form-control" id="" name="exception-status" placeholder="Enter Exception Status"> -->
+                                        <select class="form-control choices-js" data-trigger name="exception-status" id="exception-status" placeholder="This is a search placeholder">
+                                            <option value="">Select Carrier Name</option>
+                                            @foreach($exceptionStatus as $item)
+                                                <option value="{{ $item['audit_condition'] }}">
+                                                    {{ $item['audit_condition'] }}
+                                                </option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">Exception Owner <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="" name="exception-owner" placeholder="Enter Exception Owner">
+                                        <!-- <input type="text" class="form-control" id="" name="exception-owner" placeholder="Enter Exception Owner"> -->
+
+                                        <select class="form-control choices-js" data-trigger name="exception-owner" id="exception-owner" placeholder="This is a search placeholder">
+                                            <option value="">Select Exception Owner</option>
+                                            <option value="Carrier Review">Carrier Review</option>
+                                            <option value="Client Review">Client Review</option>
+                                            <option value="Trax Review">Trax Review</option>
+
+                                            
+                                        </select>
                                     </div>
                                 </div>
                             </div>

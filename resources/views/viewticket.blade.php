@@ -107,7 +107,7 @@
                                                 <tr>
                                                     <th class="fw-bold">Coaching</th>
                                                     <td class="text-muted">
-                                                        @if($triad_exists)
+                                                        @if($coaching_exists)
                                                             <span class="badge bg-success-subtle text-success  mb-0">Done</span>
                                                         @else
                                                             <span class="badge bg-secondary-subtle text-secondary  mb-0">Not yet</span>
@@ -120,7 +120,7 @@
                                                 <tr>
                                                     <th class="fw-bold">Triad</th>
                                                     <td class="text-muted">
-                                                        @if($coaching_exists)
+                                                        @if($triad_exists)
                                                             <span class="badge bg-success-subtle text-success  mb-0">Done</span>
                                                         @else
                                                             <span class="badge bg-secondary-subtle text-secondary  mb-0">Not yet</span>

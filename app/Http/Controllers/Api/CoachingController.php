@@ -6,22 +6,28 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Coaching;
 use App\Models\User;
-
+use Illuminate\Support\Str;
 class CoachingController extends Controller
 {
+
+    function generateReference()
+    {
+        return 'COA-' . now()->format('YmdHis') . '-' . Str::random(4);
+    }
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'Reference' => 'required|string',
-            'Smart' => 'required|array',
-            'Grow' => 'required|array',
-            'Origin' => 'required|string',
+            'reference_type' => 'required|string',
+            'reference' => 'required|string',
+            'smart' => 'required|array',
+            'grow' => 'required|array',
+            'apps' => 'required|string',
             'email' => 'nullable|email'
         ]);
 
         $employeeid = null;
 
-        switch ($validated['Origin']) {
+        switch ($validated['apps']) {
             case 'Web':
                 $employeeid = optional(auth()->user())->employeeid;
                 break;
@@ -38,14 +44,14 @@ class CoachingController extends Controller
             ], 401);
         }
 
-        $coaching = Coaching::updateOrCreate(
-            ['reference' => $validated['Reference']],
-            [
-                'smart' => $validated['Smart'],
-                'grow' => $validated['Grow'],
-                'created_by' => $employeeid
-            ]
-        );
+        $coaching = Coaching::create([
+            'reference' => $validated['reference'],
+            'reference_type' => $validated['reference_type'],
+            'reference_id' => $this->generateReference(),
+            'smart' => $validated['smart'],
+            'grow' => $validated['smart'],
+            'created_by' => $employeeid
+        ]);
 
         return response()->json([
             'message' => 'Saved successfully',

@@ -32,11 +32,22 @@
                         <div class="col-lg-4 col-md-6">
                             <div class="mb-3">
                                 <label for="choices-single-default" class="form-label">Coaching Reference <span class="text-danger">*</span></label>
-                                <select class="form-control choices-js" data-trigger name="coaching-reference" id="coaching-reference" placeholder="This is a search placeholder">
-                                    <option value="">Select Coaching Reference</option>
+                                <input type="text" class="form-control" name="coaching-reference" id="coaching-reference" placeholder="Coaching Reference">
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6" id="coaching-type-field">
+                            <div class="mb-3">
+                                <label for="choices-single-default" class="form-label">Coaching Type <span class="text-danger">*</span></label>
+                                <select class="form-control choices-js" data-trigger name="coaching-type" id="coaching-type" placeholder="This is a search placeholder">
+                                    <option value="">Select Coaching Type</option>
+                                    <option value="Spot Check">Spot Check</option>
+                                    <option value="Calibration Follow up">Calibration Follow up</option>
+                                    <option value="Performance">Performance</option>
+                                    
                                 </select>
                             </div>
                         </div>
+                        
                     </div>
 
 

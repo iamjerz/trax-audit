@@ -127,7 +127,7 @@
                     </a>
                     
                 </li>
-                <li>
+                <!-- <li>
                     <a href="/viewcoaching">
                         <i class="bx bx-food-menu icon nav-icon"></i>
                         <span class="menu-item" data-key="t-calendar">Coaching</span>
@@ -140,7 +140,7 @@
                         <span class="menu-item" data-key="t-calendar">Triad</span>
                     </a>
                     
-                </li>
+                </li> -->
 
                 <!-- Name Divider -->
                 <!-- <li class="menu-title" data-key="t-applications">Tools </li>
@@ -168,8 +168,15 @@
 
                 <li>
                     <a href="/recon-ticket">
-                        <i class="bx bx-food-menu icon nav-icon"></i>
-                        <span class="menu-item" data-key="t-calendar">Action Register</span>
+                        <i class="bx bx-receipt icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-calendar">Action Register Ticket</span>
+                    </a>
+                    
+                </li>
+                <li>
+                    <a href="/triad-ticket">
+                        <i class="bx bx-receipt icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-calendar">Triad Ticket</span>
                     </a>
                     
                 </li>

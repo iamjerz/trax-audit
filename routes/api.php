@@ -9,6 +9,11 @@ use App\Http\Controllers\Api\CoachingController;
 use App\Http\Controllers\Api\CoachingFormController;
 use App\Http\Controllers\Api\CoachingTriadController;
 use App\Http\Controllers\Api\ComboController;
+use App\Http\Controllers\Api\MenuController;
+use App\Http\Controllers\Api\DropdownController;
+use App\Http\Controllers\Api\QaMonitoringFormController;
+
+
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -45,6 +50,19 @@ Route::middleware(['ms.jwt'])->group(function () {
     Route::get('/selection/ticket', [CoachingTriadController::class, 'coachingRef']);
     Route::get('/dropdown/client-code', [ComboController::class, 'clientCode']);
     Route::get('/dropdown/carrier-code', [ComboController::class, 'carrierCode']);
+
+
+
+    Route::post('/forms/menu/', [MenuController::class, 'index']);
+
+    // TEST ONLY
+    Route::get('/client-codes', [DropdownController::class, 'clientCodes']);
+    Route::get('/carrier-codes', [DropdownController::class, 'carrierCodes']);
+    Route::get('/carrier-codes-nd', [DropdownController::class, 'carrierCodesNo']);
+    Route::get('/audit-conditions', [DropdownController::class, 'auditConditions']);
+
+
+    Route::post('/forms/qa', [QaMonitoringFormController::class, 'index']);
 });
 
 

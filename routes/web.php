@@ -25,9 +25,11 @@ use App\Http\Controllers\Api\TriadItemController;
 use App\Http\Controllers\Api\CoachingController;
 use App\Http\Controllers\Api\ReconTiketController;
 use App\Http\Controllers\Api\DashboardReconController;
+use App\Http\Controllers\Api\MenuController;
+use App\Http\Controllers\Api\TriadTicket;
 /*
 |--------------------------------------------------------------------------
-| Root
+| 
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
@@ -36,7 +38,7 @@ Route::get('/', function () {
         : redirect()->route('login');
 });
 
-// Route::get('/import-users', [UserImportController::class, 'import']);
+Route::get('/import-users', [UserImportController::class, 'import']);
 
 /*
 |--------------------------------------------------------------------------
@@ -173,6 +175,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard-recon-chart-clientcode', [DashboardReconController::class, 'TopClientsChart']);
     Route::get('/dashboard-recon-chart-carriercode', [DashboardReconController::class, 'TopCarriers']);
 
+    // Ticket Triad
+
+    Route::get('/triad-ticket', [TriadTicket::class, 'index']);
+    Route::get('/triad-data', [TriadTicket::class, 'displayTicket']);
+    Route::get('/triad-ticket-view/{id}', [TriadTicket::class, 'fullDetails']);
+
+
+
+
 });
 /*
 |--------------------------------------------------------------------------
@@ -186,7 +197,7 @@ Route::middleware('auth')->group(function () {
 // Route::get('api/recon', function () {
 //     return view('extension.recon');
 // })->name('recon');
-Route::get('api/forms/qa', [QaMonitoringFormController::class, 'index']);
+
 Route::get('api/login/verify', [LoginVerifyController::class, 'validateMicrosoftToken']);
 
 
@@ -196,9 +207,11 @@ Route::middleware(['ms.jwt'])->group(function () {
     Route::get('api/field/{name}', [DefaultFieldApi::class, 'index']);
     Route::get('api/forms/recon', [ReconFieldController::class, 'index']);
     
-    Route::get('api/forms/menu', function () {
-        return view('extension.menu');
-    })->name('menu');
+    // Route::get('api/forms/menu', function () {
+    //     return view('extension.menu');
+    // })->name('menu');
+
+    
 
     Route::get('api/forms/selection', [UserListMonitoringPage::class, 'SelectionUserList']);
     // Route::get('api/forms/selection', function () {

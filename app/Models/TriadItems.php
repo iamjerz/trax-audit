@@ -10,7 +10,8 @@ class TriadItems extends Model
     protected $fillable = [
         'reference',
         'triad',
-        'created_by'
+        'created_by',
+        'reference_id' // 👈 add this
     ];
 
     protected $casts = [
