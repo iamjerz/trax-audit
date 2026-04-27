@@ -87,7 +87,7 @@ class ReconTiketController extends Controller
             }
 
             // 👤 ROLE FILTER
-            if ($user_position == "Logistics Data Analyst") {
+            if ($user_position == "LDA") {
                 $query->where(function ($q) use ($user_email, $user_employeeid) {
                     $q->where('recon_action_items.lda_email', $user_email)
                     ->orWhere('recon_action_items.assigned_to', $user_employeeid);

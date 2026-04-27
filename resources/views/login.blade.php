@@ -9,7 +9,7 @@
                     <div class="col-md-8 col-lg-6 col-xl-5">
 
                         <div class="mb-4 pb-2">
-                            <a href="https://www.traxtech.com/" class="d-block auth-logo">
+                            <a href="/login" class="d-block auth-logo">
                                 <img src="https://www.traxtech.com/hubfs/build_assets/trax-core/251/js_client_assets/assets/logo-hwTUqwwd.svg" alt="" height="30" class="auth-logo-dark me-start">
                                 <img src="https://www.traxtech.com/hubfs/build_assets/trax-core/251/js_client_assets/assets/logo-hwTUqwwd.svg" alt="" height="30" class="auth-logo-light me-start">
                             </a>
@@ -19,7 +19,7 @@
                             <div class="card-body p-4"> 
                                 <div class="text-center mt-2">
                                     <h5>Welcome Back !</h5>
-                                    <p class="text-muted">Sign in to continue to QA Form.</p>
+                                    <p class="text-muted">Sign in to continue to Audit Ops Dashboard.</p>
                                 </div>
                                 <div class="p-2 mt-4">
                                     <form method="POST" action="{{ route('login.attempt') }}">
