@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\DB;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -18,15 +20,21 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+     public function boot(): void
     {
-        // REMOVE THIS IS YOU WANT TO RUN IN LOCALHOST
-        // if (app()->environment('local')) {
-        //     URL::forceScheme('https');
-        // }
+        View::composer('partials.bodyheader', function ($view) {
+            $user = auth()->user();
 
-        // if (request()->getHost() !== 'localhost') {
-        //     URL::forceScheme('https');
-        // }
+            $access = collect();
+
+            if ($user) {
+                $access = DB::table('extension_access')
+                    ->select('access_type')
+                    ->where('employeeid', $user->employeeid)
+                    ->get();
+            }
+
+            $view->with('access', $access);
+        });
     }
 }

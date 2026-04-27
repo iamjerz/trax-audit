@@ -106,6 +106,7 @@
                     </a>
                     
                 </li>
+                @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'dashboard'))
                 <li class="menu-title" data-key="t-menu">Dashboard</li>
 
                 <li>
@@ -119,6 +120,8 @@
                         <li><a href="/dashboard-triad" data-key="t-sales">Triad</a></li>
                     </ul>
                 </li>
+                @endif
+                @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'forms'))
                 <li class="menu-title" data-key="t-menu">Forms</li>
                 <li>
                     <a href="/monitoringform">
@@ -127,6 +130,7 @@
                     </a>
                     
                 </li>
+                @endif
                 <!-- <li>
                     <a href="/viewcoaching">
                         <i class="bx bx-food-menu icon nav-icon"></i>
@@ -154,35 +158,42 @@
                     </ul>
                 </li> -->
                 <!-- Name Divider -->
+                 @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'reports'))
                 <li class="menu-title" data-key="t-applications">Reports </li>
-                <li>
-                    <a href="javascript: void(0);" class="has-arrow">
-                        <i class="bx bxs-report icon nav-icon"></i>
-                        <span class="menu-item" data-key="t-ecommerce">Evaluations</span>
-                    </a>
-                    <ul class="sub-menu" aria-expanded="false">
-                        <li><a href="ecommerce-products.html" data-key="t-products">Team(In Progress)</a></li>
-                        <li><a href="/eval-individual" data-key="t-product-detail">Individual</a></li>
-                    </ul>
-                </li>
-
-                <li>
-                    <a href="/recon-ticket">
-                        <i class="bx bx-receipt icon nav-icon"></i>
-                        <span class="menu-item" data-key="t-calendar">Action Register Ticket</span>
-                    </a>
-                    
-                </li>
-                <li>
-                    <a href="/triad-ticket">
-                        <i class="bx bx-receipt icon nav-icon"></i>
-                        <span class="menu-item" data-key="t-calendar">Triad Ticket</span>
-                    </a>
-                    
-                </li>
+                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'report_monitoring'))
+                    <li>
+                        <a href="javascript: void(0);" class="has-arrow">
+                            <i class="bx bxs-report icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-ecommerce">Evaluations</span>
+                        </a>
+                        <ul class="sub-menu" aria-expanded="false">
+                            <li><a href="ecommerce-products.html" data-key="t-products">Team(In Progress)</a></li>
+                            <li><a href="/eval-individual" data-key="t-product-detail">Individual</a></li>
+                        </ul>
+                    </li>
+                    @endif
+                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'report_action_register'))
+                    <li>
+                        <a href="/recon-ticket">
+                            <i class="bx bx-receipt icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-calendar">Action Register Ticket</span>
+                        </a>
+                        
+                    </li>
+                    @endif
+                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'report_triad'))
+                    <li>
+                        <a href="/triad-ticket">
+                            <i class="bx bx-receipt icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-calendar">Triad Ticket</span>
+                        </a>
+                        
+                    </li>
+                    @endif
                 
-
+                @endif
                 <!-- Name Divider -->
+                 @if($access->contains('access_type', 'admin'))
                 <li class="menu-title" data-key="t-applications">Administrator </li>
                 <li>
                     <a href="javascript: void(0);" class="has-arrow">
@@ -194,7 +205,7 @@
                         <li><a href="/users" data-key="t-users">List of Users</a></li>
                     </ul>
                 </li>
-
+                @endif
 
             </ul>
         </div>
