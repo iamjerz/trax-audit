@@ -400,10 +400,10 @@
                     style: { fontWeight: 600 }
                 },
 
-                subtitle: {
-                    text: "Category Names as DataLabels inside bars",
-                    align: "center"
-                },
+                // subtitle: {
+                //     text: "Category Names as DataLabels inside bars",
+                //     align: "center"
+                // },
 
                 tooltip: {
                     theme: "dark",
