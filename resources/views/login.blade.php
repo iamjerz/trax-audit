@@ -18,8 +18,8 @@
                         <div class="card">
                             <div class="card-body p-4"> 
                                 <div class="text-center mt-2">
-                                    <h5>Welcome Back !</h5>
-                                    <p class="text-muted">Sign in to continue to Audit Ops Dashboard.</p>
+                                    <h5>Welcome Back!</h5>
+                                    <p class="text-muted">Sign in to Audit Ops Dashboard</p>
                                 </div>
                                 <div class="p-2 mt-4">
                                     <form method="POST" action="{{ route('login.attempt') }}">
