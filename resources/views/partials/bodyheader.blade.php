@@ -106,7 +106,7 @@
                     </a>
                     
                 </li>
-                @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'dashboard'))
+                @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_dashboard'))
                 <li class="menu-title" data-key="t-menu">Dashboard</li>
 
                 <li>
@@ -121,7 +121,7 @@
                     </ul>
                 </li>
                 @endif
-                @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'forms'))
+                @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_forms'))
                 <li class="menu-title" data-key="t-menu">Forms</li>
                 <li>
                     <a href="/monitoringform">
@@ -158,9 +158,9 @@
                     </ul>
                 </li> -->
                 <!-- Name Divider -->
-                 @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'reports'))
+                 @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_reports'))
                 <li class="menu-title" data-key="t-applications">Reports </li>
-                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'report_monitoring'))
+                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_report_monitoring'))
                     <li>
                         <a href="javascript: void(0);" class="has-arrow">
                             <i class="bx bxs-report icon nav-icon"></i>
@@ -172,7 +172,7 @@
                         </ul>
                     </li>
                     @endif
-                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'report_action_register'))
+                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_report_action_register'))
                     <li>
                         <a href="/recon-ticket">
                             <i class="bx bx-receipt icon nav-icon"></i>
@@ -181,7 +181,7 @@
                         
                     </li>
                     @endif
-                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'report_triad'))
+                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_report_triad'))
                     <li>
                         <a href="/triad-ticket">
                             <i class="bx bx-receipt icon nav-icon"></i>

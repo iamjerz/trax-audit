@@ -15,19 +15,19 @@
                     <h4 class="mb-0">Audit Ops Forms</h4>
                     <hr>
                     <ul class="list-group list-group-flush">
-                        @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'action_register'))
+                        @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'extension_action_register'))
                             <button type="button" id="recon-form" class="list-group-item list-group-item-action"><i class="bx bx-caret-right"></i> Recon Call Action Register</button>
                         @endif
                         
-                        @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'monitoring'))
+                        @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'extension_monitoring'))
                             <button type="button" id="qa-form"class="list-group-item list-group-item-action"><i class="bx bx-caret-right"></i> QA Monitoring</button>
                         @endif
                         
-                        @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'coaching'))
+                        @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'extension_coaching'))
                             <button type="button" id="coaching-form" class="list-group-item list-group-item-action"><i class="bx bx-caret-right"></i> Coaching</button>
                         @endif
 
-                        @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'triad'))
+                        @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'extension_triad'))
                             <button type="button" id="triad-form" class="list-group-item list-group-item-action"><i class="bx bx-caret-right"></i> Triad</button>
                         @endif
                     </ul>

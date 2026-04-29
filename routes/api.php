@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\DropdownController;
 use App\Http\Controllers\Api\QaMonitoringFormController;
 
 
+
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');

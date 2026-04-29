@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\ReconTiketController;
 use App\Http\Controllers\Api\DashboardReconController;
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\TriadTicket;
+use App\Http\Controllers\Api\UserPageController;
 /*
 |--------------------------------------------------------------------------
 | 
@@ -96,10 +97,10 @@ Route::middleware('auth')->group(function () {
 
     
     // Users Page
-    Route::get('/users', function () {
-        return view('users');
-    })->name('users');
-
+    // Route::get('/users', function () {
+    //     return view('users');
+    // })->name('users');
+    Route::get('/users', [UserListMonitoringPage::class, 'UserPageList']);
 
     // Monitoring Form Page
     Route::get('/monitoringform', [UserListMonitoringPage::class, 'UserList'])
@@ -182,8 +183,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/triad-ticket-view/{id}', [TriadTicket::class, 'fullDetails']);
 
 
-
-
+    Route::get('/check-email', [UserPageController::class, 'check']);
+    Route::post('/insert-user', [UserPageController::class, 'store']);
+    Route::get('/edit-user/{employeeid}', [UserPageController::class, 'index']);
+    Route::put('/users/edit/{employeeid}', [UserPageController::class, 'updateUser'])->name('users.update');
+    Route::put('/users/{employeeid}/access', [UserPageController::class, 'updateAccessOnly']);
 });
 /*
 |--------------------------------------------------------------------------

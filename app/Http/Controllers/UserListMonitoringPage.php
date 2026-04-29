@@ -16,7 +16,7 @@ class UserListMonitoringPage extends Controller
                 ->get(),
 
             'supervisors' => User::select('employeeid', 'first_name', 'last_name')
-                ->where('position', '!=', 'Logistics Data Analyst')
+                ->where('position', '!=', 'LDA')
                 ->orderBy('first_name')
                 ->get(),
 
@@ -54,6 +54,12 @@ class UserListMonitoringPage extends Controller
     {
         $data = $this->getUsersData();
         return view('extension.selection', $data);
+    }
+
+    public function UserPageList()
+    {
+        $data = $this->getUsersData();
+        return view('users', $data);
     }
     
 }
