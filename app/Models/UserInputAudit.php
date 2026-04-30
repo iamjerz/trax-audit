@@ -40,4 +40,9 @@ class UserInputAudit extends Model
         return $this->hasOne(BusinessAnalytic::class, 'audit_id', 'audit_id');
     }
 
+    public function ldaUser()
+    {
+        return $this->belongsTo(User::class, 'lda_id', 'employeeid');
+    }
+
 }

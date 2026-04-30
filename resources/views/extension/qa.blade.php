@@ -36,7 +36,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-lg-4 col-md-6">
+                                <div class="col-lg-4 col-md-6" hidden>
                                     <div class="mb-3">
                                         <label class="form-label">Audit Ticket Date <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control datetime-js flatpickr-input datepicker-humanfd" name="audit-date1" id="audit-date1" placeholder="Select Audit Date">
@@ -1019,7 +1019,7 @@
                                                     <div class="mb-3 row">
                                                         <label for="example-text-input" class="col-md-8 col-form-label">If so, how many days?</label>
                                                         <div class="col-md-4">
-                                                            <input class="form-control" type="number" id="many-days" name="many-days">
+                                                            <input class="form-control" type="text" id="many-days" name="many-days">
                                                         </div>
                                                     </div>
                                                     <div class="mb-3 row">
@@ -1139,27 +1139,27 @@
                                         <div class="card-body flex-grow-1"><!-- ✅ added flex-grow-1 -->
                                             <div class="row">
                                                 <div class="col-lg-12">
-                                                    <h3 class="fw-medium mb-0">Summary OutCome</h3>
+                                                    <h3 class="fw-medium mb-0">Summary Outcome</h3>
                                                 </div>
 
                                                 <hr class="mx-1 my-2">
 
                                                 <div class="col-lg-12">
                                                     <div class="my-3">
-                                                        <h4 class="card-title">Verification and Identification</h4>
-                                                        <div class="progress">
+                                                        <h4 class="card-title">VERIFICATION AND IDENTIFICATION</h4>
+                                                        <div class="progress fw-bold" style="height: 20px;">
                                                             <div class="progress-bar" id="total-verification" role="progressbar" style="width: 0%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">0%</div>
                                                         </div>
                                                     </div>
                                                     <div class="my-3">
                                                         <h4 class="card-title">PROCESS COMPLIANCE</h4>
-                                                        <div class="progress">
+                                                        <div class="progress fw-bold" style="height: 20px;">
                                                             <div class="progress-bar" id="total-process-compliance" role="progressbar" style="width: 0%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">0%</div>
                                                         </div>
                                                     </div>
                                                     <div class="my-3">
                                                         <h4 class="card-title">ENGAGEMENT</h4>
-                                                        <div class="progress">
+                                                        <div class="progress fw-bold" style="height: 20px;">
                                                             <div class="progress-bar" id="total-engagement" role="progressbar" style="width: 0%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">0%</div>
                                                         </div>
                                                     </div>

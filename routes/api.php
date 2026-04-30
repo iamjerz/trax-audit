@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\ComboController;
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\DropdownController;
 use App\Http\Controllers\Api\QaMonitoringFormController;
-
+use App\Http\Controllers\Api\DataSourceController;
 
 
 Route::get('/user', function (Request $request) {
@@ -67,4 +67,4 @@ Route::middleware(['ms.jwt'])->group(function () {
 });
 
 
-
+Route::post('/v1/data', [DataSourceController::class, 'index']);

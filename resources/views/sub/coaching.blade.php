@@ -17,10 +17,10 @@
                             <h5 class="font-size-14">The goal or issue must be clearly defined; define what needs to be changed </h5>
                             <ul class="list-unstyled ps-0 mb-0 mt-3">
                                 <li>
-                                    <p class="text-muted mb-1 text-truncate"><i class="mdi mdi-circle-medium align-middle text-primary me-1"></i> LDAs must be able to understand the specifics, not broad/vague, of the current state of the problem or issue.  </p>
+                                    <p class="text-muted mb-1"><i class="mdi mdi-circle-medium align-middle text-primary me-1"></i> LDAs must be able to understand the specifics, not broad/vague, of the current state of the problem or issue.  </p>
                                 </li>
                                 <li>
-                                    <p class="text-muted mb-1 text-truncate"><i class="mdi mdi-circle-medium align-middle text-primary me-1"></i> LDAs must be able to define the goal/what they want to achieve </p>
+                                    <p class="text-muted mb-1"><i class="mdi mdi-circle-medium align-middle text-primary me-1"></i> LDAs must be able to define the goal/what they want to achieve </p>
                                 </li>
                             </ul>
                         </div>
@@ -38,19 +38,19 @@
                             <h5 class="font-size-14">Progress should be trackable and observable </h5>
                             <ul class="list-unstyled ps-0 mb-0 mt-3">
                                 <li>
-                                    <p class="text-muted mb-1 text-truncate">
+                                    <p class="text-muted mb-1">
                                         <i class="mdi mdi-circle-medium align-middle text-primary me-1"></i> 
                                         Define clear and quantifiable metrics (number, percent, time, etc.) or indicators  
                                     </p>
                                 </li>
                                 <li>
-                                    <p class="text-muted mb-1 text-truncate">
+                                    <p class="text-muted mb-1">
                                         <i class="mdi mdi-circle-medium align-middle text-primary me-1"></i> 
                                         Break down the goal into milestones or checkpoints 
                                     </p>
                                 </li>
                                 <li>
-                                    <p class="text-muted mb-1 text-truncate">
+                                    <p class="text-muted mb-1">
                                         <i class="mdi mdi-circle-medium align-middle text-primary me-1"></i> 
                                         Use tools or documentation to record progress
                                     </p>
@@ -72,7 +72,7 @@
                             <h5 class="font-size-14">The goal must be realistic given the employee’s skills, workload, resources </h5>
                             <ul class="list-unstyled ps-0 mb-0 mt-3">
                                 <li>
-                                    <p class="text-muted mb-1 text-truncate">
+                                    <p class="text-muted mb-1">
                                         <i class="mdi mdi-circle-medium align-middle text-primary me-1"></i> 
                                         Goals that LDAs can achieve given their current, knowledge and skills, experience, workload, and available resources (time, tools, SME/Supervisor/Colleague support, etc.) 
                                     </p>
@@ -94,7 +94,7 @@
                             <h5 class="font-size-14">This goal should connect directly to the team or business priorities: </h5>
                             <ul class="list-unstyled ps-0 mb-0 mt-3">
                                 <li>
-                                    <p class="text-muted mb-1 text-truncate">
+                                    <p class="text-muted mb-1">
                                         <i class="mdi mdi-circle-medium align-middle text-primary me-1"></i> 
                                         The goal should clearly contribute to the larger objectives of your team and the business, which is clearly outline in the Team/s Initiatives and Aligned OKRs 
                                     </p>
@@ -116,13 +116,13 @@
                             <h5 class="font-size-14">There must be a clear deadline or timeframe  </h5>
                             <ul class="list-unstyled ps-0 mb-0 mt-3">
                                 <li>
-                                    <p class="text-muted mb-1 text-truncate">
+                                    <p class="text-muted mb-1">
                                         <i class="mdi mdi-circle-medium align-middle text-primary me-1"></i> 
                                         The goal should include a specific date or period (Example, issue tracker indicating the Owners and Timeline of completion) 
                                     </p>
                                 </li>
                                 <li>
-                                    <p class="text-muted mb-1 text-truncate">
+                                    <p class="text-muted mb-1">
                                         <i class="mdi mdi-circle-medium align-middle text-primary me-1"></i> 
                                         Creates urgency and motivation 
                                     </p>
