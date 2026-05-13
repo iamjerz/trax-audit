@@ -65,8 +65,12 @@
                                         <h4 class="card-title">Body Language - set the mood</h4>
                                         <p class="card-text"> {{ $triad['body_language']['input'] ?? '' }}</p>
                                         <p class="card-text">
-                                            <small class="text-muted">{{ $triad['body_language']['score'] ?? '' }}</small>
+                                            <small class="
+                                                {{ ($triad['body_language']['score'] ?? '') == 'Pass' ? 'text-success' : 'text-danger' }}">
+                                                {{ $triad['body_language']['score'] ?? '' }}
+                                            </small>
                                         </p>
+
                                     </div>
                                 </div>
                             </div>
@@ -76,7 +80,11 @@
                                         <h4 class="card-title">Clear the mind (setting of expectation)</h4>
                                         <p class="card-text"> {{ $triad['clear_mind']['input'] ?? '' }}</p>
                                         <p class="card-text">
-                                            <small class="text-muted">{{ $triad['clear_mind']['score'] ?? '' }}</small>
+                                            
+                                            <small class="
+                                                {{ ($triad['clear_mind']['score'] ?? '') == 'Pass' ? 'text-success' : 'text-danger' }}">
+                                                {{ $triad['clear_mind']['score'] ?? '' }}
+                                            </small>
                                         </p>
                                     </div>
                                 </div>
@@ -87,7 +95,11 @@
                                         <h4 class="card-title">Permission to take notes</h4>
                                         <p class="card-text"> {{ $triad['permission_notes']['input'] ?? '' }}</p>
                                         <p class="card-text">
-                                            <small class="text-muted">{{ $triad['permission_notes']['score'] ?? '' }}</small>
+                                            
+                                            <small class="
+                                                {{ ($triad['permission_notes']['score'] ?? '') == 'Pass' ? 'text-success' : 'text-danger' }}">
+                                                {{ $triad['permission_notes']['score'] ?? '' }}
+                                            </small>
                                         </p>
                                     </div>
                                 </div>
@@ -98,7 +110,11 @@
                                         <h4 class="card-title">Were the word choices and questions delivered appropriately and positively</h4>
                                         <p class="card-text"> {{ $triad['choices_question']['input'] ?? '' }}</p>
                                         <p class="card-text">
-                                            <small class="text-muted">{{ $triad['choices_question']['score'] ?? '' }}</small>
+                                           
+                                            <small class="
+                                                {{ ($triad['choices_question']['score'] ?? '') == 'Pass' ? 'text-success' : 'text-danger' }}">
+                                                {{ $triad['choices_question']['score'] ?? '' }}
+                                            </small>
                                         </p>
                                     </div>
                                 </div>
@@ -109,7 +125,11 @@
                                         <h4 class="card-title">Was the SME able to establish trust, buy-in, and, commitment?</h4>
                                         <p class="card-text"> {{ $triad['was_sme']['input'] ?? '' }}</p>
                                         <p class="card-text">
-                                            <small class="text-muted">{{ $triad['was_sme']['score'] ?? '' }}</small>
+                                            
+                                            <small class="
+                                                {{ ($triad['was_sme']['score'] ?? '') == 'Pass' ? 'text-success' : 'text-danger' }}">
+                                                {{ $triad['was_sme']['score'] ?? '' }}
+                                            </small>
                                         </p>
                                     </div>
                                 </div>
@@ -120,7 +140,11 @@
                                         <h4 class="card-title">Recap/Summary provided?</h4>
                                         <p class="card-text"> {{ $triad['recap_summary']['input'] ?? '' }}</p>
                                         <p class="card-text">
-                                            <small class="text-muted">{{ $triad['recap_summary']['score'] ?? '' }}</small>
+                                            
+                                            <small class="
+                                                {{ ($triad['recap_summary']['score'] ?? '') == 'Pass' ? 'text-success' : 'text-danger' }}">
+                                                {{ $triad['recap_summary']['score'] ?? '' }}
+                                            </small>
                                         </p>
                                     </div>
                                 </div>
@@ -131,7 +155,11 @@
                                         <h4 class="card-title">Did the SME adhere to the 80/20 rule?</h4>
                                         <p class="card-text"> {{ $triad['sme_adhere']['input'] ?? '' }}</p>
                                         <p class="card-text">
-                                            <small class="text-muted">{{ $triad['sme_adhere']['score'] ?? '' }}</small>
+                                            
+                                            <small class="
+                                                {{ ($triad['sme_adhere']['score'] ?? '') == 'Pass' ? 'text-success' : 'text-danger' }}">
+                                                {{ $triad['sme_adhere']['score'] ?? '' }}
+                                            </small>
                                         </p>
                                     </div>
                                 </div>
@@ -142,7 +170,11 @@
                                         <h4 class="card-title">DOCUMENTATION - Is SMART goal clearly defined?</h4>
                                         <p class="card-text"> {{ $triad['clearly_defined']['input'] ?? '' }}</p>
                                         <p class="card-text">
-                                            <small class="text-muted">{{ $triad['clearly_defined']['score'] ?? '' }}</small>
+                                            
+                                            <small class="
+                                                {{ ($triad['clearly_defined']['score'] ?? '') == 'Pass' ? 'text-success' : 'text-danger' }}">
+                                                {{ $triad['clearly_defined']['score'] ?? '' }}
+                                            </small>
                                         </p>
                                     </div>
                                 </div>
@@ -153,7 +185,11 @@
                                         <h4 class="card-title">DOCUMENTATION - Did the documentation include the RCA of the current situation?</h4>
                                         <p class="card-text"> {{ $triad['rca']['input'] ?? '' }}</p>
                                         <p class="card-text">
-                                            <small class="text-muted">{{ $triad['rca']['score'] ?? '' }}</small>
+                                            
+                                            <small class="
+                                                {{ ($triad['rca']['score'] ?? '') == 'Pass' ? 'text-success' : 'text-danger' }}">
+                                                {{ $triad['rca']['score'] ?? '' }}
+                                            </small>
                                         </p>
                                     </div>
                                 </div>
@@ -164,7 +200,11 @@
                                         <h4 class="card-title">DOCUMENTATION - Are actions agreed to be identified in line with the situation?</h4>
                                         <p class="card-text"> {{ $triad['line_situation']['input'] ?? '' }}</p>
                                         <p class="card-text">
-                                            <small class="text-muted">{{ $triad['line_situation']['score'] ?? '' }}</small>
+                                            
+                                            <small class="
+                                                {{ ($triad['line_situation']['score'] ?? '') == 'Pass' ? 'text-success' : 'text-danger' }}">
+                                                {{ $triad['line_situation']['score'] ?? '' }}
+                                            </small>
                                         </p>
                                     </div>
                                 </div>
