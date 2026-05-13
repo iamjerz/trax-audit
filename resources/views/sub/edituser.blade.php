@@ -115,6 +115,7 @@
                                                     'web_report_monitoring',
                                                     'web_report_action_register',
                                                     'web_report_triad',
+                                                    'web_report_coaching',
                                                     'web_forms',
                                                     'web_dashboard',
                                                     'extension_action_register',
