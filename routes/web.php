@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\DashboardReconController;
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\TriadTicket;
 use App\Http\Controllers\Api\UserPageController;
+use App\Http\Controllers\Api\CoachingTicket;
 /*
 |--------------------------------------------------------------------------
 | 
@@ -181,6 +182,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/triad-ticket', [TriadTicket::class, 'index']);
     Route::get('/triad-data', [TriadTicket::class, 'displayTicket']);
     Route::get('/triad-ticket-view/{id}', [TriadTicket::class, 'fullDetails']);
+
+    // Coaching Triad
+
+    Route::get('/coaching-ticket', [CoachingTicket::class, 'index']);
+    Route::get('/coaching-data', [CoachingTicket::class, 'displayTicket']);
+    Route::get('/coaching-ticket-view/{id}', [CoachingTicket::class, 'fullDetails']);
+
 
 
     Route::get('/check-email', [UserPageController::class, 'check']);

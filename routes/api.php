@@ -13,7 +13,7 @@ use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\DropdownController;
 use App\Http\Controllers\Api\QaMonitoringFormController;
 use App\Http\Controllers\Api\DataSourceController;
-
+use App\Http\Controllers\Api\ConnectorController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -68,3 +68,5 @@ Route::middleware(['ms.jwt'])->group(function () {
 
 
 Route::post('/v1/data', [DataSourceController::class, 'index']);
+Route::get('/extension/connector/check', [ConnectorController::class, 'CheckConnection']);
+Route::post('/extension/details/check', [ConnectorController::class, 'CheckVersion']);

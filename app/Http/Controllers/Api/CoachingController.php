@@ -49,7 +49,7 @@ class CoachingController extends Controller
             'reference_type' => $validated['reference_type'],
             'reference_id' => $this->generateReference(),
             'smart' => $validated['smart'],
-            'grow' => $validated['smart'],
+            'grow' => $validated['grow'],
             'created_by' => $employeeid
         ]);
 

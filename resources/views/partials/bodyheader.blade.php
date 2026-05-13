@@ -181,6 +181,15 @@
                         
                     </li>
                     @endif
+                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_report_coaching'))
+                    <li>
+                        <a href="/coaching-ticket">
+                            <i class="bx bx-receipt icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-calendar">Coaching Ticket</span>
+                        </a>
+                        
+                    </li>
+                    @endif
                     @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_report_triad'))
                     <li>
                         <a href="/triad-ticket">
@@ -190,6 +199,7 @@
                         
                     </li>
                     @endif
+                    
                 
                 @endif
                 <!-- Name Divider -->
