@@ -1,7 +1,7 @@
     <head>
 
         <meta charset="utf-8" />
-        <title>Trax | QA</title>
+        <title>Trax | Audit Ops Forms Dashboard</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
         <meta name="auth-token" content="{{session('api_token')}}">

@@ -44,5 +44,9 @@ class UserInputAudit extends Model
     {
         return $this->belongsTo(User::class, 'lda_id', 'employeeid');
     }
+    public function auditSupervisor()
+    {
+        return $this->belongsTo(User::class, 'audit_sup_name', 'employeeid');
+    }
 
 }

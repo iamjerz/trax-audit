@@ -54,4 +54,8 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function supervisor()
+    {
+        return $this->belongsTo(User::class, 'supervisor_id', 'audit_sup_name');
+    }
 }

@@ -78,10 +78,7 @@
                                                     <td class="text-muted">{{ \Carbon\Carbon::parse($data->audit_date_1)->format('F') }} </td>
                                                 </tr>
                                                 <!-- end tr -->
-                                                <tr>
-                                                    <th class="fw-bold">Audit Date:</th>
-                                                    <td class="text-muted">{{ $data->audit_date_2 }}</td>
-                                                </tr>
+                                                
                                                 <!-- end tr -->
                                                 <tr>
                                                     <th class="fw-bold">Carrier Name :</th>

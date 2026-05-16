@@ -166,6 +166,7 @@ Route::middleware('auth')->group(function () {
     // For Recon
     Route::get('/recon-ticket', [ReconTiketController::class, 'index']);
     Route::get('/recon-data', [ReconTiketController::class, 'displayTicket']);
+    Route::get('/recon-filter-options', [ReconTiketController::class, 'filterOptions']);
     Route::get('/recon-ticket-view/{id}', [ReconTiketController::class, 'fullDetails']);
     Route::post('/recon-ticket-add-comment', [ReconTiketController::class, 'addCommentToTicket']);
     Route::get('/recon-view-comment/{id}', [ReconTiketController::class, 'viewComment']);

@@ -47,7 +47,7 @@
         new gridjs.Grid({
             columns: [
                 {
-                    name: 'Triad Reference ID',
+                    name: 'Triad Reference',
                     formatter: (cell) => {
                         const safe = String(cell).replace(/"/g, '&quot;');
                         return gridjs.html(`
@@ -57,7 +57,7 @@
                 `);
                     }
                 },
-                'Coaching Reference ID',
+                'Coaching Reference',
                 {
                     name: 'Triad Date',
                     formatter: (cell) => {

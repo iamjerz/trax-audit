@@ -11,7 +11,7 @@ class UserListMonitoringPage extends Controller
     {
         return [
             'logisticsUsers' => User::select('employeeid', 'first_name', 'last_name')
-                ->where('position', 'Logistics Data Analyst')
+                ->where('position', 'LDA')
                 ->orderBy('first_name')
                 ->get(),
 

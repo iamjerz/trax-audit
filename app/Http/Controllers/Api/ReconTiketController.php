@@ -53,60 +53,152 @@ class ReconTiketController extends Controller
 
 
     public function displayTicket(Request $request)
+{
+    try {
+        $user_email = auth()->user()->email;
+        $user_position = auth()->user()->position;
+        $user_employeeid = auth()->user()->employeeid;
+
+        $limit = $request->input('limit', 10);
+        $offset = $request->input('offset', 0);
+        $search = $request->input('search');
+
+        // 🆕 New filter inputs
+        $f_name         = $request->input('name');
+        $f_client_code  = $request->input('client_code');
+        $f_carrier_code = $request->input('carrier_code');
+        $f_status       = $request->input('status');
+        $f_date_from    = $request->input('date_from');
+        $f_date_to      = $request->input('date_to');
+
+        $query = DB::table('recon_action_items')
+            ->leftJoin('users', 'recon_action_items.lda_email', '=', 'users.email')
+            ->select(
+                'recon_action_items.*',
+                DB::raw("users.first_name || ' ' || users.last_name as full_name")
+            );
+
+        // 🔍 SEARCH (global)
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('recon_action_items.submission_id', 'ilike', "%{$search}%")
+                  ->orWhere('recon_action_items.client_code', 'ilike', "%{$search}%")
+                  ->orWhere('recon_action_items.carrier_code', 'ilike', "%{$search}%")
+                  ->orWhere('recon_action_items.region', 'ilike', "%{$search}%")
+                  ->orWhere('recon_action_items.status', 'ilike', "%{$search}%")
+                  ->orWhere('users.first_name', 'ilike', "%{$search}%")
+                  ->orWhere('users.last_name', 'ilike', "%{$search}%")
+                  ->orWhere(DB::raw("users.first_name || ' ' || users.last_name"), 'ilike', "%{$search}%");
+            });
+        }
+
+        // 🆕 NAME FILTER (first, last, or full name)
+        if ($f_name) {
+            $query->where(function ($q) use ($f_name) {
+                $q->where('users.first_name', 'ilike', "%{$f_name}%")
+                  ->orWhere('users.last_name', 'ilike', "%{$f_name}%")
+                  ->orWhere(DB::raw("users.first_name || ' ' || users.last_name"), 'ilike', "%{$f_name}%");
+            });
+        }
+
+        // 🆕 CLIENT CODE
+        if ($f_client_code) {
+            $query->where('recon_action_items.client_code', $f_client_code);
+        }
+
+        // 🆕 CARRIER CODE
+        if ($f_carrier_code) {
+            $query->where('recon_action_items.carrier_code', $f_carrier_code);
+        }
+
+        // 🆕 STATUS
+        if ($f_status) {
+            $query->where('recon_action_items.status', $f_status);
+        }
+
+        // 🆕 DATE RANGE (on recon_call_date)
+        if ($f_date_from) {
+            $query->whereDate('recon_action_items.recon_call_date', '>=', $f_date_from);
+        }
+        if ($f_date_to) {
+            $query->whereDate('recon_action_items.recon_call_date', '<=', $f_date_to);
+        }
+
+        // 👤 ROLE FILTER
+        if ($user_position == "LDA") {
+            $query->where(function ($q) use ($user_email, $user_employeeid) {
+                $q->where('recon_action_items.lda_email', $user_email)
+                  ->orWhere('recon_action_items.assigned_to', $user_employeeid);
+            });
+        }
+
+        // ✅ COUNT
+        $total = (clone $query)->count();
+
+        // ✅ DATA
+        $data = $query
+            ->orderBy('recon_action_items.id', 'desc')
+            ->offset($offset)
+            ->limit($limit)
+            ->get();
+
+        return response()->json([
+            'data' => $data,
+            'total' => $total
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+    public function filterOptions(Request $request)
     {
         try {
             $user_email = auth()->user()->email;
             $user_position = auth()->user()->position;
             $user_employeeid = auth()->user()->employeeid;
 
-            $limit = $request->input('limit', 10);
-            $offset = $request->input('offset', 0);
-            $search = $request->input('search');
+            $base = DB::table('recon_action_items');
 
-            $query = DB::table('recon_action_items')
-                ->leftJoin('users', 'recon_action_items.lda_email', '=', 'users.email')
-                ->select(
-                    'recon_action_items.*',
-                    DB::raw("users.first_name || ' ' || users.last_name as full_name")
-                );
-
-            // 🔍 SEARCH (PostgreSQL-safe with ILIKE)
-            if ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('recon_action_items.submission_id', 'ilike', "%{$search}%")
-                    ->orWhere('recon_action_items.client_code', 'ilike', "%{$search}%")
-                    ->orWhere('recon_action_items.carrier_code', 'ilike', "%{$search}%")
-                    ->orWhere('recon_action_items.region', 'ilike', "%{$search}%")
-                    ->orWhere('recon_action_items.status', 'ilike', "%{$search}%")
-
-                    // 🔥 NAME SEARCH
-                    ->orWhere('users.first_name', 'ilike', "%{$search}%")
-                    ->orWhere('users.last_name', 'ilike', "%{$search}%")
-                    ->orWhere(DB::raw("users.first_name || ' ' || users.last_name"), 'ilike', "%{$search}%");
-                });
-            }
-
-            // 👤 ROLE FILTER
+            // 👤 ROLE FILTER — same logic as displayTicket
             if ($user_position == "LDA") {
-                $query->where(function ($q) use ($user_email, $user_employeeid) {
-                    $q->where('recon_action_items.lda_email', $user_email)
-                    ->orWhere('recon_action_items.assigned_to', $user_employeeid);
+                $base->where(function ($q) use ($user_email, $user_employeeid) {
+                    $q->where('lda_email', $user_email)
+                    ->orWhere('assigned_to', $user_employeeid);
                 });
             }
 
-            // ✅ COUNT
-            $total = (clone $query)->count();
+            $client_codes = (clone $base)
+                ->select('client_code')
+                ->whereNotNull('client_code')
+                ->where('client_code', '!=', '')
+                ->distinct()
+                ->orderBy('client_code')
+                ->pluck('client_code');
 
-            // ✅ DATA
-            $data = $query
-                ->orderBy('recon_action_items.id', 'desc')
-                ->offset($offset)
-                ->limit($limit)
-                ->get();
+            $carrier_codes = (clone $base)
+                ->select('carrier_code')
+                ->whereNotNull('carrier_code')
+                ->where('carrier_code', '!=', '')
+                ->distinct()
+                ->orderBy('carrier_code')
+                ->pluck('carrier_code');
+
+            $statuses = (clone $base)
+                ->select('status')
+                ->whereNotNull('status')
+                ->where('status', '!=', '')
+                ->distinct()
+                ->orderBy('status')
+                ->pluck('status');
 
             return response()->json([
-                'data' => $data,
-                'total' => $total
+                'client_codes'  => $client_codes,
+                'carrier_codes' => $carrier_codes,
+                'statuses'      => $statuses,
             ]);
 
         } catch (\Exception $e) {
@@ -115,8 +207,6 @@ class ReconTiketController extends Controller
             ], 500);
         }
     }
-
-    
 
 
 

@@ -23,7 +23,8 @@ class DataSourceController extends Controller
                     'processCompliance',
                     'engagement',
                     'businessAnalytic',
-                    'ldaUser:employeeid,first_name,last_name,email'
+                    'ldaUser:employeeid,first_name,last_name,email',
+                    'auditSupervisor:employeeid,first_name,last_name,email'
                 ])->get();
                 break;
 

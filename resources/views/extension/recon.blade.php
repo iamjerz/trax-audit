@@ -30,7 +30,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" for="formrow-firstname-input">LDA Email</label>
+                        <label class="form-label" for="formrow-firstname-input">Employee Name</label>
                         <input type="text" class="form-control" name="ldaEmail" placeholder="Enter LDA Email" id="lda-email" required disabled>
                     </div>
 

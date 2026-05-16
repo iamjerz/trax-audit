@@ -25,7 +25,7 @@
                                     <input type="hidden" id="audit-by" name="audit-by">
                                     <input type="hidden" id="csrf-token" name="csrf-token" value="{{ csrf_token() }}">
                                     <div class="mb-3">
-                                        <label for="choices-single-default" class="form-label">LDA Name <span class="text-danger">*</span></label>
+                                        <label for="choices-single-default" class="form-label">Employee Name <span class="text-danger">*</span></label>
                                         <select class="form-control choices-js" data-trigger name="lda-name" id="lda-name" placeholder="This is a search placeholder">
                                             <option value="">Select LDA Name</option>
                                             @foreach ($Users as $item)

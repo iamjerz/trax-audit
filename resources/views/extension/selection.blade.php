@@ -17,9 +17,9 @@
                     <div class="row">
                         <div class="col-lg-4 col-md-6">
                             <div class="mb-3">
-                                <label for="choices-single-default" class="form-label">LDA Name <span class="text-danger">*</span></label>
+                                <label for="choices-single-default" class="form-label">Employee Name <span class="text-danger">*</span></label>
                                 <select class="form-control choices-js" data-trigger name="lda-name" id="lda-name" placeholder="This is a search placeholder">
-                                    <option value="">Select LDA Name</option>
+                                    <option value="">Select Employee Name</option>
 
                                     @foreach ($allusers as $alluser)
                                     <option value="{{ $alluser->employeeid }}">
@@ -31,8 +31,8 @@
                         </div>
                         <div class="col-lg-4 col-md-6">
                             <div class="mb-3">
-                                <label for="choices-single-default" class="form-label">Coaching Reference <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="coaching-reference" id="coaching-reference" placeholder="Coaching Reference">
+                                <label for="choices-single-default" class="form-label">Reference <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="coaching-reference" id="coaching-reference" placeholder="Reference">
                             </div>
                         </div>
                         <div class="col-lg-4 col-md-6" id="coaching-type-field">

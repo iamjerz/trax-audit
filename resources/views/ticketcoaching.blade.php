@@ -57,8 +57,8 @@
                 `);
                     }
                 },
-                'Coaching Reference ID',
-                'Coaching Reference Type',
+                'Coaching Reference',
+                'Coaching Type',
                 {
                     name: 'Coaching Date',
                     formatter: (cell) => {

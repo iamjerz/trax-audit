@@ -28,13 +28,13 @@
                             <div class="card-body">
                                 <div class="row g-4">
                                     <div class="col-md-6">
-                                        <small class="text-muted">Coaching Reference ID</small>
+                                        <small class="text-muted">Coaching Reference</small>
                                         <div class="fw-semibold">
                                             {{ $data->reference_id ?? '' }}
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <small class="text-muted">QA Reference ID</small>
+                                        <small class="text-muted">QA Reference</small>
                                         <div class="fw-semibold">
                                             {{ $data->reference ?? '' }}
                                         </div>
