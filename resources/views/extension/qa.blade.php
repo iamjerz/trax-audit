@@ -65,7 +65,7 @@
                                 </div>
                                 <div class="col-lg-4 col-md-6">
                                     <div class="mb-3">
-                                        <label class="form-label">Audit Coaching Date <span class="text-danger">*</span></label>
+                                        <label class="form-label">Audit Date <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control datetime-js flatpickr-input datepicker-humanfd" name="audit-date2" id="audit-date2" placeholder="Select Audit Date">
                                     </div>
                                 </div>

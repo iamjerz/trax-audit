@@ -890,7 +890,7 @@
                                         </div>
                                         <div class="mb-3">
                                             <h5 class="text-truncate font-size-14 mb-1">Root Cause Analysis (RCA)</h5>
-                                            <p class="text-muted mb-0">A{{ $data->businessAnalytic->root_cause }}NS</p>
+                                            <p class="text-muted mb-0">{{ $data->businessAnalytic->root_cause }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -905,11 +905,7 @@
 
 
                 </div>
-                <div class="card">
-                    <div class="card-body">
-                        <pre>{{ $data }}</pre>
-                    </div>
-                </div>
+                
 
                 
                 <!-- end modal -->
