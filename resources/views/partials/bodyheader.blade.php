@@ -215,6 +215,18 @@
                         <li><a href="/users" data-key="t-users">List of Users</a></li>
                     </ul>
                 </li>
+                <li>
+                    <a href="/audit-trail">
+                        <i class="bx bx-history icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-audit-trail">Audit Trail</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/extension-details">
+                        <i class="bx bx-extension icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-extension-details">Extension Details</span>
+                    </a>
+                </li>
                 @endif
 
             </ul>

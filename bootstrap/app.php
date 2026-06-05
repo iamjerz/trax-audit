@@ -15,6 +15,12 @@ return Application::configure(basePath: dirname(__DIR__))
         //
         $middleware->alias([
             'ms.jwt' => \App\Http\Middleware\VerifyMicrosoftToken::class,
+            'access' => \App\Http\Middleware\CheckAccess::class,
+        ]);
+
+        // Force users still on the default password to change it before using the app.
+        $middleware->web(append: [
+            \App\Http\Middleware\ForcePasswordChange::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

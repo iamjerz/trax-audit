@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class Verification extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'audit_id',
         'ver_comment_1',

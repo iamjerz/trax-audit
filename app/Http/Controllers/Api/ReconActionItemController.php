@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditTrail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -68,6 +69,14 @@ class ReconActionItemController extends Controller
 
         $data = DB::table('recon_action_items')->where('id', $id)->first();
 
+        AuditTrail::record([
+            'event'          => 'created',
+            'description'    => 'Created recon action item ' . ($data->submission_id ?? '#' . $id),
+            'auditable_type' => 'recon_action_items',
+            'auditable_id'   => $id,
+            'new_values'     => (array) $data,
+        ]);
+
         return response()->json($data, 201);
     }
 
@@ -79,6 +88,8 @@ class ReconActionItemController extends Controller
         if (!$exists) {
             return response()->json(['error' => 'Not found'], 404);
         }
+
+        $old = DB::table('recon_action_items')->where('id', $id)->first();
 
         $validated = $request->validate([
             'submission_id' => 'nullable|unique:recon_action_items,submission_id,' . $id,
@@ -114,12 +125,23 @@ class ReconActionItemController extends Controller
 
         $data = DB::table('recon_action_items')->where('id', $id)->first();
 
+        AuditTrail::record([
+            'event'          => 'updated',
+            'description'    => 'Updated recon action item ' . ($data->submission_id ?? '#' . $id),
+            'auditable_type' => 'recon_action_items',
+            'auditable_id'   => $id,
+            'old_values'     => (array) $old,
+            'new_values'     => (array) $data,
+        ]);
+
         return response()->json($data);
     }
 
     // ✅ DELETE
     public function destroy($id)
     {
+        $old = DB::table('recon_action_items')->where('id', $id)->first();
+
         $deleted = DB::table('recon_action_items')
             ->where('id', $id)
             ->delete();
@@ -127,6 +149,14 @@ class ReconActionItemController extends Controller
         if (!$deleted) {
             return response()->json(['error' => 'Not found'], 404);
         }
+
+        AuditTrail::record([
+            'event'          => 'deleted',
+            'description'    => 'Deleted recon action item ' . ($old->submission_id ?? '#' . $id),
+            'auditable_type' => 'recon_action_items',
+            'auditable_id'   => $id,
+            'old_values'     => (array) $old,
+        ]);
 
         return response()->json(['message' => 'Deleted successfully']);
     }

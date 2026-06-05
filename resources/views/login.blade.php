@@ -22,6 +22,13 @@
                                     <p class="text-muted">Sign in to Audit Ops Dashboard</p>
                                 </div>
                                 <div class="p-2 mt-4">
+
+                                    @if ($errors->any())
+                                        <div class="alert alert-danger" role="alert">
+                                            {{ $errors->first() }}
+                                        </div>
+                                    @endif
+
                                     <form method="POST" action="{{ route('login.attempt') }}">
                                         @csrf
         
@@ -98,6 +105,22 @@
         </div><!-- end container -->
     </div>
     @include('partials.script')
-    <script src="{{ asset('assets/js/pages/pass-addon.init.js') }}"></script>
+    <script>
+        // Show / hide password toggle (works for every .auth-pass-inputgroup on the page)
+        document.querySelectorAll('.auth-pass-inputgroup').forEach(function (group) {
+            var btn = group.querySelector('button');
+            var input = group.querySelector('input');
+            if (!btn || !input) return;
+
+            btn.addEventListener('click', function () {
+                input.type = input.type === 'password' ? 'text' : 'password';
+                var icon = btn.querySelector('i');
+                if (icon) {
+                    icon.classList.toggle('mdi-eye-outline');
+                    icon.classList.toggle('mdi-eye-off-outline');
+                }
+            });
+        });
+    </script>
     </body>
 </html>

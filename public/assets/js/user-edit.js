@@ -62,6 +62,40 @@ document.getElementById("edit-user").addEventListener("click", function() {
         });
 });
 
+document.getElementById('reset-password-btn').addEventListener('click', function () {
+
+    const employeeid = document.getElementById('employeeid').value;
+
+    if (!confirm("Reset this user's password to the default? They will be required to change it at next login.")) {
+        return;
+    }
+
+    fetch(`/users/${employeeid}/reset-password`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(async response => {
+        const res = await response.json();
+        if (!response.ok) throw res;
+        return res;
+    })
+    .then(res => {
+        if (res.success) {
+            alert('✅ ' + (res.message || 'Password reset to default.'));
+        } else {
+            alert(res.message || 'Failed to reset password');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Error resetting password');
+    });
+
+});
+
 document.getElementById('update-access-btn').addEventListener('click', function () {
 
     const employeeid = document.getElementById('employeeid').value;

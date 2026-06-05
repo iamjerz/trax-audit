@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\ChangePasswordController;
+use App\Http\Controllers\AuditTrailController;
+use App\Http\Controllers\ExtensionDetailController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\DisplayFormListController;
@@ -25,6 +28,7 @@ use App\Http\Controllers\Api\TriadItemController;
 use App\Http\Controllers\Api\CoachingController;
 use App\Http\Controllers\Api\ReconTiketController;
 use App\Http\Controllers\Api\DashboardReconController;
+use App\Http\Controllers\Api\DashboardTriadController;
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\TriadTicket;
 use App\Http\Controllers\Api\UserPageController;
@@ -65,49 +69,21 @@ Route::middleware('guest')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
-    // Dashboard QA Monitoring Page
+
+    /* -----------------------------------------------------------------
+     | Always available to any authenticated user
+     | ----------------------------------------------------------------*/
     Route::get('/homepage', function () {
         return view('homepage');
     })->name('homepage');
-    Route::get('/dashboard-qa', function () {
-        return view('dashboard');
-    });
-    // Create Form Page
-    Route::get('/formbuilder', function () {
-        return view('formbuilder');
-    })->name('formbuilder');
-    Route::get('/formbuilder/{id}', [FormBuilderController::class, 'show'])
-    ->name('formbuilder.show');
-    // View Forms Page
-    Route::get('/viewforms', function () {
-        return view('viewforms');
-    })->name('viewforms');
-    // Create Form POST Route
-    Route::post('/viewforms/form', [FormInsertController::class, 'createForm'])
-    ->name('viewforms.createForm');
-    // View Individual Eval
-    Route::get('/eval-individual', [UserListMonitoringPage::class, 'EvalIndiData']);
-    // View Ticket Page
-    Route::get('/ticket/view/{id}', [ViewTicket::class, 'viewTicket'])->name('viewticket');
-    // view Triad Trial Form 
-    Route::get('/viewtriad', [UserListMonitoringPage::class, 'CoachingTriadData']);
-    // // View for Triad Form
-    // Route::get('/viewtriad', [TriadFormController::class, 'index']);
-    // Viewe for Coaching Form
-    Route::get('/viewcoaching', [UserListMonitoringPage::class, 'CoachingFormData']);
 
-    
-    // Users Page
-    // Route::get('/users', function () {
-    //     return view('users');
-    // })->name('users');
-    Route::get('/users', [UserListMonitoringPage::class, 'UserPageList']);
+    // Force password change (default-password users are redirected here by middleware)
+    Route::get('/password/change', [ChangePasswordController::class, 'show'])
+        ->name('password.change');
+    Route::post('/password/change', [ChangePasswordController::class, 'update'])
+        ->name('password.update');
 
-    // Monitoring Form Page
-    Route::get('/monitoringform', [UserListMonitoringPage::class, 'UserList'])
-    ->name('monitoringform');
-
-    // Logout Route
+    // Logout
     Route::post('/logout', function (Request $request) {
         Auth::logout();
 
@@ -117,86 +93,135 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('login');
     })->name('logout');
 
-    // API (JSON)
-    // Users Data API
-    Route::get('/users/data', [UserController::class, 'usersCallApi'])
-    ->name('users.data');
-    // Forms Data API
-    Route::get('/forms/data', [DisplayFormListController::class, 'displayFormList'])
-    ->name('forms.data');
-    // Audit Store API
-    Route::post('/api/audits', [AuditController::class, 'store']);
-    // Dashboard Cards API
-    Route::get('/dashboard/cards', [DashboardControllerMain::class, 'dashbaordCard']);
-    // Dashboard Recent Table Ticket API
-    Route::get('/dashboard/recent-ticket', [DashboardControllerMain::class, 'dashboardRecentTableTicket']);
-    // Impact Factor Ticket API
-    Route::get('/dashboard/accountable-factor', [DashboardControllerMain::class, 'impact_factor_count']);
-    // Cause Issue Table  API
-    Route::get('/dashboard/cause-issue', [DashboardControllerMain::class, 'cause_issue_count']);
-    // Root Cause Table  API
-    Route::get('/dashboard/root-cause', [DashboardControllerMain::class, 'root_cause_count']);
-    // Individual Eval API for Recent Ticket
-    Route::get('/evaluation/individual-recent', [EvalIndividual::class, 'recentTableAPI']);
-    // Individual Eval API for Cause Issue
-    Route::get('/evaluation/individual-cause-issue', [EvalIndividual::class, 'cause_issue_count']);
-    // Individual Eval API for Cause Issue
-    Route::get('/evaluation/individual-accountable-factor', [EvalIndividual::class, 'impact_factor_count']);
-    // Coaching Triad API
-    Route::get('/api/coaching-triad', [CoachingTriadController::class, 'coachingRef']);
-    // Triad Ticket Information API
-    Route::get('/api/triad-ticket', [CoachingTriadController::class, 'triadTicketInformation']);
-    // Coaching Ticket Information API
-    Route::get('/api/coaching-ticket', [CoachingFormController::class, 'coachingTicketInformation']);
-    
-    // Extra Body for Page
+    /* -----------------------------------------------------------------
+     | Administrator only
+     | ----------------------------------------------------------------*/
+    Route::middleware('access:admin')->group(function () {
+        Route::get('/audit-trail', [AuditTrailController::class, 'index'])->name('audit-trail');
 
-    // Individual Eval
-    Route::get('/load-blade', [EvalIndividual::class, 'userTicket']);
-    // Web Base
-    Route::prefix('triad')->group(function () {
-        Route::post('/', [TriadItemController::class, 'store']);        // create/update
-        Route::get('/', [TriadItemController::class, 'index']);         // list
-        Route::get('/{reference}', [TriadItemController::class, 'show']); // get one
-        Route::put('/{reference}', [TriadItemController::class, 'update']); // update
+        // Extension Details management
+        Route::get('/extension-details', [ExtensionDetailController::class, 'index'])->name('extension-details');
+        Route::post('/extension-details', [ExtensionDetailController::class, 'store']);
+        Route::put('/extension-details/{id}', [ExtensionDetailController::class, 'update']);
+        Route::get('/extension-details/{id}/history', [ExtensionDetailController::class, 'history']);
+
+        Route::get('/users', [UserListMonitoringPage::class, 'UserPageList']);
+        Route::get('/users/data', [UserController::class, 'usersCallApi'])->name('users.data');
+        Route::get('/check-email', [UserPageController::class, 'check']);
+        Route::post('/insert-user', [UserPageController::class, 'store']);
+        Route::get('/edit-user/{employeeid}', [UserPageController::class, 'index']);
+        Route::put('/users/edit/{employeeid}', [UserPageController::class, 'updateUser'])->name('users.update');
+        Route::put('/users/{employeeid}/access', [UserPageController::class, 'updateAccessOnly']);
+        Route::put('/users/{employeeid}/reset-password', [UserPageController::class, 'resetPassword']);
     });
 
-    Route::post('/coaching', [CoachingController::class, 'store']);
+    /* -----------------------------------------------------------------
+     | Dashboards (web_dashboard)
+     | ----------------------------------------------------------------*/
+    Route::middleware('access:web_dashboard')->group(function () {
+        Route::get('/dashboard-qa', function () {
+            return view('dashboard');
+        });
+        Route::get('/dashboard/recent-ticket', [DashboardControllerMain::class, 'dashboardRecentTableTicket']);
+        Route::get('/dashboard/accountable-factor', [DashboardControllerMain::class, 'impact_factor_count']);
+        Route::get('/dashboard/cause-issue', [DashboardControllerMain::class, 'cause_issue_count']);
+        Route::get('/dashboard/root-cause', [DashboardControllerMain::class, 'root_cause_count']);
 
-    // For Recon
-    Route::get('/recon-ticket', [ReconTiketController::class, 'index']);
-    Route::get('/recon-data', [ReconTiketController::class, 'displayTicket']);
-    Route::get('/recon-filter-options', [ReconTiketController::class, 'filterOptions']);
-    Route::get('/recon-ticket-view/{id}', [ReconTiketController::class, 'fullDetails']);
-    Route::post('/recon-ticket-add-comment', [ReconTiketController::class, 'addCommentToTicket']);
-    Route::get('/recon-view-comment/{id}', [ReconTiketController::class, 'viewComment']);
-    Route::post('/recon/assignto/{id}', [ReconTiketController::class, 'insertAssignTo']);
-    Route::post('/recon/status-change/{id}', [ReconTiketController::class, 'ChangeStatus']);
-    Route::get('/dashboard-recon', [DashboardReconController::class, 'index']);
-    Route::get('/dashboard-recon-cards', [DashboardReconController::class, 'CardCount']);
-    Route::get('/dashboard-recon-table-top10', [DashboardReconController::class, 'Top10Breakdown']);
-    Route::get('/dashboard-recon-chart-clientcode', [DashboardReconController::class, 'TopClientsChart']);
-    Route::get('/dashboard-recon-chart-carriercode', [DashboardReconController::class, 'TopCarriers']);
+        Route::get('/dashboard-recon', [DashboardReconController::class, 'index']);
+        Route::get('/dashboard-recon-table-top10', [DashboardReconController::class, 'Top10Breakdown']);
+        Route::get('/dashboard-recon-chart-clientcode', [DashboardReconController::class, 'TopClientsChart']);
+        Route::get('/dashboard-recon-chart-carriercode', [DashboardReconController::class, 'TopCarriers']);
 
-    // Ticket Triad
+        Route::get('/dashboard-triad', [DashboardTriadController::class, 'index']);
+        Route::get('/dashboard-triad-criteria', [DashboardTriadController::class, 'CriteriaBreakdown']);
+        Route::get('/dashboard-triad-evaluators', [DashboardTriadController::class, 'EvaluatorBreakdown']);
+    });
 
-    Route::get('/triad-ticket', [TriadTicket::class, 'index']);
-    Route::get('/triad-data', [TriadTicket::class, 'displayTicket']);
-    Route::get('/triad-ticket-view/{id}', [TriadTicket::class, 'fullDetails']);
+    // Shared stat endpoints (used by a dashboard AND the homepage)
+    Route::middleware('access:web_dashboard,web_report_monitoring')->group(function () {
+        Route::get('/dashboard/cards', [DashboardControllerMain::class, 'dashbaordCard']);
+        Route::get('/ticket/view/{id}', [ViewTicket::class, 'viewTicket'])->name('viewticket');
+    });
+    Route::middleware('access:web_dashboard,web_report_action_register')->group(function () {
+        Route::get('/dashboard-recon-cards', [DashboardReconController::class, 'CardCount']);
+    });
+    Route::middleware('access:web_dashboard,web_report_triad')->group(function () {
+        Route::get('/dashboard-triad-cards', [DashboardTriadController::class, 'CardCount']);
+    });
 
-    // Coaching Triad
+    /* -----------------------------------------------------------------
+     | Forms (web_forms)
+     | ----------------------------------------------------------------*/
+    Route::middleware('access:web_forms')->group(function () {
+        Route::get('/formbuilder', function () {
+            return view('formbuilder');
+        })->name('formbuilder');
+        Route::get('/formbuilder/{id}', [FormBuilderController::class, 'show'])->name('formbuilder.show');
+        Route::get('/viewforms', function () {
+            return view('viewforms');
+        })->name('viewforms');
+        Route::post('/viewforms/form', [FormInsertController::class, 'createForm'])->name('viewforms.createForm');
+        Route::get('/forms/data', [DisplayFormListController::class, 'displayFormList'])->name('forms.data');
 
-    Route::get('/coaching-ticket', [CoachingTicket::class, 'index']);
-    Route::get('/coaching-data', [CoachingTicket::class, 'displayTicket']);
-    Route::get('/coaching-ticket-view/{id}', [CoachingTicket::class, 'fullDetails']);
+        Route::get('/monitoringform', [UserListMonitoringPage::class, 'UserList'])->name('monitoringform');
+        Route::post('/api/audits', [AuditController::class, 'store']);
+    });
 
+    /* -----------------------------------------------------------------
+     | Evaluations report (web_report_monitoring)
+     | ----------------------------------------------------------------*/
+    Route::middleware('access:web_report_monitoring')->group(function () {
+        Route::get('/eval-individual', [UserListMonitoringPage::class, 'EvalIndiData']);
+        Route::get('/load-blade', [EvalIndividual::class, 'userTicket']);
+        Route::get('/evaluation/individual-recent', [EvalIndividual::class, 'recentTableAPI']);
+        Route::get('/evaluation/individual-cause-issue', [EvalIndividual::class, 'cause_issue_count']);
+        Route::get('/evaluation/individual-accountable-factor', [EvalIndividual::class, 'impact_factor_count']);
+    });
 
+    /* -----------------------------------------------------------------
+     | Action Register report (web_report_action_register)
+     | ----------------------------------------------------------------*/
+    Route::middleware('access:web_report_action_register')->group(function () {
+        Route::get('/recon-ticket', [ReconTiketController::class, 'index']);
+        Route::get('/recon-data', [ReconTiketController::class, 'displayTicket']);
+        Route::get('/recon-filter-options', [ReconTiketController::class, 'filterOptions']);
+        Route::get('/recon-ticket-view/{id}', [ReconTiketController::class, 'fullDetails']);
+        Route::post('/recon-ticket-add-comment', [ReconTiketController::class, 'addCommentToTicket']);
+        Route::get('/recon-view-comment/{id}', [ReconTiketController::class, 'viewComment']);
+        Route::post('/recon/assignto/{id}', [ReconTiketController::class, 'insertAssignTo']);
+        Route::post('/recon/status-change/{id}', [ReconTiketController::class, 'ChangeStatus']);
+    });
 
-    Route::get('/check-email', [UserPageController::class, 'check']);
-    Route::post('/insert-user', [UserPageController::class, 'store']);
-    Route::get('/edit-user/{employeeid}', [UserPageController::class, 'index']);
-    Route::put('/users/edit/{employeeid}', [UserPageController::class, 'updateUser'])->name('users.update');
-    Route::put('/users/{employeeid}/access', [UserPageController::class, 'updateAccessOnly']);
+    /* -----------------------------------------------------------------
+     | Coaching report (web_report_coaching)
+     | ----------------------------------------------------------------*/
+    Route::middleware('access:web_report_coaching')->group(function () {
+        Route::get('/viewcoaching', [UserListMonitoringPage::class, 'CoachingFormData']);
+        Route::post('/coaching', [CoachingController::class, 'store']);
+        Route::get('/coaching-ticket', [CoachingTicket::class, 'index']);
+        Route::get('/coaching-data', [CoachingTicket::class, 'displayTicket']);
+        Route::get('/coaching-ticket-view/{id}', [CoachingTicket::class, 'fullDetails']);
+        Route::get('/api/coaching-ticket', [CoachingFormController::class, 'coachingTicketInformation']);
+    });
+
+    /* -----------------------------------------------------------------
+     | Triad report (web_report_triad)
+     | ----------------------------------------------------------------*/
+    Route::middleware('access:web_report_triad')->group(function () {
+        Route::get('/viewtriad', [UserListMonitoringPage::class, 'CoachingTriadData']);
+        Route::get('/triad-ticket', [TriadTicket::class, 'index']);
+        Route::get('/triad-data', [TriadTicket::class, 'displayTicket']);
+        Route::get('/triad-ticket-view/{id}', [TriadTicket::class, 'fullDetails']);
+        Route::get('/api/coaching-triad', [CoachingTriadController::class, 'coachingRef']);
+        Route::get('/api/triad-ticket', [CoachingTriadController::class, 'triadTicketInformation']);
+
+        Route::prefix('triad')->group(function () {
+            Route::post('/', [TriadItemController::class, 'store']);
+            Route::get('/', [TriadItemController::class, 'index']);
+            Route::get('/{reference}', [TriadItemController::class, 'show']);
+            Route::put('/{reference}', [TriadItemController::class, 'update']);
+        });
+    });
 });
 /*
 |--------------------------------------------------------------------------

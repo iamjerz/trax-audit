@@ -1,9 +1,12 @@
 <?php
 namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
+use App\Models\AuditTrail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Firebase\JWT\JWT;
 use Firebase\JWT\JWK;
+use Firebase\JWT\ExpiredException;
 use Carbon\Carbon;
 
 
@@ -42,6 +45,25 @@ class LoginVerifyController extends Controller
             if ($user['aud'] !== env('MICROSOFT_CLIENT_ID')) {
                 return response()->json(['error' => 'Invalid audience'], 401);
             }
+
+            // ✅ Resolve the local user (token has no session) and log the extension login
+            $dbUser = DB::table('users')
+                ->where('email', strtolower($email))
+                ->first();
+
+            $actorName = $dbUser
+                ? trim(($dbUser->first_name ?? '') . ' ' . ($dbUser->last_name ?? ''))
+                : $email;
+
+            AuditTrail::record([
+                'employeeid'     => $dbUser->employeeid ?? null,
+                'actor_name'     => $actorName,
+                'event'          => 'login',
+                'description'    => $actorName . ' logged in on the Chrome extension',
+                'auditable_type' => 'auth',
+                'ip_address'     => $userip,   // IP from the Microsoft token (the user's address)
+                'new_values'     => ['email' => $email, 'channel' => 'chrome_extension'],
+            ]);
 
             return response()->json([
                 'status' => 'success',

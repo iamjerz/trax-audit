@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\ForcePasswordChange;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\AuditTrail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -178,10 +180,39 @@ class UserPageController extends Controller
         ]);
     }
 
+    public function resetPassword($employeeid)
+    {
+        $user = User::where('employeeid', $employeeid)->firstOrFail();
+
+        // Reset to the application default; the "hashed" cast hashes it on save.
+        $user->password = ForcePasswordChange::DEFAULT_PASSWORD;
+        $user->save();
+
+        AuditTrail::record([
+            'event'          => 'password_reset',
+            'description'    => 'Reset password to default for '
+                . trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''))
+                . ' (' . $user->employeeid . ')',
+            'auditable_type' => 'User',
+            'auditable_id'   => $user->employeeid,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password has been reset to the default. The user must change it at next login.',
+        ]);
+    }
+
     public function updateAccessOnly(Request $request, $employeeid)
     {
         try {
             $accessList = $request->access ?? [];
+
+            // capture old access for the audit diff
+            $oldAccess = DB::table('extension_access')
+                ->where('employeeid', $employeeid)
+                ->pluck('access_type')
+                ->toArray();
 
             // delete old
             DB::table('extension_access')
@@ -203,6 +234,15 @@ class UserPageController extends Controller
             if (!empty($data)) {
                 DB::table('extension_access')->insert($data);
             }
+
+            AuditTrail::record([
+                'event'          => 'access_updated',
+                'description'    => 'Updated extension access for employee ' . $employeeid,
+                'auditable_type' => 'extension_access',
+                'auditable_id'   => $employeeid,
+                'old_values'     => ['access_type' => array_values($oldAccess)],
+                'new_values'     => ['access_type' => array_values(collect($accessList)->filter()->all())],
+            ]);
 
             return response()->json([
                 'success' => true,

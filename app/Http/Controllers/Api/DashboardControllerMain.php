@@ -18,13 +18,53 @@ class DashboardControllerMain extends Controller
     {
         $auditCount = UserInputAudit::count();
 
+        // Data uses the position label "LDA"; accept the long form too for safety.
         $total_lda = DB::table('users')
-            ->where('position', 'Logistics Data Analyst')
+            ->whereIn('position', ['LDA', 'Logistics Data Analyst'])
             ->count();
+
+        // Overall score per audit (mirrors the ticket view logic):
+        //   - Verification is a gate: if its total_score < 200 the audit scores 0%
+        //   - Otherwise the score is process_compliance + engagement (each 0-50, summing to 0-100)
+        // "Above Average" = score >= 75, "Below Average" = score < 75.
+        $passThreshold = 75;
+        $verificationGate = 200;
+
+        // NOTE: total_score is stored as a string column, so we select the raw
+        // values and cast in PHP (avoids COALESCE varchar/int type errors on Postgres).
+        $scores = DB::table('user_input_audits as a')
+            ->leftJoin('verifications as v', 'v.audit_id', '=', 'a.audit_id')
+            ->leftJoin('process_compliances as p', 'p.audit_id', '=', 'a.audit_id')
+            ->leftJoin('engagements as e', 'e.audit_id', '=', 'a.audit_id')
+            ->select(
+                'v.total_score as ver',
+                'p.total_score as proc',
+                'e.total_score as eng'
+            )
+            ->get();
+
+        $aboveAverage = 0;
+        $belowAverage = 0;
+
+        foreach ($scores as $s) {
+            $ver  = (float) ($s->ver ?? 0);
+            $proc = (float) ($s->proc ?? 0);
+            $eng  = (float) ($s->eng ?? 0);
+
+            $overall = ($ver >= $verificationGate) ? ($proc + $eng) : 0;
+
+            if ($overall >= $passThreshold) {
+                $aboveAverage++;
+            } else {
+                $belowAverage++;
+            }
+        }
 
         return response()->json([
             'total' => $auditCount,
-            'total_lda' => $total_lda
+            'total_lda' => $total_lda,
+            'above_average' => $aboveAverage,
+            'below_average' => $belowAverage,
         ]);
     }
 

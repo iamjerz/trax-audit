@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use App\Models\AuditTrail;
 
 class ReconTiketController extends Controller
 {
@@ -245,6 +246,14 @@ class ReconTiketController extends Controller
 
             $this->logComment($id, "Assigned to {$old_user->first_name} {$old_user->last_name}");
 
+            AuditTrail::record([
+                'event'          => 'assigned',
+                'description'    => "Recon ticket {$id} assigned to {$old_user->first_name} {$old_user->last_name}",
+                'auditable_type' => 'recon_action_items',
+                'auditable_id'   => $id,
+                'new_values'     => ['assigned_to' => $request->input('assigned_to')],
+            ]);
+
             return response()->json([
                 'status' => 200,
                 'message' => 'Assignment updated successfully'
@@ -270,6 +279,14 @@ class ReconTiketController extends Controller
             'employeeid'      => auth()->user()->employeeid,
             'created_at'    => now(),
             'updated_at'    => now()
+        ]);
+
+        AuditTrail::record([
+            'event'          => 'commented',
+            'description'    => 'Added comment to recon ticket ' . $request->submission_id,
+            'auditable_type' => 'recon_action_items',
+            'auditable_id'   => $request->submission_id,
+            'new_values'     => ['comments' => $request->comments],
         ]);
     }
 
@@ -303,6 +320,16 @@ class ReconTiketController extends Controller
 
         
             $this->logComment($id, "Status changed from $old to " . $request->input('status'));
+
+            AuditTrail::record([
+                'event'          => 'status_changed',
+                'description'    => "Recon ticket {$id} status changed from {$old} to " . $request->input('status'),
+                'auditable_type' => 'recon_action_items',
+                'auditable_id'   => $id,
+                'old_values'     => ['status' => $old],
+                'new_values'     => ['status' => $request->input('status')],
+            ]);
+
             return response()->json([
                 'status' => 200,
                 'message' => 'Assignment updated successfully'

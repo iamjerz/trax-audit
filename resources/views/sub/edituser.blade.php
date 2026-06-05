@@ -221,7 +221,8 @@
                                         <div class="mb-3">
                                             <label for="formrow-firstname-input" class="form-label">Password</label>
                                             <div>
-                                                <button type="submit" class="btn btn-danger w-md">Reset</button>
+                                                <button type="button" id="reset-password-btn" class="btn btn-danger w-md">Reset</button>
+                                                <small class="d-block text-muted mt-1">Resets the password to the default.</small>
                                             </div>
                                         </div>
                                     </div>

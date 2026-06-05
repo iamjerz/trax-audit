@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class ProcessCompliance extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'audit_id',
         'pc_comment_1',

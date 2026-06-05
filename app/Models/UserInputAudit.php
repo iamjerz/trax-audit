@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class UserInputAudit extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'audit_id',
         'lda_id',

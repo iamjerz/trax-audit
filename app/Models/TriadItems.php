@@ -2,10 +2,13 @@
 
 namespace App\Models;
 use App\Models\User;
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class TriadItems extends Model
 {
+    use Auditable;
+
     //
     protected $fillable = [
         'reference',

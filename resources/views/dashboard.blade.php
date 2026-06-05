@@ -29,7 +29,7 @@
                                 <div class="d-flex justify-content-between">
                                     <div>
                                         <h6 class="font-size-15">Total Evaluations</h6>
-                                        <h4 class="mt-3 pt-1 mb-0 font-size-22" id="total-evaluations">0 <span class="text-success fw-medium font-size-14 align-middle"></h4>
+                                        <h4 class="mt-3 pt-1 mb-0 font-size-22" id="total-evaluations">0</h4>
                                     </div>
                                     <div class="">
                                         <div class="avatar">
@@ -49,7 +49,7 @@
                                 <div class="d-flex justify-content-between">
                                     <div>
                                         <h6 class="font-size-15">Total LDA</h6>
-                                        <h4 class="mt-3 pt-1 mb-0 font-size-22" id="total-lda">0 <span class="text-success fw-medium font-size-14 align-middle"></h4>
+                                        <h4 class="mt-3 pt-1 mb-0 font-size-22" id="total-lda">0</h4>
                                     </div>
                                     <div class="">
                                         <div class="avatar">
@@ -69,7 +69,7 @@
                                 <div class="d-flex justify-content-between">
                                     <div>
                                         <h6 class="font-size-15">Above Average 75.00%</h6>
-                                        <h4 class="mt-3 pt-1 mb-0 font-size-22" id="above-average">0 <span class="text-success fw-medium font-size-14 align-middle"></h4>
+                                        <h4 class="mt-3 pt-1 mb-0 font-size-22" id="above-average">0</h4>
                                     </div>
                                     <div class="">
                                         <div class="avatar">
@@ -89,7 +89,7 @@
                                 <div class="d-flex justify-content-between">
                                     <div>
                                         <h6 class="font-size-15">Below Average 75.00%</h6>
-                                        <h4 class="mt-3 pt-1 mb-0 font-size-22" id="below-average">0 <span class="text-success fw-medium font-size-14 align-middle"></h4>
+                                        <h4 class="mt-3 pt-1 mb-0 font-size-22" id="below-average">0</h4>
                                     </div>
                                     <div class="">
                                         <div class="avatar">
@@ -189,12 +189,13 @@
         .then(data => {
             const totalEvaluationsEl = document.getElementById("total-evaluations");
             const totalLdaEl = document.getElementById("total-lda");
+            const aboveAverageEl = document.getElementById("above-average");
+            const belowAverageEl = document.getElementById("below-average");
 
-            animateCount(totalEvaluationsEl, 0, data.total);
-            animateCount(totalLdaEl, 0, data.total_lda);
-
-            console.log("Total audits:", data.total);
-            console.log("Total LDA:", data.total_lda);
+            animateCount(totalEvaluationsEl, 0, data.total || 0);
+            animateCount(totalLdaEl, 0, data.total_lda || 0);
+            animateCount(aboveAverageEl, 0, data.above_average || 0);
+            animateCount(belowAverageEl, 0, data.below_average || 0);
         })
         .catch(err => console.error(err));
 

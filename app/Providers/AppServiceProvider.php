@@ -7,6 +7,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\Paginator;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -22,7 +23,10 @@ class AppServiceProvider extends ServiceProvider
      */
      public function boot(): void
     {
-        View::composer('partials.bodyheader', function ($view) {
+        // Render Laravel's paginator with Bootstrap 5 markup (matches the theme)
+        Paginator::useBootstrapFive();
+
+        View::composer(['partials.bodyheader', 'homepage'], function ($view) {
             $user = auth()->user();
 
             $access = collect();
