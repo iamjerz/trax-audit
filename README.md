@@ -1,59 +1,218 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Trax Audit Ops
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+An internal QA, audit, and reconciliation platform for Trax Technologies' logistics operation. It lets audit supervisors evaluate Logistics Data Analysts (LDAs), track reconciliation action items, run Triad and Coaching follow-ups, and review performance across the team — from both a web dashboard and a companion Chrome extension.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tech Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Framework:** Laravel 12 (PHP 8.2+)
+- **Database:** PostgreSQL (the app relies on Postgres features such as `jsonb`, `ILIKE`, and `||` string concatenation)
+- **Frontend:** Blade templates with a Bootstrap 5 admin theme (`public/assets`); Vite + Tailwind are wired up for `resources/` assets
+- **Auth:** Session-based login for the web app; Microsoft Entra (Azure AD) JWT verification for the Chrome extension
+- **Notable packages:** `laravel/sanctum`, `laravel/socialite` + `socialiteproviders/microsoft`, `maatwebsite/excel`, `firebase/php-jwt`, `doctrine/dbal`
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Features
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### QA Monitoring
+Create evaluations of an LDA across four scored sections — **Verification**, **Process Compliance**, **Engagement**, and **Business Analytics** — each stored in its own table and written together in a single transaction. The dashboard shows totals, an evaluations breakdown, and **Above/Below 75%** score cards.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+> **Scoring rule:** Verification acts as a gate. If `verification.total_score < 200` the overall score is **0%**; otherwise the score is `process_compliance + engagement` (each 0–50, summing to 0–100). An audit scoring **≥ 75** counts as "Above Average."
 
-## Laravel Sponsors
+### Action Register (Reconciliation)
+Track recon tickets (`recon_action_items`) with a status workflow (To Do / In Progress / Pending / Closed), assignment to LDAs, threaded comments, and a dashboard with status counts and top client/carrier breakdowns.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Triad
+Evaluations scoring **10 call-handling criteria** as Pass/Fail (body language, clearing the mind, permission to take notes, word choices, SME trust/buy-in, recap, the 80/20 rule, SMART goal definition, RCA documentation, and actions in line with the situation). Includes a dedicated dashboard with per-criterion pass/fail charts and per-evaluator breakdowns.
 
-### Premium Partners
+### Coaching
+Capture SMART goals and GROW plans linked to an evaluation.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Users & Access Management
+Admin CRUD for users, CSV/Excel import, per-user permission management via the `extension_access` table, and a **Reset password** action that returns a user to the default password.
 
-## Contributing
+### Audit Trail
+A system-wide activity log (`audit_trails`) recording authentication events (web and Chrome-extension logins, logouts, failed logins), record create/update/delete with before/after field diffs, status/assignment changes, access changes, and password resets. Viewable on an admin page with search, event, and date filters.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Extension Details
+Admin page to manage the Chrome extension's version registry (`extension_details`): list Version / Item ID / Status, add and edit entries, and view a per-entry change history (drawn from the audit trail).
 
-## Code of Conduct
+### Security
+- **Forced password change:** any user still on the default password is redirected to a change-password screen before they can use the app.
+- **Server-side access control:** an `access` middleware enforces `extension_access` permissions on every protected route (admins bypass), so hidden menu items can't be reached by typing the URL.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## Requirements
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- PHP **8.2+** with the usual Laravel extensions, plus `pdo_pgsql`
+- Composer
+- Node.js + npm
+- PostgreSQL
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Installation
+
+```bash
+# 1. Install PHP dependencies
+composer install
+
+# 2. Create your environment file
+cp .env.example .env
+
+# 3. Generate the app key
+php artisan key:generate
+
+# 4. Configure your database and Microsoft settings in .env (see below)
+
+# 5. Run migrations
+php artisan migrate
+
+# 6. Install and build front-end assets
+npm install
+npm run build
+```
+
+A convenience script is also defined in `composer.json`:
+
+```bash
+composer setup   # install, copy .env, key:generate, migrate --force, npm install, npm run build
+```
+
+---
+
+## Environment Configuration
+
+Set the database connection to PostgreSQL in `.env`:
+
+```env
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=trax_audit
+DB_USERNAME=your_user
+DB_PASSWORD=your_password
+```
+
+For the Chrome extension's Microsoft SSO verification, configure the Azure AD application (client) ID. Tokens are validated against Microsoft's public JWKS (`https://login.microsoftonline.com/common/discovery/v2.0/keys`):
+
+```env
+MICROSOFT_CLIENT_ID=your-azure-ad-application-id
+```
+
+---
+
+## Running the App
+
+```bash
+# Serve the application (plus queue, logs, and Vite) in one command:
+composer dev
+
+# …or individually:
+php artisan serve
+npm run dev
+```
+
+Then open `http://localhost:8000` and log in.
+
+---
+
+## Default Credentials
+
+Users created via the import or the "Add User" form are seeded with the default password:
+
+```
+password123
+```
+
+On first login with the default password, the user is **forced to set a new password** before they can access any page.
+
+> **Note:** `/import-users` performs a CSV import. Review and secure this route before deploying to production.
+
+---
+
+## Access Control
+
+Permissions are stored per user in the `extension_access` table. The `access` route middleware enforces them server-side (an `admin` entry bypasses all checks). The access types used across the app:
+
+| Access type | Grants |
+|---|---|
+| `admin` | Full access (users, audit trail, extension details, everything) |
+| `web_dashboard` | QA, Action Register, and Triad dashboards |
+| `web_forms` | QA monitoring form and form builder |
+| `web_report_monitoring` | Individual evaluation reports |
+| `web_report_action_register` | Action Register tickets |
+| `web_report_coaching` | Coaching tickets |
+| `web_report_triad` | Triad tickets |
+| `extension_*` | Corresponding Chrome-extension capabilities (`extension_monitoring`, `extension_action_register`, `extension_coaching`, `extension_triad`) |
+
+---
+
+## Project Structure
+
+```
+app/
+  Http/
+    Controllers/        Page + API controllers (QA, recon, triad, coaching, users, audit trail, …)
+    Middleware/
+      VerifyMicrosoftToken.php   Validates the extension's Microsoft JWT (alias: ms.jwt)
+      ForcePasswordChange.php    Redirects default-password users to reset
+      CheckAccess.php            Enforces extension_access (alias: access)
+  Models/               Eloquent models (UserInputAudit, Verification, Coaching, TriadItems, ExtensionDetail, AuditTrail, …)
+  Traits/Auditable.php  Auto-logs model create/update/delete to the audit trail
+  Services/             DropdownService (CSV-backed client/carrier/audit dropdowns)
+routes/
+  web.php               Session-authenticated routes, grouped by access permission
+  api.php               Extension API routes (ms.jwt protected)
+resources/views/        Blade pages (dashboards, forms, tickets, homepage, admin pages)
+public/assets/          Bootstrap admin theme + page JS (dashboard-*.js, user-edit.js, …)
+database/migrations/    Schema
+```
+
+---
+
+## Key Database Tables
+
+- `users` — accounts; `position`, `role`, `status`, `supervisor_id`, `extension_access` link
+- `user_input_audits` + `verifications`, `process_compliances`, `engagements`, `business_analytics` — QA evaluations
+- `recon_action_items` + `recon_item_comments` — reconciliation tickets and their history
+- `triad_items` — Triad evaluations (`jsonb` criteria)
+- `coachings` — Coaching sessions (SMART/GROW `jsonb`)
+- `extension_access` — per-user permissions
+- `extension_details` — Chrome extension version registry
+- `audit_trails` — system-wide activity log
+- Reference tables: `client_codes`, `carrier_codes`, `region`, `status`, `form_list`
+
+---
+
+## Chrome Extension Integration
+
+The extension authenticates users via Microsoft SSO. It sends the Microsoft access token as a Bearer token; the app validates it against Microsoft's JWKS and checks the audience against `MICROSOFT_CLIENT_ID`.
+
+- `GET  /api/login/verify` — validates the Microsoft token and logs the sign-in to the audit trail
+- Routes under the `ms.jwt` middleware (`api.php`) expose form data, dropdowns, and submission endpoints for the extension (QA form, recon, triad, coaching)
+- `GET  /api/extension/connector/check` and `POST /api/extension/details/check` — connector and version validation against `extension_details`
+
+---
+
+## Testing
+
+```bash
+composer test        # php artisan test
+# or
+php artisan test
+```
+
+> The repository currently contains the default Laravel example tests only. Adding feature tests around scoring, access control, and the audit trail is recommended.
+
+---
+
+## Notes & Conventions
+
+- **Database engine:** several queries use PostgreSQL-specific syntax (`ILIKE`, `||`, `jsonb`). Run the app on PostgreSQL.
+- **Position labels:** LDA users are stored with `position = 'LDA'`. A few older code paths reference the longer `'Logistics Data Analyst'`; prefer `'LDA'` for consistency.
+- **Audit trail:** sensitive fields (`password`, `remember_token`) are excluded from logged diffs.
+- **Compiled views:** if a Blade change doesn't appear, run `php artisan view:clear`.
