@@ -6,6 +6,16 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\AuditTrailController;
 use App\Http\Controllers\ExtensionDetailController;
+use App\Http\Controllers\AcknowledgementController;
+use App\Http\Controllers\ExportController;
+use App\Http\Controllers\LdaScorecardController;
+use App\Http\Controllers\MyEvaluationController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\DisputeController;
+use App\Http\Controllers\ScoreCorrectionController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\CorrectionApprovalController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\DisplayFormListController;
@@ -83,6 +93,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/password/change', [ChangePasswordController::class, 'update'])
         ->name('password.update');
 
+    // My Evaluations — every user can view and acknowledge their own evaluations
+    Route::get('/home/action-center', [HomeController::class, 'actionCenter'])->name('home.action-center');
+
+    Route::get('/my-evaluations', [MyEvaluationController::class, 'index'])->name('my-evaluations');
+    Route::get('/my-evaluations/{auditId}', [MyEvaluationController::class, 'show'])->name('my-evaluations.show');
+    Route::post('/my-evaluations/{auditId}/acknowledge', [MyEvaluationController::class, 'acknowledge'])
+        ->name('my-evaluations.acknowledge');
+    Route::post('/my-evaluations/{auditId}/dispute', [MyEvaluationController::class, 'dispute'])
+        ->name('my-evaluations.dispute');
+
     // Logout
     Route::post('/logout', function (Request $request) {
         Auth::logout();
@@ -98,6 +118,7 @@ Route::middleware('auth')->group(function () {
      | ----------------------------------------------------------------*/
     Route::middleware('access:admin')->group(function () {
         Route::get('/audit-trail', [AuditTrailController::class, 'index'])->name('audit-trail');
+        Route::get('/export/audit-trail', [ExportController::class, 'auditTrail'])->name('export.audit-trail');
 
         // Extension Details management
         Route::get('/extension-details', [ExtensionDetailController::class, 'index'])->name('extension-details');
@@ -116,9 +137,18 @@ Route::middleware('auth')->group(function () {
     });
 
     /* -----------------------------------------------------------------
+     | Manager Tools — Score correction approvals (web_score_approval)
+     | ----------------------------------------------------------------*/
+    Route::middleware('access:web_score_approval')->group(function () {
+        Route::get('/reports/corrections', [CorrectionApprovalController::class, 'index'])->name('reports.corrections');
+        Route::post('/reports/corrections/{id}/approve', [CorrectionApprovalController::class, 'approve'])->name('reports.corrections.approve');
+        Route::post('/reports/corrections/{id}/reject', [CorrectionApprovalController::class, 'reject'])->name('reports.corrections.reject');
+    });
+
+    /* -----------------------------------------------------------------
      | Dashboards (web_dashboard)
      | ----------------------------------------------------------------*/
-    Route::middleware('access:web_dashboard')->group(function () {
+    Route::middleware('access:web_dashboard,web_managers')->group(function () {
         Route::get('/dashboard-qa', function () {
             return view('dashboard');
         });
@@ -126,8 +156,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard/accountable-factor', [DashboardControllerMain::class, 'impact_factor_count']);
         Route::get('/dashboard/cause-issue', [DashboardControllerMain::class, 'cause_issue_count']);
         Route::get('/dashboard/root-cause', [DashboardControllerMain::class, 'root_cause_count']);
+        Route::get('/dashboard/trend', [DashboardControllerMain::class, 'trend']);
 
         Route::get('/dashboard-recon', [DashboardReconController::class, 'index']);
+        Route::get('/dashboard-recon-aging', [DashboardReconController::class, 'Aging']);
         Route::get('/dashboard-recon-table-top10', [DashboardReconController::class, 'Top10Breakdown']);
         Route::get('/dashboard-recon-chart-clientcode', [DashboardReconController::class, 'TopClientsChart']);
         Route::get('/dashboard-recon-chart-carriercode', [DashboardReconController::class, 'TopCarriers']);
@@ -137,22 +169,25 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard-triad-evaluators', [DashboardTriadController::class, 'EvaluatorBreakdown']);
     });
 
-    // Shared stat endpoints (used by a dashboard AND the homepage)
-    Route::middleware('access:web_dashboard,web_report_monitoring')->group(function () {
+    // Shared endpoints — viewing evaluations/timeline (dashboards, monitoring, and managers)
+    Route::middleware('access:web_dashboard,web_report_monitoring,web_managers')->group(function () {
         Route::get('/dashboard/cards', [DashboardControllerMain::class, 'dashbaordCard']);
         Route::get('/ticket/view/{id}', [ViewTicket::class, 'viewTicket'])->name('viewticket');
+        Route::post('/ticket/{auditId}/acknowledge', [AcknowledgementController::class, 'store'])->name('ticket.acknowledge');
+        Route::get('/export/evaluations', [ExportController::class, 'evaluations'])->name('export.evaluations');
+        Route::get('/evaluations/{auditId}/timeline', [AnalyticsController::class, 'timeline'])->name('evaluations.timeline');
     });
-    Route::middleware('access:web_dashboard,web_report_action_register')->group(function () {
+    Route::middleware('access:web_dashboard,web_report_action_register,web_managers')->group(function () {
         Route::get('/dashboard-recon-cards', [DashboardReconController::class, 'CardCount']);
     });
-    Route::middleware('access:web_dashboard,web_report_triad')->group(function () {
+    Route::middleware('access:web_dashboard,web_report_triad,web_managers')->group(function () {
         Route::get('/dashboard-triad-cards', [DashboardTriadController::class, 'CardCount']);
     });
 
     /* -----------------------------------------------------------------
      | Forms (web_forms)
      | ----------------------------------------------------------------*/
-    Route::middleware('access:web_forms')->group(function () {
+    Route::middleware('access:web_forms,web_managers')->group(function () {
         Route::get('/formbuilder', function () {
             return view('formbuilder');
         })->name('formbuilder');
@@ -170,7 +205,7 @@ Route::middleware('auth')->group(function () {
     /* -----------------------------------------------------------------
      | Evaluations report (web_report_monitoring)
      | ----------------------------------------------------------------*/
-    Route::middleware('access:web_report_monitoring')->group(function () {
+    Route::middleware('access:web_report_monitoring,web_managers')->group(function () {
         Route::get('/eval-individual', [UserListMonitoringPage::class, 'EvalIndiData']);
         Route::get('/load-blade', [EvalIndividual::class, 'userTicket']);
         Route::get('/evaluation/individual-recent', [EvalIndividual::class, 'recentTableAPI']);
@@ -179,10 +214,26 @@ Route::middleware('auth')->group(function () {
     });
 
     /* -----------------------------------------------------------------
+     | Management Reports (web_managers)
+     | ----------------------------------------------------------------*/
+    Route::middleware('access:web_managers')->group(function () {
+        Route::get('/lda-scorecard', [LdaScorecardController::class, 'index'])->name('lda-scorecard');
+        Route::get('/reports/pending-acknowledgements', [ReportController::class, 'pendingAcknowledgements'])->name('reports.pending-acknowledgements');
+        Route::get('/analytics/auditor-productivity', [AnalyticsController::class, 'auditorProductivity'])->name('analytics.auditor-productivity');
+        Route::get('/analytics/root-cause', [AnalyticsController::class, 'rootCause'])->name('analytics.root-cause');
+        Route::get('/analytics/audit-coverage', [AnalyticsController::class, 'auditCoverage'])->name('analytics.audit-coverage');
+        Route::get('/reports/disputes', [DisputeController::class, 'index'])->name('reports.disputes');
+        Route::post('/reports/disputes/{id}/resolve', [DisputeController::class, 'resolve'])->name('reports.disputes.resolve');
+        Route::get('/evaluations/{auditId}/correct', [ScoreCorrectionController::class, 'edit'])->name('evaluations.correct');
+        Route::post('/evaluations/{auditId}/correct', [ScoreCorrectionController::class, 'update'])->name('evaluations.correct.save');
+    });
+
+    /* -----------------------------------------------------------------
      | Action Register report (web_report_action_register)
      | ----------------------------------------------------------------*/
-    Route::middleware('access:web_report_action_register')->group(function () {
+    Route::middleware('access:web_report_action_register,web_managers')->group(function () {
         Route::get('/recon-ticket', [ReconTiketController::class, 'index']);
+        Route::get('/recon-overdue', [ReconTiketController::class, 'overdue'])->name('recon-overdue');
         Route::get('/recon-data', [ReconTiketController::class, 'displayTicket']);
         Route::get('/recon-filter-options', [ReconTiketController::class, 'filterOptions']);
         Route::get('/recon-ticket-view/{id}', [ReconTiketController::class, 'fullDetails']);
@@ -190,12 +241,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/recon-view-comment/{id}', [ReconTiketController::class, 'viewComment']);
         Route::post('/recon/assignto/{id}', [ReconTiketController::class, 'insertAssignTo']);
         Route::post('/recon/status-change/{id}', [ReconTiketController::class, 'ChangeStatus']);
+        Route::get('/export/recon', [ExportController::class, 'recon'])->name('export.recon');
+        Route::get('/analytics/client-carrier-health', [AnalyticsController::class, 'clientCarrierHealth'])->name('analytics.client-carrier-health');
     });
 
     /* -----------------------------------------------------------------
      | Coaching report (web_report_coaching)
      | ----------------------------------------------------------------*/
-    Route::middleware('access:web_report_coaching')->group(function () {
+    Route::middleware('access:web_report_coaching,web_managers')->group(function () {
         Route::get('/viewcoaching', [UserListMonitoringPage::class, 'CoachingFormData']);
         Route::post('/coaching', [CoachingController::class, 'store']);
         Route::get('/coaching-ticket', [CoachingTicket::class, 'index']);
@@ -207,13 +260,14 @@ Route::middleware('auth')->group(function () {
     /* -----------------------------------------------------------------
      | Triad report (web_report_triad)
      | ----------------------------------------------------------------*/
-    Route::middleware('access:web_report_triad')->group(function () {
+    Route::middleware('access:web_report_triad,web_managers')->group(function () {
         Route::get('/viewtriad', [UserListMonitoringPage::class, 'CoachingTriadData']);
         Route::get('/triad-ticket', [TriadTicket::class, 'index']);
         Route::get('/triad-data', [TriadTicket::class, 'displayTicket']);
         Route::get('/triad-ticket-view/{id}', [TriadTicket::class, 'fullDetails']);
         Route::get('/api/coaching-triad', [CoachingTriadController::class, 'coachingRef']);
         Route::get('/api/triad-ticket', [CoachingTriadController::class, 'triadTicketInformation']);
+        Route::get('/export/triad', [ExportController::class, 'triad'])->name('export.triad');
 
         Route::prefix('triad')->group(function () {
             Route::post('/', [TriadItemController::class, 'store']);

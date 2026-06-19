@@ -25,11 +25,13 @@ class CheckAccess
             return redirect()->route('login');
         }
 
-        // Look up the user's access types once per request.
-        $userAccess = DB::table('extension_access')
-            ->where('employeeid', $user->employeeid)
-            ->pluck('access_type')
-            ->all();
+        // Look up the user's access types once per request, expanding any role bundles.
+        $userAccess = \App\Support\AccessRoles::expand(
+            DB::table('extension_access')
+                ->where('employeeid', $user->employeeid)
+                ->pluck('access_type')
+                ->all()
+        );
 
         // Admins bypass all access checks.
         if (in_array('admin', $userAccess, true)) {

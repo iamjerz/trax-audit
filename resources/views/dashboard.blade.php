@@ -22,6 +22,32 @@
     <div class="main-content">
         <div class="page-content">
             <div class="container-fluid">
+
+                {{-- Date range filter --}}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label font-size-13 mb-1">From</label>
+                                <input type="date" id="dash-date-from" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label font-size-13 mb-1">To</label>
+                                <input type="date" id="dash-date-to" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" id="dash-apply" class="btn btn-sm btn-primary">Apply</button>
+                                <button type="button" id="dash-reset" class="btn btn-sm btn-light">Reset</button>
+                            </div>
+                            <div class="col-md-3 text-md-end">
+                                <a href="#" id="dash-export" class="btn btn-sm btn-success">
+                                    <i class="bx bx-download"></i> Export Evaluations
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row">
                     <div class="col-md-6 col-xl-3">
                         <div class="card">
@@ -103,6 +129,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Evaluations Trend (last 12 months)</h4>
+                            </div>
+                            <div class="card-body">
+                                <div id="evalTrendChart"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row h-100">
                     <div class="col-xl-6 d-flex">
                         <div class="card flex-fill">
@@ -182,22 +221,62 @@
         }
 
 
-        fetch("/dashboard/cards", {
-            headers: { "Accept": "application/json" }
-        })
-        .then(res => res.json())
-        .then(data => {
-            const totalEvaluationsEl = document.getElementById("total-evaluations");
-            const totalLdaEl = document.getElementById("total-lda");
-            const aboveAverageEl = document.getElementById("above-average");
-            const belowAverageEl = document.getElementById("below-average");
+        function loadDashboardCards() {
+            const from = document.getElementById("dash-date-from").value;
+            const to = document.getElementById("dash-date-to").value;
 
-            animateCount(totalEvaluationsEl, 0, data.total || 0);
-            animateCount(totalLdaEl, 0, data.total_lda || 0);
-            animateCount(aboveAverageEl, 0, data.above_average || 0);
-            animateCount(belowAverageEl, 0, data.below_average || 0);
-        })
-        .catch(err => console.error(err));
+            const params = new URLSearchParams();
+            if (from) params.append("date_from", from);
+            if (to) params.append("date_to", to);
+
+            fetch("/dashboard/cards?" + params.toString(), {
+                headers: { "Accept": "application/json" }
+            })
+            .then(res => res.json())
+            .then(data => {
+                animateCount(document.getElementById("total-evaluations"), 0, data.total || 0);
+                animateCount(document.getElementById("total-lda"), 0, data.total_lda || 0);
+                animateCount(document.getElementById("above-average"), 0, data.above_average || 0);
+                animateCount(document.getElementById("below-average"), 0, data.below_average || 0);
+            })
+            .catch(err => console.error(err));
+        }
+
+        loadDashboardCards();
+
+        document.getElementById("dash-apply").addEventListener("click", loadDashboardCards);
+        document.getElementById("dash-reset").addEventListener("click", function () {
+            document.getElementById("dash-date-from").value = "";
+            document.getElementById("dash-date-to").value = "";
+            loadDashboardCards();
+        });
+
+        // Export evaluations honoring the current date filter
+        document.getElementById("dash-export").addEventListener("click", function (e) {
+            e.preventDefault();
+            const from = document.getElementById("dash-date-from").value;
+            const to = document.getElementById("dash-date-to").value;
+            const params = new URLSearchParams();
+            if (from) params.append("date_from", from);
+            if (to) params.append("date_to", to);
+            window.location.href = "/export/evaluations?" + params.toString();
+        });
+
+        // Evaluations trend (last 12 months)
+        fetch("/dashboard/trend", { headers: { "Accept": "application/json" } })
+            .then(res => res.json())
+            .then(data => {
+                new ApexCharts(document.querySelector("#evalTrendChart"), {
+                    chart: { type: "line", height: 320, toolbar: { show: false } },
+                    series: [{ name: "Evaluations", data: data.counts || [] }],
+                    xaxis: { categories: data.labels || [] },
+                    stroke: { curve: "smooth", width: 3 },
+                    colors: ["#1f58c7"],
+                    markers: { size: 4 },
+                    dataLabels: { enabled: true }
+                }).render();
+            })
+            .catch(err => console.error("Trend chart error:", err));
 
 
         document.addEventListener('DOMContentLoaded', () => {

@@ -132,6 +132,45 @@
     </div>
 </div>
 
+{{-- Open item aging / SLA --}}
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title mb-3">Open Item Aging <small class="text-muted">(SLA: 7 days)</small></h5>
+        <div class="row text-center">
+            <div class="col">
+                <div class="p-2 border rounded">
+                    <h6 class="text-muted font-size-13 mb-1">Overdue (7+ days)</h6>
+                    <h4 class="mb-0 text-danger" id="aging-overdue">0</h4>
+                </div>
+            </div>
+            <div class="col">
+                <div class="p-2 border rounded">
+                    <h6 class="text-muted font-size-13 mb-1">0–3 days</h6>
+                    <h4 class="mb-0 text-success" id="aging-0-3">0</h4>
+                </div>
+            </div>
+            <div class="col">
+                <div class="p-2 border rounded">
+                    <h6 class="text-muted font-size-13 mb-1">4–7 days</h6>
+                    <h4 class="mb-0 text-warning" id="aging-4-7">0</h4>
+                </div>
+            </div>
+            <div class="col">
+                <div class="p-2 border rounded">
+                    <h6 class="text-muted font-size-13 mb-1">8–14 days</h6>
+                    <h4 class="mb-0 text-warning" id="aging-8-14">0</h4>
+                </div>
+            </div>
+            <div class="col">
+                <div class="p-2 border rounded">
+                    <h6 class="text-muted font-size-13 mb-1">15+ days</h6>
+                    <h4 class="mb-0 text-danger" id="aging-15">0</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-lg-6">
         <div class="card">

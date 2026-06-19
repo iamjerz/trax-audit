@@ -111,6 +111,12 @@
                                                 $selectedAccess = old('access', $access ?? []);
                                                 $options = [
                                                     'admin',
+                                                    'web_user_manager',
+                                                    'web_user_sup',
+                                                    'web_user_sme',
+                                                    'web_user_lda',
+                                                    'web_managers',
+                                                    'web_score_approval',
                                                     'web_reports',
                                                     'web_report_monitoring',
                                                     'web_report_action_register',

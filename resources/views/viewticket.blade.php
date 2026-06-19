@@ -15,8 +15,33 @@
             <div class="container-fluid">
                 <div class="row">
                    <div class="col-lg-12">
+                        @if(session('success'))
+                            <div class="alert alert-success">{{ session('success') }}</div>
+                        @endif
                         <div class="card">
                             <div class="card-header">
+                                <div class="float-end">
+                                    <a href="{{ route('evaluations.timeline', $data->audit_id) }}" class="btn btn-sm btn-outline-secondary me-1">
+                                        <i class="bx bx-history"></i> Timeline
+                                    </a>
+                                    @if(!empty($acknowledgement))
+                                        <span class="badge bg-success-subtle text-success font-size-12">
+                                            <i class="bx bx-check-circle"></i>
+                                            Acknowledged by {{ $acknowledgement->ack_name }}
+                                            on {{ \Carbon\Carbon::parse($acknowledgement->acknowledged_at)->format('Y-m-d H:i') }}
+                                        </span>
+                                    @elseif(auth()->user()->employeeid === $data->lda_id)
+                                        <form method="POST" action="{{ route('my-evaluations.acknowledge', $data->audit_id) }}" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-success"
+                                                onclick="return confirm('Confirm you have reviewed this evaluation?');">
+                                                <i class="bx bx-check"></i> Acknowledge
+                                            </button>
+                                        </form>
+                                    @else
+                                        <span class="badge bg-secondary-subtle text-secondary font-size-12">Awaiting LDA acknowledgement</span>
+                                    @endif
+                                </div>
                                 <div class="fw-semibold font-size-18">
                                     <h3 class="card-title"><h3 class="fw-semibold mb-0">Invoice# - {{ $data->invoice_id }}</h3></h3>
                                 </div>

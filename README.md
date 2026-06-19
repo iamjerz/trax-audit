@@ -39,9 +39,32 @@ A system-wide activity log (`audit_trails`) recording authentication events (web
 ### Extension Details
 Admin page to manage the Chrome extension's version registry (`extension_details`): list Version / Item ID / Status, add and edit entries, and view a per-entry change history (drawn from the audit trail).
 
-### Security
-- **Forced password change:** any user still on the default password is redirected to a change-password screen before they can use the app.
-- **Server-side access control:** an `access` middleware enforces `extension_access` permissions on every protected route (admins bypass), so hidden menu items can't be reached by typing the URL.
+### My Evaluations & Acknowledgement
+Every user has a **My Evaluations** page listing the evaluations recorded for them. They can open the full read-only detail (same layout as the supervisor ticket view) and **acknowledge** that they've reviewed it — recorded with who/when and logged to the audit trail. Acknowledgement is ownership-enforced (you can only acknowledge your own).
+
+### Disputes / Appeals
+From My Evaluations, an LDA can **dispute** an evaluation they disagree with (with a reason). Supervisors review on a **Disputes** report and **Resolve** or **Reject** each, with a note. Optionally they can **correct the scores** as part of resolving (see below). All actions are audit-logged.
+
+### Score Corrections — maker / checker (with history)
+From a dispute, a supervisor proposes a score correction via dropdowns matching the QA form (Pass/Fail and Met/Coached/Not Met). This creates a **pending request** — scores do **not** change yet. A **Score Approvals** screen (Manager Tools) lets an approver **Approve** (applies the values, recalculates totals, resolves the dispute) or **Reject** (no change), showing a field-level "what changed" diff. Every correction keeps a full **before/after snapshot** (`score_corrections`) plus field diffs in the audit trail — nothing changes without a record. While a correction is pending, the dispute is **locked** (admins can override).
+
+### Reports & Analytics
+- **Pending Acknowledgements** — evaluations not yet acknowledged by their LDA, with days-waiting.
+- **Overdue Action Items** — open recon tickets aged 7+ days.
+- **LDA Scorecard** — per-analyst QA score, pass rate, Triad pass rate, coaching count, open recon items.
+- **Auditor Productivity** — per-auditor output, average score given, pass rate.
+- **Client / Carrier Health** — recon volume / open / overdue by client and carrier.
+- **Root-Cause Analytics** — Pareto of cause-of-issue + 12-month trend.
+- **Audit Coverage** — % of LDAs evaluated in a period.
+- **Per-record Activity Timeline** — full chronological history of a single evaluation.
+- **Excel exports** for evaluations, recon, triad, and the audit trail.
+
+Report pages share a consistent filter bar (Choices.js dropdowns, result counts) including a user (auditor/LDA) filter.
+
+### Security & Workflow Rules
+- **Forced password change:** users on the default password must set a new one before using the app.
+- **Server-side access control:** an `access` middleware enforces `extension_access` permissions on every protected route (admins bypass), so hidden menu items can't be reached by URL. Role bundles (below) expand to capabilities in the middleware, the sidebar, and the Chrome-extension menu.
+- **Acknowledge vs Dispute** are mutually exclusive, and disputes lock while a correction awaits approval — enforced in the UI and on the server.
 
 ---
 
@@ -136,18 +159,33 @@ On first login with the default password, the user is **forced to set a new pass
 
 ## Access Control
 
-Permissions are stored per user in the `extension_access` table. The `access` route middleware enforces them server-side (an `admin` entry bypasses all checks). The access types used across the app:
+Permissions are stored per user in the `extension_access` table. The `access` route middleware enforces them server-side (an `admin` entry bypasses all checks). Role bundles expand to capabilities via `App\Support\AccessRoles` (in the middleware, sidebar, and extension menu).
+
+**Capabilities:**
 
 | Access type | Grants |
 |---|---|
-| `admin` | Full access (users, audit trail, extension details, everything) |
+| `admin` | Full access — users, audit trail, extension details, everything |
 | `web_dashboard` | QA, Action Register, and Triad dashboards |
 | `web_forms` | QA monitoring form and form builder |
-| `web_report_monitoring` | Individual evaluation reports |
-| `web_report_action_register` | Action Register tickets |
+| `web_report_monitoring` | Individual evaluation reports + viewing any evaluation |
+| `web_report_action_register` | Action Register tickets, overdue list, client/carrier health |
 | `web_report_coaching` | Coaching tickets |
 | `web_report_triad` | Triad tickets |
-| `extension_*` | Corresponding Chrome-extension capabilities (`extension_monitoring`, `extension_action_register`, `extension_coaching`, `extension_triad`) |
+| `web_managers` | Everything except admin — dashboards, forms, all reports, Management Reports (scorecard, disputes, analytics), view any evaluation |
+| `web_score_approval` | Manager Tools → Score Approvals (approve/reject corrections) |
+| `extension_*` | Chrome-extension capabilities (`extension_action_register`, `extension_monitoring`, `extension_coaching`, `extension_triad`) |
+
+**Role bundles** (assign one; it expands to the capabilities below):
+
+| Role | Effective access |
+|---|---|
+| `web_user_manager` | Everything except admin (web + all extension capabilities) |
+| `web_user_sup` | Dashboards, Forms, all Reports; extension: action register, monitoring, triad |
+| `web_user_sme` | Dashboards, Forms, Reports **except** Triad Ticket; extension: action register, monitoring |
+| `web_user_lda` | Main + My Evaluations; extension: action register |
+
+> Main and My Evaluations are open to any authenticated user. Admin-only areas (Users, Audit Trail, Extension Details) are never granted by these roles.
 
 ---
 
@@ -184,6 +222,9 @@ database/migrations/    Schema
 - `extension_access` — per-user permissions
 - `extension_details` — Chrome extension version registry
 - `audit_trails` — system-wide activity log
+- `acknowledgements` — LDA sign-offs on their evaluations
+- `disputes` — evaluation disputes/appeals and their resolution
+- `score_corrections` — before/after snapshots of score corrections
 - Reference tables: `client_codes`, `carrier_codes`, `region`, `status`, `form_list`
 
 ---

@@ -32,10 +32,15 @@ class AppServiceProvider extends ServiceProvider
             $access = collect();
 
             if ($user) {
-                $access = DB::table('extension_access')
-                    ->select('access_type')
-                    ->where('employeeid', $user->employeeid)
-                    ->get();
+                $types = \App\Support\AccessRoles::expand(
+                    DB::table('extension_access')
+                        ->where('employeeid', $user->employeeid)
+                        ->pluck('access_type')
+                        ->all()
+                );
+
+                // Keep the ->contains('access_type', X) shape the views use
+                $access = collect($types)->map(fn ($t) => (object) ['access_type' => $t]);
             }
 
             $view->with('access', $access);

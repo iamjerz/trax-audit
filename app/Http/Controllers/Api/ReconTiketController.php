@@ -34,6 +34,69 @@ class ReconTiketController extends Controller
 
         return view("inputrecon");
     }
+
+    /**
+     * Open recon items that are overdue (>= 7 days since recon_call_date, not closed).
+     */
+    public function overdue(Request $request)
+    {
+        $today = \Carbon\Carbon::today();
+
+        $f_client  = $request->input('client_code');
+        $f_carrier = $request->input('carrier_code');
+        $f_region  = $request->input('region');
+        $f_status  = $request->input('status');
+        $f_name    = $request->input('name');
+        $minDays   = (int) $request->input('min_days', 7);
+        if ($minDays < 7) {
+            $minDays = 7; // overdue baseline
+        }
+
+        $query = DB::table('recon_action_items as r')
+            ->leftJoin('users as u', 'u.email', '=', 'r.lda_email')
+            ->whereRaw("LOWER(COALESCE(r.status, '')) != 'closed'")
+            ->whereNotNull('r.recon_call_date');
+
+        if ($f_client)  $query->where('r.client_code', $f_client);
+        if ($f_carrier) $query->where('r.carrier_code', $f_carrier);
+        if ($f_region)  $query->where('r.region', $f_region);
+        if ($f_status)  $query->where('r.status', $f_status);
+        if ($f_name) {
+            $query->where(function ($q) use ($f_name) {
+                $q->where('u.first_name', 'ilike', "%{$f_name}%")
+                  ->orWhere('u.last_name', 'ilike', "%{$f_name}%")
+                  ->orWhere(DB::raw("u.first_name || ' ' || u.last_name"), 'ilike', "%{$f_name}%");
+            });
+        }
+
+        $rows = $query
+            ->select('r.submission_id', 'r.client_code', 'r.carrier_code', 'r.region',
+                'r.status', 'r.recon_call_date', 'r.assigned_to',
+                DB::raw("CONCAT(u.first_name, ' ', u.last_name) as lda_name"))
+            ->orderBy('r.recon_call_date')
+            ->get()
+            ->map(function ($r) use ($today) {
+                $r->days_open = \Carbon\Carbon::parse($r->recon_call_date)->diffInDays($today);
+                return $r;
+            })
+            ->filter(fn ($r) => $r->days_open >= $minDays)
+            ->values();
+
+        // Filter dropdown options (from open, dated items)
+        $base = DB::table('recon_action_items')
+            ->whereRaw("LOWER(COALESCE(status, '')) != 'closed'")
+            ->whereNotNull('recon_call_date');
+
+        $clientOptions  = (clone $base)->whereNotNull('client_code')->where('client_code', '!=', '')->distinct()->orderBy('client_code')->pluck('client_code');
+        $carrierOptions = (clone $base)->whereNotNull('carrier_code')->where('carrier_code', '!=', '')->distinct()->orderBy('carrier_code')->pluck('carrier_code');
+        $regionOptions  = (clone $base)->whereNotNull('region')->where('region', '!=', '')->distinct()->orderBy('region')->pluck('region');
+        $statusOptions  = (clone $base)->whereNotNull('status')->where('status', '!=', '')->distinct()->orderBy('status')->pluck('status');
+
+        return view('reconoverdue', compact(
+            'rows', 'clientOptions', 'carrierOptions', 'regionOptions', 'statusOptions',
+            'f_client', 'f_carrier', 'f_region', 'f_status', 'f_name', 'minDays'
+        ));
+    }
     public function fullDetails($id)
     {
 
@@ -142,6 +205,18 @@ class ReconTiketController extends Controller
             ->offset($offset)
             ->limit($limit)
             ->get();
+
+        // Aging / SLA: days open since recon_call_date for items that aren't closed
+        $today = \Carbon\Carbon::today();
+        $data->transform(function ($row) use ($today) {
+            $isClosed = strtolower($row->status ?? '') === 'closed';
+            $start = !empty($row->recon_call_date) ? \Carbon\Carbon::parse($row->recon_call_date) : null;
+            $age = $start ? $start->diffInDays($today) : null;
+
+            $row->days_open  = $isClosed ? null : $age;
+            $row->is_overdue = (!$isClosed && $age !== null && $age >= 7);
+            return $row;
+        });
 
         return response()->json([
             'data' => $data,

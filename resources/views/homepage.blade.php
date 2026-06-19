@@ -41,8 +41,10 @@
                     $isAdmin = $access->contains('access_type', 'admin');
                     $can = fn($type) => $isAdmin || $access->contains('access_type', $type);
 
-                    $canDashboard = $can('web_dashboard');
-                    $canForms     = $can('web_forms');
+                    $canManage    = $can('web_managers');
+                    $canApprove   = $can('web_score_approval');
+                    $canDashboard = $can('web_dashboard') || $can('web_managers');
+                    $canForms     = $can('web_forms') || $can('web_managers');
                     $canMonitor   = $can('web_report_monitoring');
                     $canRecon     = $can('web_report_action_register');
                     $canCoaching  = $can('web_report_coaching');
@@ -76,8 +78,74 @@
                     </div>
                 </div>
 
+                {{-- ===== Action Center ===== --}}
+                <h5 class="font-size-15 mb-3 mt-2">Needs Your Attention</h5>
+                <div class="row">
+                    <div class="col-md-6 col-xl-4 mt-4">
+                        <a href="/my-evaluations" class="text-reset text-decoration-none">
+                            <div class="card quick-link-card mb-3">
+                                <div class="card-body d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h6 class="font-size-14 mb-1">Evaluations to acknowledge</h6>
+                                        <small class="text-muted">Review &amp; sign off</small>
+                                    </div>
+                                    <span class="badge bg-warning rounded-pill font-size-14" id="ac-pending">0</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    @if($canManage || $isAdmin)
+                    <div class="col-md-6 col-xl-4 mt-4">
+                        <a href="/reports/disputes" class="text-reset text-decoration-none">
+                            <div class="card quick-link-card mb-3">
+                                <div class="card-body d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h6 class="font-size-14 mb-1">Disputes to review</h6>
+                                        <small class="text-muted">Open appeals</small>
+                                    </div>
+                                    <span class="badge bg-danger rounded-pill font-size-14" id="ac-disputes">0</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    @endif
+
+                    @if($canRecon || $canDashboard || $isAdmin)
+                    <div class="col-md-6 col-xl-4 mt-4">
+                        <a href="/recon-overdue" class="text-reset text-decoration-none">
+                            <div class="card quick-link-card mb-3">
+                                <div class="card-body d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h6 class="font-size-14 mb-1">My overdue action items</h6>
+                                        <small class="text-muted">Open 7+ days</small>
+                                    </div>
+                                    <span class="badge bg-danger rounded-pill font-size-14" id="ac-overdue">0</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    @endif
+
+                    @if($isAdmin || $canApprove)
+                    <div class="col-md-6 col-xl-4 mt-4">
+                        <a href="/reports/corrections" class="text-reset text-decoration-none">
+                            <div class="card quick-link-card mb-3">
+                                <div class="card-body d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h6 class="font-size-14 mb-1">Corrections to approve</h6>
+                                        <small class="text-muted">Awaiting your approval</small>
+                                    </div>
+                                    <span class="badge bg-warning rounded-pill font-size-14" id="ac-corrections">0</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    @endif
+                </div>
+
                 {{-- ===== At-a-glance stats ===== --}}
-                <h5 class="font-size-15 mb-3">At a Glance</h5>
+                <h5 class="font-size-15 mb-3 mt-4 pt-2">At a Glance</h5>
                 <div class="row">
 
                     @if($canDashboard || $canMonitor)
@@ -163,7 +231,7 @@
                 </div>
 
                 {{-- ===== Quick access ===== --}}
-                <h5 class="font-size-15 mb-3 mt-2">Quick Access</h5>
+                <h5 class="font-size-15 mb-3 mt-4 pt-2">Quick Access</h5>
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3">
 
                     @if($canDashboard)
@@ -445,6 +513,17 @@
             const el = document.getElementById(id);
             if (el) el.textContent = value ?? 0;
         }
+
+        // Action Center counts
+        fetch('/home/action-center', { headers: { 'Accept': 'application/json' } })
+            .then(r => r.json())
+            .then(d => {
+                setStat('ac-pending', d.pending_ack);
+                setStat('ac-disputes', d.open_disputes);
+                setStat('ac-overdue', d.my_overdue);
+                setStat('ac-corrections', d.pending_corrections);
+            })
+            .catch(() => {});
 
         // QA cards: total evaluations + total LDAs
         if (document.getElementById('hp-total-eval') || document.getElementById('hp-total-lda')) {

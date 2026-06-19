@@ -14,9 +14,15 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardControllerMain extends Controller
 {
-    public function dashbaordCard()
+    public function dashbaordCard(Request $request)
     {
-        $auditCount = UserInputAudit::count();
+        $from = $request->input('date_from');
+        $to   = $request->input('date_to');
+
+        $auditQuery = UserInputAudit::query();
+        if ($from) $auditQuery->whereDate('audit_date_1', '>=', $from);
+        if ($to)   $auditQuery->whereDate('audit_date_1', '<=', $to);
+        $auditCount = $auditQuery->count();
 
         // Data uses the position label "LDA"; accept the long form too for safety.
         $total_lda = DB::table('users')
@@ -32,7 +38,7 @@ class DashboardControllerMain extends Controller
 
         // NOTE: total_score is stored as a string column, so we select the raw
         // values and cast in PHP (avoids COALESCE varchar/int type errors on Postgres).
-        $scores = DB::table('user_input_audits as a')
+        $scoresQuery = DB::table('user_input_audits as a')
             ->leftJoin('verifications as v', 'v.audit_id', '=', 'a.audit_id')
             ->leftJoin('process_compliances as p', 'p.audit_id', '=', 'a.audit_id')
             ->leftJoin('engagements as e', 'e.audit_id', '=', 'a.audit_id')
@@ -40,8 +46,10 @@ class DashboardControllerMain extends Controller
                 'v.total_score as ver',
                 'p.total_score as proc',
                 'e.total_score as eng'
-            )
-            ->get();
+            );
+        if ($from) $scoresQuery->whereDate('a.audit_date_1', '>=', $from);
+        if ($to)   $scoresQuery->whereDate('a.audit_date_1', '<=', $to);
+        $scores = $scoresQuery->get();
 
         $aboveAverage = 0;
         $belowAverage = 0;
@@ -136,6 +144,40 @@ class DashboardControllerMain extends Controller
 
          return response()->json([
             $data,
+        ]);
+    }
+
+    /**
+     * Evaluations per month for the last 12 months (trend line).
+     */
+    public function trend()
+    {
+        $dates = DB::table('user_input_audits')
+            ->whereNotNull('audit_date_1')
+            ->pluck('audit_date_1');
+
+        $labels = [];
+        $map = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $m = \Carbon\Carbon::now()->startOfMonth()->subMonths($i);
+            $labels[] = $m->format('M Y');
+            $map[$m->format('Y-m')] = 0;
+        }
+
+        foreach ($dates as $d) {
+            try {
+                $key = \Carbon\Carbon::parse($d)->format('Y-m');
+            } catch (\Throwable $e) {
+                continue;
+            }
+            if (isset($map[$key])) {
+                $map[$key]++;
+            }
+        }
+
+        return response()->json([
+            'labels' => $labels,
+            'counts' => array_values($map),
         ]);
     }
 

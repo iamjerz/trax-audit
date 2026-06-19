@@ -1,33 +1,45 @@
-# 📢 Audit Ops — System Update
+# 📢 Audit Ops — Update (v1.0.0.26, includes v1.0.0.25)
 
 Hi everyone,
 
-We've rolled out a round of updates to the Audit Ops platform to make it easier to use, more informative, and more secure. Here's what's new.
+This release brings a big round of improvements: a self-service experience for analysts, a fair dispute-and-appeal process with admin-approved corrections, a full set of management reports, and simpler role-based access. Here's everything that's new.
 
-## ✨ New
+> 🚀 **Heads up:** these updates will be deployed to Production **this weekend or early next week**.
 
-- **Home page.** Logging in now lands you on a proper home page with a welcome banner, quick links to the sections you use, and at-a-glance stats. You'll only see the cards and links you have access to.
-- **Triad Dashboard.** A new dashboard for Triad evaluations showing overall pass rate, pass/fail by each of the 10 criteria, and a breakdown by evaluator.
-- **Audit Trail (Admins).** A complete activity log — logins, record changes, status and assignment updates, access changes, and password resets — with search and date filters.
-- **Extension Details page (Admins).** Manage the Chrome extension's version entries (Version, Item ID, Status), and view the full change history for each one.
+## 👤 For Everyone (Analysts)
+- **My Evaluations** — a new menu item where you can see every evaluation recorded for you and open the full details (the same view your supervisor sees).
+- **Acknowledge** — after reviewing an evaluation, confirm you've seen it. It's recorded with the date.
+- **Dispute** — if you disagree with an evaluation, raise a dispute with a reason; your supervisor will review it. You'll see the outcome (and a "Corrected" tag if your scores were changed) right on My Evaluations.
+- **One path per evaluation** — you can acknowledge *or* dispute, not both. Once acknowledged it can't be disputed, and while a dispute is open it can't be acknowledged.
 
-## 🔧 Improvements
+## 🧑‍💼 For Supervisors & Managers
+- **Disputes review** — review raised disputes and **Resolve** or **Reject** them with a note.
+- **Score corrections now require approval** — when you correct a disputed evaluation's scores, it becomes a **pending request**. Scores change only after an approver acts on the new **Manager Tools → Score Approvals** page, which shows exactly **what changed** before approving. The full before/after is always kept on record, and the dispute is locked until the decision is made.
+- **New reports & analytics:**
+  - **Pending Acknowledgements** — evaluations not yet acknowledged, with how long they've waited.
+  - **Overdue Action Items** — open reconciliation tickets 7+ days old.
+  - **LDA Scorecard** — per-analyst QA score, pass rate, Triad pass rate, coaching count, open items.
+  - **Auditor Productivity** — output, average score, and pass rate per auditor.
+  - **Client / Carrier Health** — recon volume / open / overdue by client and carrier.
+  - **Root Cause Analytics** — most common issues (Pareto) and a 12-month trend.
+  - **Audit Coverage** — % of LDAs evaluated, and who hasn't been audited.
+  - **Activity Timeline** — the full history of any single evaluation.
+- Report pages now have cleaner filters, including filtering by a specific auditor or LDA.
 
-- **QA Monitoring dashboard.** The summary cards now work correctly — Total Evaluations, Total LDAs, and the Above/Below 75% counts now show accurate numbers.
-- **Show/Hide password.** The eye icon on the login and change-password screens now works properly.
-- **Clearer login errors.** If your email or password is incorrect, you'll now see a clear message.
-- **Reset password (Admins).** The "Reset" button on the user edit page now resets a user's password back to the default.
+## 🔐 Simpler Access Roles
+Admins can assign a single **role** instead of many individual permissions:
+- **Manager** — everything except admin
+- **Supervisor** — Dashboards, Forms, all Reports (+ extension tools)
+- **SME** — Dashboards, Forms, Reports except Triad (+ extension tools)
+- **LDA** — Home and My Evaluations (+ Action Register in the extension)
 
-## 🔒 Security & Your Account
-
-- **Set your own password.** Anyone still using the default password will be asked to set a new one the next time they log in. (Please choose something only you know.)
-- **Permissions are enforced.** You can now only open the sections your account has access to. If you need access to something, contact an administrator.
-- **Sign-in tracking.** Logins — including Microsoft sign-ins from the Chrome extension — are now recorded for security and auditing.
+These apply consistently across the web app and the Chrome extension.
 
 ## ✅ What you need to do
+- **Analysts:** review and acknowledge anything pending in **My Evaluations**.
+- **Supervisors/Managers:** explore the new reports.
+- Nothing else is required.
 
-- The next time you log in, **if you're on the default password you'll be prompted to change it.** That's the only action required.
-
-Questions or run into anything unexpected? Reach out to your administrator.
+Questions or anything not working as expected? Reach out to your administrator.
 
 Thank you!

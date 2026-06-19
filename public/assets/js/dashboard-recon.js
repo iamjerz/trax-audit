@@ -297,20 +297,45 @@ $(document).ready(function () {
         });
     }
 
+    // 🔹 Load Open Item Aging / SLA
+    function loadAging() {
+        let scope = $('#chartFilter').val() || 'all';
+
+        $.ajax({
+            url: '/dashboard-recon-aging',
+            type: 'GET',
+            data: { scope: scope },
+            success: function (data) {
+                const b = data.buckets || {};
+                $('#aging-overdue').text(data.overdue || 0);
+                $('#aging-0-3').text(b['0-3'] || 0);
+                $('#aging-4-7').text(b['4-7'] || 0);
+                $('#aging-8-14').text(b['8-14'] || 0);
+                $('#aging-15').text(b['15+'] || 0);
+            },
+            error: function () {
+                console.error('Error loading aging data');
+            }
+        });
+    }
+
     // ✅ INITIAL LOAD
     loadClientChart();
     loadCarrierChart();
+    loadAging();
 
     // ✅ DROPDOWN CHANGE
     $('#chartFilter').on('change', function () {
         loadClientChart();
         loadCarrierChart();
+        loadAging();
     });
 
     // 🔄 AUTO REFRESH (optional)
     setInterval(function () {
         loadClientChart();
         loadCarrierChart();
+        loadAging();
     }, 15000);
 
 });

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use App\Models\UserInputAudit;
 
@@ -53,9 +54,25 @@ class ViewTicket extends Controller
         $coaching_exists = DB::table('coachings')
             ->where('reference', $ticketid)
             ->exists();
-        
 
-        return view('viewticket', compact('ticketid', 'data', 'triad_exists', 'coaching_exists'));
+        // Acknowledgement (sign-off) for this evaluation, if any.
+        // Guarded so the ticket page still works if the migration hasn't been run yet.
+        $acknowledgement = null;
+        if (Schema::hasTable('acknowledgements')) {
+            $acknowledgement = DB::table('acknowledgements as a')
+                ->leftJoin('users as u', 'u.employeeid', '=', 'a.employeeid')
+                ->where('a.reference_type', 'audit')
+                ->where('a.reference_id', $ticketid)
+                ->orderByDesc('a.id')
+                ->select(
+                    'a.acknowledged_at',
+                    'a.employeeid',
+                    DB::raw("CONCAT(u.first_name, ' ', u.last_name) as ack_name")
+                )
+                ->first();
+        }
+
+        return view('viewticket', compact('ticketid', 'data', 'triad_exists', 'coaching_exists', 'acknowledgement'));
 
 
     }

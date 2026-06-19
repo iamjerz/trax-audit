@@ -20,6 +20,11 @@
                             <h5 class="card-title">Triad Ticket</h5>
                         </div>
                     </div>
+                    <div class="col-md-6 text-md-end">
+                        <a href="{{ route('export.triad') }}" class="btn btn-sm btn-success mb-3">
+                            <i class="bx bx-download"></i> Export to Excel
+                        </a>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-lg-12">

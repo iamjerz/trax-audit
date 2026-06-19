@@ -21,6 +21,9 @@
                     <div class="col-12">
                         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
                             <h4 class="mb-sm-0 font-size-18">Audit Trail</h4>
+                            <a href="{{ route('export.audit-trail', request()->query()) }}" class="btn btn-sm btn-success">
+                                <i class="bx bx-download"></i> Export to Excel
+                            </a>
                         </div>
                     </div>
                 </div>

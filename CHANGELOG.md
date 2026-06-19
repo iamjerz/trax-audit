@@ -4,6 +4,32 @@ All notable changes to the Trax Audit Ops platform are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.0.26] - 2026-06-06
+
+_Combined release — includes everything originally drafted as 1.0.0.25._
+
+### Added
+- **My Evaluations (LDA self-service).** A page listing each user's own evaluations, with a read-only full detail view (the supervisor layout) and an **Acknowledge** action — ownership-enforced and audit-logged.
+- **Dispute / appeal workflow.** LDAs dispute an evaluation (with a reason) from My Evaluations; supervisors review on a **Disputes** report and Resolve or Reject with a note. The outcome is shown back to the LDA.
+- **Score corrections — maker/checker (with history).** From a dispute, a supervisor proposes a correction using dropdowns matching the QA form (Pass/Fail, Met/Coached/Not Met), editable comments, and the question descriptions shown. It becomes a **pending request**; scores change only after an approver acts on the **Manager Tools → Score Approvals** page, which shows a field-level "what changed" diff. Approving recalculates totals and resolves the dispute; a full before/after snapshot is kept in `score_corrections` plus field diffs in the audit trail.
+- **Reports & analytics:** Pending Acknowledgements, Overdue Action Items, LDA Scorecard, Auditor Productivity, Client/Carrier Health, Root-Cause Pareto + 12-month trend, Audit Coverage, and a per-record **Activity Timeline**.
+- **Role bundles:** `web_user_manager`, `web_user_sup`, `web_user_sme`, `web_user_lda` — assign one role and it expands to the right web + Chrome-extension capabilities (enforced in route middleware, sidebar, and extension menu).
+- **New capability permissions:** `web_managers` (everything except admin) and `web_score_approval` (Score Approvals, under a new **Manager Tools** menu).
+- **Homepage Action Center** cards: pending acknowledgements, disputes to review, overdue items, and corrections to approve (with live counts).
+
+### Changed
+- Report pages share a consistent filter bar (Choices.js dropdowns, result counts) with a **user (auditor/LDA) filter**.
+- Sidebar Reports visibility now matches the route permissions exactly (the `web_reports` grouping key is no longer required).
+- Dispute list shows the resolution outcome to the LDA; approver/requester display as names, not employee IDs.
+
+### Security / Workflow rules
+- **Acknowledge and Dispute are mutually exclusive** — can't dispute an acknowledged evaluation, and can't acknowledge one with an open dispute (UI + server-enforced).
+- A dispute is **locked** while a score correction awaits approval; **admins can override** to change the status.
+- Ownership checks on My Evaluations acknowledge/dispute are enforced server-side.
+
+### Database
+- New tables: `acknowledgements`, `disputes`, `score_corrections` (with approval columns `status`, `approved_by`, `approved_at`, `decision_note`). Run `php artisan migrate`.
+
 ## [1.0.0.24] - 2026-06-06
 
 ### Added

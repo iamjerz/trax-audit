@@ -104,9 +104,15 @@
                         <i class="bx bx-home-alt icon nav-icon"></i>
                         <span class="menu-item" data-key="t-calendar">Main</span>
                     </a>
-                    
+
                 </li>
-                @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_dashboard'))
+                <li>
+                    <a href="/my-evaluations">
+                        <i class="bx bx-user-check icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-my-evaluations">My Evaluations</span>
+                    </a>
+                </li>
+                @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_dashboard'))
                 <li class="menu-title" data-key="t-menu">Dashboard</li>
 
                 <li>
@@ -121,7 +127,7 @@
                     </ul>
                 </li>
                 @endif
-                @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_forms'))
+                @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_forms'))
                 <li class="menu-title" data-key="t-menu">Forms</li>
                 <li>
                     <a href="/monitoringform">
@@ -158,9 +164,14 @@
                     </ul>
                 </li> -->
                 <!-- Name Divider -->
-                 @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_reports'))
+                 @if($access->contains('access_type', 'admin')
+                    || $access->contains('access_type', 'web_managers')
+                    || $access->contains('access_type', 'web_report_monitoring')
+                    || $access->contains('access_type', 'web_report_action_register')
+                    || $access->contains('access_type', 'web_report_coaching')
+                    || $access->contains('access_type', 'web_report_triad'))
                 <li class="menu-title" data-key="t-applications">Reports </li>
-                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_report_monitoring'))
+                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_report_monitoring'))
                     <li>
                         <a href="javascript: void(0);" class="has-arrow">
                             <i class="bx bxs-report icon nav-icon"></i>
@@ -172,16 +183,28 @@
                         </ul>
                     </li>
                     @endif
-                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_report_action_register'))
+                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_report_action_register'))
                     <li>
                         <a href="/recon-ticket">
                             <i class="bx bx-receipt icon nav-icon"></i>
                             <span class="menu-item" data-key="t-calendar">Action Register Ticket</span>
                         </a>
-                        
+
+                    </li>
+                    <li>
+                        <a href="/recon-overdue">
+                            <i class="bx bx-time-five icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-recon-overdue">Overdue Items</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/analytics/client-carrier-health">
+                            <i class="bx bx-pulse icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-client-health">Client/Carrier Health</span>
+                        </a>
                     </li>
                     @endif
-                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_report_coaching'))
+                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_report_coaching'))
                     <li>
                         <a href="/coaching-ticket">
                             <i class="bx bx-receipt icon nav-icon"></i>
@@ -190,7 +213,7 @@
                         
                     </li>
                     @endif
-                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_report_triad'))
+                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_report_triad'))
                     <li>
                         <a href="/triad-ticket">
                             <i class="bx bx-receipt icon nav-icon"></i>
@@ -201,6 +224,56 @@
                     @endif
                     
                 
+                @endif
+                <!-- Name Divider -->
+                @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers'))
+                <li class="menu-title" data-key="t-management">Management Reports</li>
+                <li>
+                    <a href="/lda-scorecard">
+                        <i class="bx bxs-user-detail icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-lda-scorecard">LDA Scorecard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/reports/pending-acknowledgements">
+                        <i class="bx bx-time icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-pending-ack">Pending Acknowledgements</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/reports/disputes">
+                        <i class="bx bx-error-circle icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-disputes">Disputes</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/analytics/auditor-productivity">
+                        <i class="bx bx-bar-chart icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-auditor-prod">Auditor Productivity</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/analytics/root-cause">
+                        <i class="bx bx-pie-chart-alt-2 icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-root-cause">Root Cause Analytics</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/analytics/audit-coverage">
+                        <i class="bx bx-list-check icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-coverage">Audit Coverage</span>
+                    </a>
+                </li>
+                @endif
+                <!-- Name Divider -->
+                @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_score_approval'))
+                <li class="menu-title" data-key="t-manager-tools">Manager Tools</li>
+                <li>
+                    <a href="/reports/corrections">
+                        <i class="bx bx-check-shield icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-corrections">Score Approvals</span>
+                    </a>
+                </li>
                 @endif
                 <!-- Name Divider -->
                  @if($access->contains('access_type', 'admin'))

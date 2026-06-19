@@ -24,10 +24,15 @@ class MenuController extends Controller
             return view('extension.menu', ['access' => collect()]);
         }
 
-        $access = DB::table('extension_access')
-            ->select('access_type')
-            ->where('employeeid', $user_employee->employeeid)
-            ->get();
+        $types = \App\Support\AccessRoles::expand(
+            DB::table('extension_access')
+                ->where('employeeid', $user_employee->employeeid)
+                ->pluck('access_type')
+                ->all()
+        );
+
+        // Preserve the ->contains('access_type', X) shape the extension view uses
+        $access = collect($types)->map(fn ($t) => (object) ['access_type' => $t]);
 
         return view('extension.menu', compact('access'));
     }

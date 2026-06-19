@@ -87,6 +87,45 @@ class DashboardReconController extends Controller
 
         return response()->json($data);
     }
+
+    public function Aging(Request $request)
+    {
+        $scope = $request->input('scope', 'all');
+        $user = auth()->user();
+
+        $query = DB::table('recon_action_items as rai')
+            ->whereRaw("LOWER(COALESCE(rai.status, '')) != 'closed'")
+            ->whereNotNull('rai.recon_call_date');
+
+        if ($scope === 'team') {
+            $query->join('users as u', 'rai.lda_email', '=', 'u.email')
+                  ->where('u.supervisor_id', $user->employeeid);
+        }
+
+        $rows = $query->select('rai.recon_call_date')->get();
+
+        $today = \Carbon\Carbon::today();
+        $buckets = ['0-3' => 0, '4-7' => 0, '8-14' => 0, '15+' => 0];
+        $overdue = 0;
+
+        foreach ($rows as $r) {
+            $age = \Carbon\Carbon::parse($r->recon_call_date)->diffInDays($today);
+
+            if ($age <= 3)       $buckets['0-3']++;
+            elseif ($age <= 7)   $buckets['4-7']++;
+            elseif ($age <= 14)  $buckets['8-14']++;
+            else                 $buckets['15+']++;
+
+            if ($age >= 7) $overdue++;
+        }
+
+        return response()->json([
+            'open_total' => $rows->count(),
+            'overdue'    => $overdue,
+            'buckets'    => $buckets,
+        ]);
+    }
+
     public function TopCarriers(Request $request)
     {
         $scope = $request->input('scope', 'all');
