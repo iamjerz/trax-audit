@@ -165,6 +165,7 @@ class UserPageController extends Controller
             'role' => 'required|string',
             'supervisor_id' => 'nullable|string',
             'status' => 'required|string',
+            'position' => 'required|string'
         ]);
 
         // ✅ Find user

@@ -24,6 +24,7 @@ document.getElementById("edit-user").addEventListener("click", function() {
         role: document.getElementById("role").value,
         supervisor_id: document.getElementById("supervisor").value,
         status: document.getElementById("status").value,
+        position: document.getElementById("position").value
     };
 
     console.log("DATA :: :: ", data)

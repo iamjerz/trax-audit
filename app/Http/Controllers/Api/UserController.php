@@ -16,8 +16,22 @@ class UserController extends Controller
             abort(403);
         }
 
-        return User::select('id', 'employeeid', 'first_name', 'last_name', 'email', 'position', 'department', 'role', 'status')
-            ->orderBy('id', 'desc')
-            ->get();
+        return User::from('users as u')
+        ->leftJoin('users as s', 'u.supervisor_id', '=', 's.employeeid')
+        ->select(
+            'u.id',
+            'u.employeeid',
+            'u.first_name',
+            'u.last_name',
+            'u.email',
+            'u.position',
+            'u.department',
+            'u.role',
+            'u.status',
+            \DB::raw("CONCAT(s.first_name, ' ', s.last_name) as supervisor_name"),
+            's.employeeid as supervisor_employeeid'
+        )
+        ->orderBy('u.id', 'desc')
+        ->get();
     }
 }

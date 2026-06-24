@@ -21,6 +21,7 @@ function mapUsers(data) {
         user.last_name,
         user.position ?? '—',
         user.department ?? '—',
+        user.supervisor_name,
         user.role,
         user.status
     ]);
@@ -37,6 +38,7 @@ function initUserTable() {
             "Last Name",
             "Position",
             "Department",
+            "Supervisor",
             "Role",
             {
                 name: "Status",

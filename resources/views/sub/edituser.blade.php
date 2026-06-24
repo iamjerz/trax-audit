@@ -222,7 +222,51 @@
                                             </select>
                                         </div>
                                     </div>
-                                    
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            <label for="formrow-firstname-input" class="form-label">Position</label>
+                                            @php
+                                            $positions = [
+                                                'user',
+                                                'Audit Supervisor',
+                                                'Vendor Manager',
+                                                'Duplicate',
+                                                'LDA',
+                                                'Duplicate Manager',
+                                                'GSS Supervisor',
+                                                'Audit Manager',
+                                                'VP, Audit',
+                                                'Rate Loading Supervisor',
+                                                'Post Audit Supervisor',
+                                                'Audit Sr. Manager',
+                                                'SME',
+                                                'GSS',
+                                                'Post Audit',
+                                                'GSS Manager',
+                                                'AI Prompting Engineer',
+                                                'Rate Loading Analyst',
+                                                'Ops Analytics Manager',
+                                                'Service',
+                                            ];
+                                            @endphp
+
+                                            <select class="form-control dropdown-choices" data-trigger id="position" name="position">
+                                                <option value="">Select Position</option>
+
+                                                @foreach($positions as $position)
+                                                    <option value="{{ $position }}"
+                                                        {{ ($user->position ?? '') == $position ? 'selected' : '' }}>
+                                                        {{ $position }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            <button type="submit" id="edit-user" class="btn btn-primary w-md">Update</button>
+                                        </div>
+                                    </div>
                                     <div class="col-lg-6">
                                         <div class="mb-3">
                                             <label for="formrow-firstname-input" class="form-label">Password</label>
@@ -232,11 +276,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-lg-6">
-                                        <div class="mb-3">
-                                            <button type="submit" id="edit-user" class="btn btn-primary w-md">Update</button>
-                                        </div>
-                                    </div>
+                                    
                                 </div>
                             </div>
                         </div>
