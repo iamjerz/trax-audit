@@ -71,7 +71,7 @@
                                 </div>
                                 <div class="col-lg-4 col-md-6">
                                     <div class="mb-3">
-                                        <label class="form-label">Invoice ID <span class="text-danger">*</span></label>
+                                        <label class="form-label">Invoice # <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="" name="invoice-id" placeholder="Enter Invoice ID">
                                     </div>
                                 </div>

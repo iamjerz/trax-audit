@@ -82,7 +82,7 @@
 
                                                 <tr>
                                                     <th class="fw-bold">Audit Date :</th>
-                                                    <td class="text-muted">{{ $data->audit_date_1 }}</td>
+                                                    <td class="text-muted">{{ $data->audit_date_2 }}</td>
                                                 </tr>
                                                 <!-- end tr -->
 
@@ -100,7 +100,7 @@
                                             <tbody>
                                                 <tr>
                                                     <th class="fw-bold">Audit Month:</th>
-                                                    <td class="text-muted">{{ \Carbon\Carbon::parse($data->audit_date_1)->format('F') }} </td>
+                                                    <td class="text-muted">{{ \Carbon\Carbon::parse($data->audit_date_2)->format('F') }} </td>
                                                 </tr>
                                                 <!-- end tr -->
                                                 
