@@ -106,6 +106,11 @@
                             <option value="Rate Loading Analyst">Rate Loading Analyst</option>
                             <option value="Ops Analytics Manager">Ops Analytics Manager</option>
                             <option value="Service">Service</option>
+                            <option value="Chief Operating Officer">Chief Operating Officer</option>
+                            <option value="Chief Executive Officer">Chief Executive Officer</option>
+                            <option value="Chief Financial Officer">Chief Financial Officer</option>
+                            <option value="Chief Technology Officer">Chief Technology Officer</option>
+                            <option value="Chief Product Officer">Chief Product Officer</option>
                         </select>
                     </div>
                     <div class="mb-3 col-lg-6">
