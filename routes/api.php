@@ -67,12 +67,13 @@ Route::middleware(['ms.jwt'])->group(function () {
 });
 
 
-Route::post('/v1/data', [DataSourceController::class, 'index']);
+Route::match(['get', 'post'], '/v1/data', [DataSourceController::class, 'index']);
 Route::get('/extension/connector/check', [ConnectorController::class, 'CheckConnection']);
 Route::post('/extension/details/check', [ConnectorController::class, 'CheckVersion']);
 
-// New Version of API
-Route::post('/v2/data/qa-monitoring', [DataSourceController::class, 'qa_monitoring']);
-Route::post('/v2/data/action-register', [DataSourceController::class, 'action_register']);
-Route::post('/v2/data/triad', [DataSourceController::class, 'triad']);
-Route::post('/v2/data/coaching', [DataSourceController::class, 'coaching']);
+// New Version of API (GET + POST so tools like Excel Power Query, which
+// default to GET via Web.Contents, can pull the data too)
+Route::match(['get', 'post'], '/v2/data/qa-monitoring', [DataSourceController::class, 'qa_monitoring']);
+Route::match(['get', 'post'], '/v2/data/action-register', [DataSourceController::class, 'action_register']);
+Route::match(['get', 'post'], '/v2/data/triad', [DataSourceController::class, 'triad']);
+Route::match(['get', 'post'], '/v2/data/coaching', [DataSourceController::class, 'coaching']);
