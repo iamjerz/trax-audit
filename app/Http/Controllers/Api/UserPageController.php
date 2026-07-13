@@ -82,12 +82,58 @@ class UserPageController extends Controller
             'profile_photo_path' => $request->profile_photo_path ?? null,
         ]);
 
+        // 2b. Auto-assign a role bundle based on Position / Role
+        $accessRole = $this->resolveAccessRole($request->position, $request->role);
+        if ($accessRole) {
+            DB::table('extension_access')->insert([
+                'employeeid'  => $user->employeeid,
+                'access_type' => $accessRole,
+                'created_by'  => auth()->user()->employeeid ?? 'system',
+                'created_at'  => now(),
+                'updated_at'  => now(),
+            ]);
+
+            AuditTrail::record([
+                'event'          => 'access_assigned',
+                'description'    => 'Auto-assigned ' . $accessRole . ' to ' . $user->employeeid . ' on creation',
+                'auditable_type' => 'extension_access',
+                'auditable_id'   => $user->employeeid,
+                'new_values'     => ['access_type' => $accessRole],
+            ]);
+        }
+
         // 3. Response
         return response()->json([
             'success' => true,
             'message' => 'User created successfully',
-            'data' => $user
+            'data' => $user,
+            'assigned_access' => $accessRole,
         ], 201);
+    }
+
+    /**
+     * Map a new user's Position/Role to a role-bundle access type.
+     * Manager > Supervisor > SME > LDA; anything else gets no access.
+     */
+    private function resolveAccessRole(?string $position, ?string $role): ?string
+    {
+        $p = strtolower(trim((string) $position));
+        $r = strtolower(trim((string) $role));
+
+        if (str_contains($p, 'manager') || str_contains($r, 'manager')) {
+            return 'web_user_manager';
+        }
+        if (str_contains($p, 'supervisor') || str_contains($r, 'supervisor')) {
+            return 'web_user_sup';
+        }
+        if ($p === 'sme') {
+            return 'web_user_sme';
+        }
+        if ($p === 'lda') {
+            return 'web_user_lda';
+        }
+
+        return null;
     }
 
     private function generateEmployeeId()

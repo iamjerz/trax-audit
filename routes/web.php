@@ -43,6 +43,7 @@ use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\TriadTicket;
 use App\Http\Controllers\Api\UserPageController;
 use App\Http\Controllers\Api\CoachingTicket;
+use App\Http\Controllers\Api\MonitoringTicket;
 /*
 |--------------------------------------------------------------------------
 | 
@@ -172,6 +173,7 @@ Route::middleware('auth')->group(function () {
     // Shared endpoints — viewing evaluations/timeline (dashboards, monitoring, and managers)
     Route::middleware('access:web_dashboard,web_report_monitoring,web_managers')->group(function () {
         Route::get('/dashboard/cards', [DashboardControllerMain::class, 'dashbaordCard']);
+        Route::get('/dashboard/filter-options', [DashboardControllerMain::class, 'filterOptions']);
         Route::get('/ticket/view/{id}', [ViewTicket::class, 'viewTicket'])->name('viewticket');
         Route::post('/ticket/{auditId}/acknowledge', [AcknowledgementController::class, 'store'])->name('ticket.acknowledge');
         Route::get('/export/evaluations', [ExportController::class, 'evaluations'])->name('export.evaluations');
@@ -211,6 +213,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/evaluation/individual-recent', [EvalIndividual::class, 'recentTableAPI']);
         Route::get('/evaluation/individual-cause-issue', [EvalIndividual::class, 'cause_issue_count']);
         Route::get('/evaluation/individual-accountable-factor', [EvalIndividual::class, 'impact_factor_count']);
+        Route::get('/monitoring-ticket', [MonitoringTicket::class, 'index']);
+        Route::get('/monitoring-data', [MonitoringTicket::class, 'displayTicket']);
+        Route::delete('/monitoring-ticket/{id}', [MonitoringTicket::class, 'destroy'])
+            ->middleware('access:admin');
     });
 
     /* -----------------------------------------------------------------

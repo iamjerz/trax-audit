@@ -121,12 +121,25 @@
 
 <div class="card">
     <div class="card-body">
-        <div class="row">
-            <div class="col-lg-4">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4 col-lg-3">
+                <label class="form-label font-size-13 mb-1">Scope</label>
                 <select id="chartFilter" data-trigger class="form-select form-select-sm">
                     <option value="all">All Tickets</option>
                     <option value="team">My Team</option>
                 </select>
+            </div>
+            <div class="col-md-3 col-lg-2">
+                <label class="form-label font-size-13 mb-1">From (Recon Date)</label>
+                <input type="date" id="recon-date-from" class="form-control form-control-sm">
+            </div>
+            <div class="col-md-3 col-lg-2">
+                <label class="form-label font-size-13 mb-1">To (Recon Date)</label>
+                <input type="date" id="recon-date-to" class="form-control form-control-sm">
+            </div>
+            <div class="col-md-2 col-lg-3">
+                <button type="button" id="recon-apply" class="btn btn-sm btn-primary">Apply</button>
+                <button type="button" id="recon-reset" class="btn btn-sm btn-light">Reset</button>
             </div>
         </div>
     </div>

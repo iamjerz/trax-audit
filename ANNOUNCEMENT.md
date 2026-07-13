@@ -4,7 +4,7 @@ Hi everyone,
 
 This release brings a big round of improvements: a self-service experience for analysts, a fair dispute-and-appeal process with admin-approved corrections, a full set of management reports, and simpler role-based access. Here's everything that's new.
 
-> 🚀 **Heads up:** these updates will be deployed to Production **this weekend or early next week**.
+> 🚀 **Heads up:** these updates will be deployed to Production **this weekend or next week**.
 
 ## 👤 For Everyone (Analysts)
 - **My Evaluations** — a new menu item where you can see every evaluation recorded for you and open the full details (the same view your supervisor sees).

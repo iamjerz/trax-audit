@@ -15,7 +15,10 @@ class DashboardReconController extends Controller
 
     public function CardCount(Request $request)
     {
-        $result = DB::table('recon_action_items')
+        $query = DB::table('recon_action_items as rai');
+        $this->applyReconFilters($query, $request);
+
+        $result = $query
             ->selectRaw("
                 COUNT(*) as total,
                 COUNT(CASE WHEN status = 'To Do' THEN 1 END) as todo,
@@ -42,6 +45,8 @@ class DashboardReconController extends Controller
         if ($scope === 'team') {
             $query->where('u.supervisor_id', $user->employeeid);
         }
+
+        $this->applyReconFilters($query, $request);
 
         $data = $query
             ->selectRaw("
@@ -78,6 +83,8 @@ class DashboardReconController extends Controller
             $query->where('u.supervisor_id', $user->employeeid);
         }
 
+        $this->applyReconFilters($query, $request);
+
         $data = $query
             ->selectRaw("rai.client_code, COUNT(*) as total")
             ->groupBy('rai.client_code')
@@ -93,18 +100,22 @@ class DashboardReconController extends Controller
         $scope = $request->input('scope', 'all');
         $user = auth()->user();
 
+        $today = \Carbon\Carbon::today();
+
         $query = DB::table('recon_action_items as rai')
             ->whereRaw("LOWER(COALESCE(rai.status, '')) != 'closed'")
-            ->whereNotNull('rai.recon_call_date');
+            ->whereNotNull('rai.recon_call_date')
+            // Exclude items dated today — count as of yesterday, not the current day.
+            ->whereDate('rai.recon_call_date', '!=', $today->toDateString());
 
         if ($scope === 'team') {
             $query->join('users as u', 'rai.lda_email', '=', 'u.email')
                   ->where('u.supervisor_id', $user->employeeid);
         }
 
-        $rows = $query->select('rai.recon_call_date')->get();
+        $this->applyReconFilters($query, $request);
 
-        $today = \Carbon\Carbon::today();
+        $rows = $query->select('rai.recon_call_date')->get();
         $buckets = ['0-3' => 0, '4-7' => 0, '8-14' => 0, '15+' => 0];
         $overdue = 0;
 
@@ -140,6 +151,8 @@ class DashboardReconController extends Controller
             $query->where('u.supervisor_id', $user->employeeid);
         }
 
+        $this->applyReconFilters($query, $request);
+
         $data = $query
             ->selectRaw("rai.carrier_code, COUNT(*) as total")
             ->groupBy('rai.carrier_code')
@@ -148,5 +161,18 @@ class DashboardReconController extends Controller
             ->get();
 
         return response()->json($data);
+    }
+
+    /**
+     * Apply the whole-dashboard Date Range filter (on recon_call_date).
+     * $alias is the alias of the recon_action_items table in the query.
+     */
+    private function applyReconFilters($query, Request $request, string $alias = 'rai'): void
+    {
+        $from = $request->input('date_from');
+        $to   = $request->input('date_to');
+
+        if ($from) $query->whereDate("$alias.recon_call_date", '>=', $from);
+        if ($to)   $query->whereDate("$alias.recon_call_date", '<=', $to);
     }
 }

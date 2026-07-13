@@ -53,4 +53,42 @@ class DataSourceController extends Controller
         return response()->json($data);
         
     }
+
+
+    public function qa_monitoring(){
+        
+
+        $data = UserInputAudit::with([
+                    'verification',
+                    'processCompliance',
+                    'engagement',
+                    'businessAnalytic',
+                    'ldaUser:employeeid,first_name,last_name,email',
+                    'auditSupervisor:employeeid,first_name,last_name,email'
+                ])->get();
+
+        return response()->json($data);
+        
+    }
+
+    public function action_register(){
+        $data = DB::table('recon_action_items')->get();
+        return response()->json($data);
+    }
+
+    public function triad(){
+        $data = TriadItems::with([
+                    'user_info:employeeid,first_name,last_name,email'
+                ])->get();
+        return response()->json($data);
+    }
+
+    public function coaching(){
+        $data = Coaching::with([
+                    'user_info:employeeid,first_name,last_name,email'
+                ])->get();
+        return response()->json($data);
+    }
+
+    
 }

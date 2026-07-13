@@ -16,7 +16,7 @@
                     
                     <div class="card">
                         <div class="card-header bg-primary border-primary">
-                            <h4 class="card-title text-white">Trax LDA Quality Audit Form</h4>
+                            <h4 class="card-title text-white">Audit Information</h4>
 
                         </div>
                         <div class="card-body">

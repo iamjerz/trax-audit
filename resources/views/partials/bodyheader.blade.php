@@ -112,21 +112,36 @@
                         <span class="menu-item" data-key="t-my-evaluations">My Evaluations</span>
                     </a>
                 </li>
-                @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_dashboard'))
                 <li class="menu-title" data-key="t-menu">Dashboard</li>
 
-                <li>
-                    <a href="javascript: void(0);" class="has-arrow">
-                        <i class="bx bxs-dashboard icon nav-icon"></i>
-                        <span class="menu-item" data-key="t-dashboard">Dashboard</span>
-                    </a>
-                    <ul class="sub-menu" aria-expanded="false">
-                        <li><a href="/dashboard-qa" data-key="t-ecommerce">QA Monitoring</a></li>
-                        <li><a href="/dashboard-recon" data-key="t-sales">Action Register</a></li>
-                        <li><a href="/dashboard-triad" data-key="t-sales">Triad</a></li>
-                    </ul>
-                </li>
+                @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_dashboard'))
+                    <li>
+                        <a href="/dashboard-qa">
+                            <i class="bx bx-receipt icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-calendar">QA Monitoring</span>
+                        </a>
+                        
+                    </li>
                 @endif
+                @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_dashboard'))
+                    <li>
+                        <a href="/dashboard-recon">
+                            <i class="bx bx-receipt icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-calendar">Action Register</span>
+                        </a>
+                        
+                    </li>
+                @endif
+                @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_dashboard'))
+                    <li>
+                        <a href="/dashboard-triad">
+                            <i class="bx bx-receipt icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-calendar">Triad</span>
+                        </a>
+                        
+                    </li>
+                @endif
+                <!-- Dashboard End -->
                 @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_forms'))
                 <li class="menu-title" data-key="t-menu">Forms</li>
                 <li>
@@ -172,7 +187,7 @@
                     || $access->contains('access_type', 'web_report_triad'))
                 <li class="menu-title" data-key="t-applications">Reports </li>
                     @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_report_monitoring'))
-                    <li>
+                    <!-- <li>
                         <a href="javascript: void(0);" class="has-arrow">
                             <i class="bx bxs-report icon nav-icon"></i>
                             <span class="menu-item" data-key="t-ecommerce">Evaluations</span>
@@ -181,6 +196,37 @@
                             <li><a href="ecommerce-products.html" data-key="t-products">Team(In Progress)</a></li>
                             <li><a href="/eval-individual" data-key="t-product-detail">Individual</a></li>
                         </ul>
+                    </li> -->
+
+                    <li>
+                        <a href="/eval-individual">
+                            <i class="bx bxs-report icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-recon-overdue">Evaluations</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/monitoring-ticket">
+                            <i class="bx bx-receipt icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-calendar">QA Monitoring List</span>
+                        </a>
+                    </li>
+                    @endif
+                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_report_coaching'))
+                    <li>
+                        <a href="/coaching-ticket">
+                            <i class="bx bx-receipt icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-calendar">Coaching Ticket</span>
+                        </a>
+                        
+                    </li>
+                    @endif
+                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_report_triad'))
+                    <li>
+                        <a href="/triad-ticket">
+                            <i class="bx bx-receipt icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-calendar">Triad Ticket</span>
+                        </a>
+                        
                     </li>
                     @endif
                     @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_report_action_register'))
@@ -204,24 +250,7 @@
                         </a>
                     </li>
                     @endif
-                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_report_coaching'))
-                    <li>
-                        <a href="/coaching-ticket">
-                            <i class="bx bx-receipt icon nav-icon"></i>
-                            <span class="menu-item" data-key="t-calendar">Coaching Ticket</span>
-                        </a>
-                        
-                    </li>
-                    @endif
-                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_report_triad'))
-                    <li>
-                        <a href="/triad-ticket">
-                            <i class="bx bx-receipt icon nav-icon"></i>
-                            <span class="menu-item" data-key="t-calendar">Triad Ticket</span>
-                        </a>
-                        
-                    </li>
-                    @endif
+                    
                     
                 
                 @endif

@@ -20,9 +20,10 @@ class ExportController extends Controller
         );
     }
 
-    public function recon()
+    public function recon(Request $request)
     {
-        return Excel::download(new ReconExport(), 'action_register_' . now()->format('Ymd_His') . '.xlsx');
+        $filters = $request->only(['name', 'client_code', 'carrier_code', 'status', 'date_from', 'date_to', 'search']);
+        return Excel::download(new ReconExport($filters), 'action_register_' . now()->format('Ymd_His') . '.xlsx');
     }
 
     public function triad()

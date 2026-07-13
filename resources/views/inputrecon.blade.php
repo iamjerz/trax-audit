@@ -22,7 +22,7 @@
                         </div>
                     </div>
                     <div class="col-md-6 text-md-end">
-                        <a href="{{ route('export.recon') }}" class="btn btn-sm btn-success mb-3">
+                        <a href="{{ route('export.recon') }}" id="btn-export" class="btn btn-sm btn-success mb-3">
                             <i class="bx bx-download"></i> Export to Excel
                         </a>
                     </div>
@@ -178,6 +178,23 @@
                 'Carrier Code',
                 'Region',
                 {
+                    name: 'Action Item Summary',
+                    formatter: (cell) => {
+                        const t = cell ? String(cell) : '';
+                        if (t.length <= 60) return t;
+                        return gridjs.html(`<span title="${t.replace(/"/g,'&quot;')}">${t.slice(0,60)}…</span>`);
+                    }
+                },
+                {
+                    name: 'Action Item Details',
+                    formatter: (cell) => {
+                        const t = cell ? String(cell) : '';
+                        if (t.length <= 60) return t;
+                        return gridjs.html(`<span title="${t.replace(/"/g,'&quot;')}">${t.slice(0,60)}…</span>`);
+                    }
+                },
+                'Jira Ticket',
+                {
                     name: 'Status',
                     formatter: (cell) => {
                         let color = 'secondary';
@@ -220,6 +237,9 @@
                     item.client_code,
                     item.carrier_code,
                     item.region,
+                    item.action_item_summary || '',
+                    item.action_item_details || '',
+                    item.jira_ticket || '',
                     item.status,
                     item.created_at
                 ]),
@@ -265,7 +285,25 @@
             };
         }
 
+        // Keep the "Export to Excel" link in sync with the active filters so the
+        // download contains exactly what the table is showing.
+        const exportBase = document.getElementById('btn-export').getAttribute('href').split('?')[0];
+        function updateExportLink() {
+            const params = new URLSearchParams();
+            if (filters.name) params.set('name', filters.name);
+            if (filters.client_code) params.set('client_code', filters.client_code);
+            if (filters.carrier_code) params.set('carrier_code', filters.carrier_code);
+            if (filters.status) params.set('status', filters.status);
+            if (filters.date_from) params.set('date_from', filters.date_from);
+            if (filters.date_to) params.set('date_to', filters.date_to);
+
+            const qs = params.toString();
+            document.getElementById('btn-export').setAttribute('href', qs ? `${exportBase}?${qs}` : exportBase);
+        }
+        updateExportLink();
+
         function reloadGrid() {
+            updateExportLink();
             grid.updateConfig({
                 server: {
                     url: buildQuery(),
@@ -276,6 +314,9 @@
                         item.client_code,
                         item.carrier_code,
                         item.region,
+                        item.action_item_summary || '',
+                        item.action_item_details || '',
+                        item.jira_ticket || '',
                         item.status,
                         item.created_at
                     ]),

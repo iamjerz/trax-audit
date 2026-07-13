@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <link rel="stylesheet" href="assets/libs/gridjs/theme/mermaid.min.css">
+<link rel="stylesheet" href="{{ asset('assets/libs/choices.js/public/assets/styles/choices.min.css') }}">
 @include('partials.header')
 <style>
     .counter {
@@ -29,27 +30,35 @@
                         <div class="row g-2 align-items-end">
                             <div class="col-md-3">
                                 <label class="form-label font-size-13 mb-1">From</label>
-                                <input type="date" id="dash-date-from" class="form-control form-control-sm">
+                                <input type="date" id="dash-date-from" class="form-control form-control">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label font-size-13 mb-1">To</label>
-                                <input type="date" id="dash-date-to" class="form-control form-control-sm">
+                                <input type="date" id="dash-date-to" class="form-control form-control">
                             </div>
                             <div class="col-md-3">
+                                <label class="form-label font-size-13 mb-1">Carrier Name</label>
+                                <select id="dash-carrier" class="form-select form-select-sm">
+                                    <option value="">All Carriers</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label font-size-13 mb-1">Manager / Supervisor</label>
+                                <select id="dash-supervisor" class="form-select form-select">
+                                    <option value="">All</option>
+                                    <option value="my_team">My Team</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
                                 <button type="button" id="dash-apply" class="btn btn-sm btn-primary">Apply</button>
                                 <button type="button" id="dash-reset" class="btn btn-sm btn-light">Reset</button>
-                            </div>
-                            <div class="col-md-3 text-md-end">
-                                <a href="#" id="dash-export" class="btn btn-sm btn-success">
-                                    <i class="bx bx-download"></i> Export Evaluations
-                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6 col-xl-3">
+                    <div class="col-md-6 col-xl">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
@@ -69,7 +78,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6 col-xl-3">
+                    <div class="col-md-6 col-xl">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
@@ -89,7 +98,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6 col-xl-3">
+                    <div class="col-md-6 col-xl">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
@@ -109,7 +118,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6 col-xl-3">
+                    <div class="col-md-6 col-xl">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
@@ -121,6 +130,26 @@
                                         <div class="avatar">
                                             <div class="avatar-title rounded bg-primary-subtle ">
                                                 <i class="bx bx-minus font-size-24 mb-0 text-primary"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-xl">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="font-size-15">Overall Average</h6>
+                                        <h4 class="mt-3 pt-1 mb-0 font-size-22" id="overall-average">0</h4>
+                                    </div>
+                                    <div class="">
+                                        <div class="avatar">
+                                            <div class="avatar-title rounded bg-primary-subtle ">
+                                                <i class="bx bx-line-chart font-size-24 mb-0 text-primary"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -221,15 +250,23 @@
         }
 
 
-        function loadDashboardCards() {
-            const from = document.getElementById("dash-date-from").value;
-            const to = document.getElementById("dash-date-to").value;
+        // Build the shared query string from every dashboard filter.
+        function dashFilterParams() {
+            const from       = document.getElementById("dash-date-from").value;
+            const to         = document.getElementById("dash-date-to").value;
+            const carrier    = document.getElementById("dash-carrier").value;
+            const scope      = document.getElementById("dash-supervisor").value;
 
             const params = new URLSearchParams();
             if (from) params.append("date_from", from);
             if (to) params.append("date_to", to);
+            if (carrier) params.append("carrier_name", carrier);
+            if (scope) params.append("scope", scope);
+            return params;
+        }
 
-            fetch("/dashboard/cards?" + params.toString(), {
+        function loadDashboardCards() {
+            fetch("/dashboard/cards?" + dashFilterParams().toString(), {
                 headers: { "Accept": "application/json" }
             })
             .then(res => res.json())
@@ -238,90 +275,137 @@
                 animateCount(document.getElementById("total-lda"), 0, data.total_lda || 0);
                 animateCount(document.getElementById("above-average"), 0, data.above_average || 0);
                 animateCount(document.getElementById("below-average"), 0, data.below_average || 0);
+                document.getElementById("overall-average").textContent =
+                    (data.overall_average ?? 0) + "%";
             })
             .catch(err => console.error(err));
         }
 
-        loadDashboardCards();
-
-        document.getElementById("dash-apply").addEventListener("click", loadDashboardCards);
-        document.getElementById("dash-reset").addEventListener("click", function () {
-            document.getElementById("dash-date-from").value = "";
-            document.getElementById("dash-date-to").value = "";
-            loadDashboardCards();
-        });
-
-        // Export evaluations honoring the current date filter
-        document.getElementById("dash-export").addEventListener("click", function (e) {
-            e.preventDefault();
-            const from = document.getElementById("dash-date-from").value;
-            const to = document.getElementById("dash-date-to").value;
-            const params = new URLSearchParams();
-            if (from) params.append("date_from", from);
-            if (to) params.append("date_to", to);
-            window.location.href = "/export/evaluations?" + params.toString();
-        });
-
-        // Evaluations trend (last 12 months)
-        fetch("/dashboard/trend", { headers: { "Accept": "application/json" } })
+        // Evaluations trend (last 12 months) — re-rendered when filters change.
+        let trendChart = null;
+        function loadTrend() {
+            fetch("/dashboard/trend?" + dashFilterParams().toString(), {
+                headers: { "Accept": "application/json" }
+            })
             .then(res => res.json())
             .then(data => {
-                new ApexCharts(document.querySelector("#evalTrendChart"), {
-                    chart: { type: "line", height: 320, toolbar: { show: false } },
-                    series: [{ name: "Evaluations", data: data.counts || [] }],
-                    xaxis: { categories: data.labels || [] },
-                    stroke: { curve: "smooth", width: 3 },
-                    colors: ["#1f58c7"],
-                    markers: { size: 4 },
-                    dataLabels: { enabled: true }
-                }).render();
+                if (trendChart) {
+                    trendChart.updateOptions({
+                        series: [{ name: "Evaluations", data: data.counts || [] }],
+                        xaxis: { categories: data.labels || [] }
+                    });
+                } else {
+                    trendChart = new ApexCharts(document.querySelector("#evalTrendChart"), {
+                        chart: { type: "line", height: 320, toolbar: { show: false } },
+                        series: [{ name: "Evaluations", data: data.counts || [] }],
+                        xaxis: { categories: data.labels || [] },
+                        stroke: { curve: "smooth", width: 3 },
+                        colors: ["#1f58c7"],
+                        markers: { size: 4 },
+                        dataLabels: { enabled: true }
+                    });
+                    trendChart.render();
+                }
             })
             .catch(err => console.error("Trend chart error:", err));
+        }
 
+        function reloadDashboard() {
+            loadDashboardCards();
+            loadTrend();
+            loadRecentTicket();
+            loadAccountableFactor();
+            loadCauseIssue();
+            loadRootCause();
+        }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            new gridjs.Grid({
-                columns: [
-                    "Invoice ID",
-                    "Employee Name",
-                    "Audit Date 1",
-                    "Created By"
-                ],
-                pagination: {
-                    limit: 20
-                },
-                search: false,
-                sort: false,
-                server: {
-                    url: '/dashboard/recent-ticket',
-                    headers: {
-                        'Accept': 'application/json'
-                    },
-                    then: data => {
-
-                        return data.recent_ticket.map(row => [
-                        // ✅ Clickable Invoice Number
-                            gridjs.html(`
-                                <a href="/ticket/view/${row.audit_id}" 
-                                target="_blank" 
-                                style="color:#1f58c7; text-decoration: underline;">
-                                    <strong>${row.invoice_id}</strong>
-                                </a>
-                            `),
-                            row.employee_name,
-                            row.audit_date_1,
-                            row.created_by_name ?? '—'
-                        ]);
-                    }
-                }
-            }).render(document.getElementById('table-gridjs'));
+        // Searchable Choices.js on the Carrier dropdown (many options).
+        // Manager/Supervisor stays a plain 2-option select (All / My Team).
+        const dashChoices = {};
+        dashChoices["dash-carrier"] = new Choices(document.getElementById("dash-carrier"), {
+            searchEnabled: true,
+            itemSelectText: '',
+            shouldSort: false,
+            allowHTML: false
         });
+
+        // Populate Carrier Name options.
+        fetch("/dashboard/filter-options", { headers: { "Accept": "application/json" } })
+            .then(res => res.json())
+            .then(opts => {
+                if (dashChoices["dash-carrier"] && Array.isArray(opts.carriers)) {
+                    dashChoices["dash-carrier"].setChoices(
+                        opts.carriers.map(c => ({ value: c, label: c })),
+                        "value", "label", false
+                    );
+                }
+            })
+            .catch(err => console.warn("Could not load dashboard filter options:", err));
+
+
+        // ============================================================
+        // Recent Audit Ticket table (filter-aware)
+        // ============================================================
+        let recentGrid = null;
+        function loadRecentTicket() {
+            const url = '/dashboard/recent-ticket?' + dashFilterParams().toString();
+            const server = {
+                url: url,
+                headers: { 'Accept': 'application/json' },
+                then: data => data.recent_ticket.map(row => [
+                    gridjs.html(`
+                        <a href="/ticket/view/${row.audit_id}"
+                        target="_blank"
+                        style="color:#1f58c7; text-decoration: underline;">
+                            <strong>${row.invoice_id}</strong>
+                        </a>
+                    `),
+                    row.employee_name,
+                    row.audit_date_1,
+                    row.created_by_name ?? '—'
+                ])
+            };
+
+            if (recentGrid) {
+                recentGrid.updateConfig({ server }).forceRender();
+            } else {
+                recentGrid = new gridjs.Grid({
+                    columns: ["Invoice ID", "Employee Name", "Audit Date 1", "Created By"],
+                    pagination: { limit: 20 },
+                    search: false,
+                    sort: false,
+                    server
+                });
+                recentGrid.render(document.getElementById('table-gridjs'));
+            }
+        }
+
+        // ============================================================
+        // ApexCharts helper — (re)render a chart into a selector
+        // ============================================================
+        const dashCharts = {};
+        function renderChart(key, selector, options, hasData) {
+            const el = document.querySelector(selector);
+            if (dashCharts[key]) {
+                dashCharts[key].destroy();
+                dashCharts[key] = null;
+            }
+            if (!hasData) {
+                el.innerHTML = '<div class="text-muted text-center py-5">No data for the selected filters.</div>';
+                return;
+            }
+            el.innerHTML = '';
+            dashCharts[key] = new ApexCharts(el, options);
+            dashCharts[key].render();
+        }
+
         // 🎨 Chart colors
         const chartColors = ["#4CAF50", "#FF9800", "#2196F3", "#E91E63", "#974be0"];
 
-        fetch("/dashboard/accountable-factor", {
-            headers: { 
-                "Accept": "application/json" 
+        function loadAccountableFactor() {
+          fetch("/dashboard/accountable-factor?" + dashFilterParams().toString(), {
+            headers: {
+                "Accept": "application/json"
             }
         })
         .then(res => res.json())
@@ -330,12 +414,6 @@
             // 🧠 Transform API data
             const labels = data.accountable_factor.map(i => i.accountable_factors);
             const series = data.accountable_factor.map(i => Number(i.total_rows));
-
-            // 🛡 Safety check
-            if (!labels.length || !series.length) {
-                console.warn("No data available for pie chart");
-                return;
-            }
 
             // 📊 Chart options
             const options = {
@@ -380,14 +458,11 @@
                 colors: chartColors
             };
 
-            // 🚀 Render chart
-            new ApexCharts(
-                document.querySelector("#simple_pie_chart"),
-                options
-            ).render();
+            renderChart('pie', "#simple_pie_chart", options, labels.length && series.length);
 
         })
         .catch(err => console.error("API Chart Error:", err));
+        }
 
         // Cause Issue Chart
         // 🎨 Colors for distributed bars
@@ -396,23 +471,19 @@
             "#3F51B5", "#009688", "#FFC107", "#795548", "#607D8B"
         ];
 
-        fetch("/dashboard/cause-issue", {
+        function loadCauseIssue() {
+        fetch("/dashboard/cause-issue?" + dashFilterParams().toString(), {
             headers: { "Accept": "application/json" }
         })
         .then(res => res.json())
         .then(data => {
 
             // 🧠 Handle nested array
-            const apiData = data[0];   // <-- important
+            const apiData = data[0] || [];   // <-- important
 
             // 🧠 Transform API data
             const labels = apiData.map(i => i.cause_issue);
             const values = apiData.map(i => Number(i.total_rows));
-
-            if (!labels.length || !values.length) {
-                console.warn("No data for cause issues bar chart");
-                return;
-            }
 
             const options = {
                 series: [{
@@ -499,35 +570,28 @@
                 }
             };
 
-            // 🚀 Render chart
-            new ApexCharts(
-                document.querySelector("#custom_datalabels_bar"),
-                options
-            ).render();
+            renderChart('cause', "#custom_datalabels_bar", options, labels.length && values.length);
 
         })
         .catch(err => console.error("Cause Issues Chart API Error:", err));
+        }
 
         // Root Cause
         // 🎨 Donut colors
         const chartColorsRootCause = ["#E53935", "#43A047"];
 
-        fetch("/dashboard/root-cause", {
+        function loadRootCause() {
+        fetch("/dashboard/root-cause?" + dashFilterParams().toString(), {
             headers: { "Accept": "application/json" }
         })
         .then(res => res.json())
         .then(data => {
 
             // 🧠 handle nested API array
-            const apiData = data[0];   // <-- important
+            const apiData = data[0] || [];   // <-- important
 
             const labels = apiData.map(i => i.root_cause);
             const series = apiData.map(i => Number(i.total_rows));
-
-            if (!labels.length || !series.length) {
-                console.warn("No data for donut chart");
-                return;
-            }
 
             const options = {
                 series: series,
@@ -598,17 +662,25 @@
                 colors: chartColorsRootCause
             };
 
-            // 🚀 Render donut
-            new ApexCharts(
-                document.querySelector("#simple_dount_chart"),
-                options
-            ).render();
+            renderChart('root', "#simple_dount_chart", options, labels.length && series.length);
 
         })
         .catch(err => console.error("Root Cause Donut API Error:", err));
+        }
 
+        // ============================================================
+        // Initial load + filter wiring (runs after all declarations)
+        // ============================================================
+        reloadDashboard();
 
-        
+        document.getElementById("dash-apply").addEventListener("click", reloadDashboard);
+        document.getElementById("dash-reset").addEventListener("click", function () {
+            document.getElementById("dash-date-from").value = "";
+            document.getElementById("dash-date-to").value = "";
+            document.getElementById("dash-supervisor").value = "";
+            if (dashChoices["dash-carrier"]) dashChoices["dash-carrier"].setChoiceByValue("");
+            reloadDashboard();
+        });
 
     </script>
 </body>
