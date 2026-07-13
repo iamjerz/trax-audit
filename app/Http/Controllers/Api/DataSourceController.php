@@ -19,14 +19,16 @@ class DataSourceController extends Controller
         switch ($user_request) {
 
             case 'qa_monitoring':
-                $data = UserInputAudit::with([
-                    'verification',
-                    'processCompliance',
-                    'engagement',
-                    'businessAnalytic',
-                    'ldaUser:employeeid,first_name,last_name,email',
-                    'auditSupervisor:employeeid,first_name,last_name,email'
-                ])->get();
+                $data = $this->resolveQaPeople(
+                    UserInputAudit::with([
+                        'verification',
+                        'processCompliance',
+                        'engagement',
+                        'businessAnalytic',
+                        'ldaUser:employeeid,first_name,last_name,email',
+                        'auditSupervisor:employeeid,first_name,last_name,email'
+                    ])->get()
+                );
                 break;
 
             case 'action_register':
@@ -61,14 +63,16 @@ class DataSourceController extends Controller
     public function qa_monitoring(){
 
 
-        $data = UserInputAudit::with([
+        $data = $this->resolveQaPeople(
+            UserInputAudit::with([
                     'verification',
                     'processCompliance',
                     'engagement',
                     'businessAnalytic',
                     'ldaUser:employeeid,first_name,last_name,email',
                     'auditSupervisor:employeeid,first_name,last_name,email'
-                ])->get();
+                ])->get()
+        );
 
         $this->logAccess('qa_monitoring', $data->count());
 
@@ -96,6 +100,43 @@ class DataSourceController extends Controller
                 ])->get();
         $this->logAccess('coaching', $data->count());
         return response()->json($data);
+    }
+
+    /**
+     * Replace the audit supervisor / auditor employee IDs (e.g. "EMP-202614")
+     * with their full names, and add their email addresses.
+     */
+    private function resolveQaPeople($rows)
+    {
+        $ids = $rows->pluck('audit_sup_name')
+            ->merge($rows->pluck('auditors_name'))
+            ->filter()
+            ->unique()
+            ->values();
+
+        $users = DB::table('users')
+            ->whereIn('employeeid', $ids)
+            ->get(['employeeid', 'first_name', 'last_name', 'email'])
+            ->keyBy('employeeid');
+
+        return $rows->map(function ($row) use ($users) {
+            $sup = $users->get($row->audit_sup_name);
+            $aud = $users->get($row->auditors_name);
+
+            $data = $row->toArray();
+
+            $data['audit_sup_name']  = $sup
+                ? trim(($sup->first_name ?? '') . ' ' . ($sup->last_name ?? ''))
+                : $row->audit_sup_name;
+            $data['audit_sup_email'] = $sup->email ?? null;
+
+            $data['auditors_name']   = $aud
+                ? trim(($aud->first_name ?? '') . ' ' . ($aud->last_name ?? ''))
+                : $row->auditors_name;
+            $data['auditors_email']  = $aud->email ?? null;
+
+            return $data;
+        });
     }
 
     /**
