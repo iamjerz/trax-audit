@@ -270,12 +270,6 @@
                     </a>
                 </li>
                 <li>
-                    <a href="/reports/disputes">
-                        <i class="bx bx-error-circle icon nav-icon"></i>
-                        <span class="menu-item" data-key="t-disputes">Disputes</span>
-                    </a>
-                </li>
-                <li>
                     <a href="/analytics/auditor-productivity">
                         <i class="bx bx-bar-chart icon nav-icon"></i>
                         <span class="menu-item" data-key="t-auditor-prod">Auditor Productivity</span>
@@ -291,6 +285,18 @@
                     <a href="/analytics/audit-coverage">
                         <i class="bx bx-list-check icon nav-icon"></i>
                         <span class="menu-item" data-key="t-coverage">Audit Coverage</span>
+                    </a>
+                </li>
+                @endif
+                <!-- Disputes — managers, supervisors, and SMEs (not LDAs) -->
+                @if($access->contains('access_type', 'admin')
+                    || $access->contains('access_type', 'web_managers')
+                    || $access->contains('access_type', 'web_user_sup')
+                    || $access->contains('access_type', 'web_user_sme'))
+                <li>
+                    <a href="/reports/disputes">
+                        <i class="bx bx-error-circle icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-disputes">Disputes</span>
                     </a>
                 </li>
                 @endif

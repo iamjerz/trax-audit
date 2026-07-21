@@ -228,10 +228,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/analytics/auditor-productivity', [AnalyticsController::class, 'auditorProductivity'])->name('analytics.auditor-productivity');
         Route::get('/analytics/root-cause', [AnalyticsController::class, 'rootCause'])->name('analytics.root-cause');
         Route::get('/analytics/audit-coverage', [AnalyticsController::class, 'auditCoverage'])->name('analytics.audit-coverage');
-        Route::get('/reports/disputes', [DisputeController::class, 'index'])->name('reports.disputes');
-        Route::post('/reports/disputes/{id}/resolve', [DisputeController::class, 'resolve'])->name('reports.disputes.resolve');
         Route::get('/evaluations/{auditId}/correct', [ScoreCorrectionController::class, 'edit'])->name('evaluations.correct');
         Route::post('/evaluations/{auditId}/correct', [ScoreCorrectionController::class, 'update'])->name('evaluations.correct.save');
+    });
+
+    /* -----------------------------------------------------------------
+     | Disputes review (managers + supervisors + SMEs; not LDAs)
+     | ----------------------------------------------------------------*/
+    Route::middleware('access:web_managers,web_user_sup,web_user_sme')->group(function () {
+        Route::get('/reports/disputes', [DisputeController::class, 'index'])->name('reports.disputes');
+        Route::post('/reports/disputes/{id}/resolve', [DisputeController::class, 'resolve'])->name('reports.disputes.resolve');
     });
 
     /* -----------------------------------------------------------------
