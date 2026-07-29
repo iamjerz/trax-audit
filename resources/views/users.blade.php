@@ -24,6 +24,9 @@
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3  text-end">
+                            <button type="button" class="btn btn-outline-primary waves-effect waves-light me-2" data-bs-toggle="modal" data-bs-target="#bulk-access-modal">
+                                <i class="bx bx-shield-plus font-size-16 align-middle me-2"></i> Bulk Assign Access
+                            </button>
                             <button type="button" class="btn btn-primary waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#add-user">
                                 <i class="bx bx-user-plus font-size-16 align-middle me-2"></i> Add new user
                             </button>
@@ -135,6 +138,52 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" id="update-assigned-to">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Assign Access by Position -->
+    <div class="modal fade" id="bulk-access-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="bulkAccessLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkAccessLabel">Bulk Assign Access by Position</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body row">
+                    <div class="mb-3 col-lg-12">
+                        <label for="bulk-position" class="form-label">Position</label>
+                        <select class="form-control dropdown-choices" data-trigger id="bulk-position" placeholder="This is a search placeholder">
+                            <option value="">Select Position</option>
+                            @foreach ($positions ?? [] as $position)
+                                <option value="{{ $position }}">{{ $position }}</option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted">Access is granted to every user currently assigned this Position.</small>
+                    </div>
+                    <div class="mb-3 col-lg-12">
+                        @php
+                            $bulkAccessOptions = [
+                                'admin', 'web_user_manager', 'web_user_sup', 'web_user_sme', 'web_user_lda',
+                                'web_managers', 'web_score_approval', 'web_reports',
+                                'web_report_monitoring', 'web_report_action_register', 'web_report_triad', 'web_report_coaching',
+                                'web_forms', 'web_dashboard',
+                                'extension_action_register', 'extension_monitoring', 'extension_coaching', 'extension_triad',
+                            ];
+                        @endphp
+                        <label for="bulk-access" class="form-label">Access to grant</label>
+                        <select name="access[]" class="form-control dropdown-choices" id="bulk-access" multiple>
+                            @foreach ($bulkAccessOptions as $opt)
+                                <option value="{{ $opt }}">{{ $opt }}</option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted">Selecting a Position pre-fills a suggested role — adjust freely. This only adds access; nothing already assigned to these users is removed.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="bulk-assign-access-btn">Assign Access</button>
                 </div>
             </div>
         </div>

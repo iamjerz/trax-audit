@@ -6,6 +6,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\AuditTrailController;
 use App\Http\Controllers\ExtensionDetailController;
+use App\Http\Controllers\SignOffController;
 use App\Http\Controllers\AcknowledgementController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\LdaScorecardController;
@@ -127,6 +128,10 @@ Route::middleware('auth')->group(function () {
         Route::put('/extension-details/{id}', [ExtensionDetailController::class, 'update']);
         Route::get('/extension-details/{id}/history', [ExtensionDetailController::class, 'history']);
 
+        Route::get('/sign-off', [SignOffController::class, 'index'])->name('sign-off');
+        Route::get('/sign-off-form', [SignOffController::class, 'signOffForms'])->name('sign-off-form');
+
+
         Route::get('/users', [UserListMonitoringPage::class, 'UserPageList']);
         Route::get('/users/data', [UserController::class, 'usersCallApi'])->name('users.data');
         Route::get('/check-email', [UserPageController::class, 'check']);
@@ -135,6 +140,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/users/edit/{employeeid}', [UserPageController::class, 'updateUser'])->name('users.update');
         Route::put('/users/{employeeid}/access', [UserPageController::class, 'updateAccessOnly']);
         Route::put('/users/{employeeid}/reset-password', [UserPageController::class, 'resetPassword']);
+        Route::post('/users/bulk-access', [UserPageController::class, 'bulkAssignAccessByPosition'])->name('users.bulk-access');
     });
 
     /* -----------------------------------------------------------------
@@ -242,10 +248,12 @@ Route::middleware('auth')->group(function () {
 
     /* -----------------------------------------------------------------
      | Action Register report (web_report_action_register)
+     | LDA gets only the ticket list itself (+ its view/comment/assign/
+     | status/export actions) via web_user_lda. Overdue Items and
+     | Client/Carrier Health stay out of LDA's reach — see group below.
      | ----------------------------------------------------------------*/
-    Route::middleware('access:web_report_action_register,web_managers')->group(function () {
+    Route::middleware('access:web_report_action_register,web_managers,web_user_lda')->group(function () {
         Route::get('/recon-ticket', [ReconTiketController::class, 'index']);
-        Route::get('/recon-overdue', [ReconTiketController::class, 'overdue'])->name('recon-overdue');
         Route::get('/recon-data', [ReconTiketController::class, 'displayTicket']);
         Route::get('/recon-filter-options', [ReconTiketController::class, 'filterOptions']);
         Route::get('/recon-ticket-view/{id}', [ReconTiketController::class, 'fullDetails']);
@@ -254,6 +262,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/recon/assignto/{id}', [ReconTiketController::class, 'insertAssignTo']);
         Route::post('/recon/status-change/{id}', [ReconTiketController::class, 'ChangeStatus']);
         Route::get('/export/recon', [ExportController::class, 'recon'])->name('export.recon');
+    });
+
+    Route::middleware('access:web_report_action_register,web_managers')->group(function () {
+        Route::get('/recon-overdue', [ReconTiketController::class, 'overdue'])->name('recon-overdue');
         Route::get('/analytics/client-carrier-health', [AnalyticsController::class, 'clientCarrierHealth'])->name('analytics.client-carrier-health');
     });
 

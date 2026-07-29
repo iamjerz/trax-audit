@@ -283,3 +283,107 @@ document.getElementById("update-assigned-to").addEventListener("click", function
             btn.innerText = "Update";
         });
 });
+
+// ---- Bulk Assign Access by Position ----
+
+// Same manager > supervisor > sme > lda heuristic used server-side when a
+// single user is created (UserPageController::resolveAccessRole). Only used
+// here to pre-fill a sensible default; the admin can still edit before saving.
+const positionSuggestions = [
+    { match: 'manager', access: ['web_user_manager'] },
+    { match: 'supervisor', access: ['web_user_sup'] },
+    { match: 'sme', access: ['web_user_sme'] },
+    { match: 'lda', access: ['web_user_lda'] },
+];
+
+function suggestedAccessFor(position) {
+    const p = (position || '').toLowerCase();
+    const hit = positionSuggestions.find(s => p.includes(s.match));
+    return hit ? hit.access : [];
+}
+
+const bulkPositionEl = document.getElementById('bulk-position');
+if (bulkPositionEl) {
+    bulkPositionEl.addEventListener('change', function() {
+        const suggested = suggestedAccessFor(this.value);
+        const accessInstance = choicesInstances['bulk-access'];
+        if (accessInstance) {
+            accessInstance.removeActiveItems();
+            if (suggested.length) {
+                accessInstance.setChoiceByValue(suggested);
+            }
+        }
+    });
+}
+
+const bulkAssignBtn = document.getElementById('bulk-assign-access-btn');
+if (bulkAssignBtn) {
+    bulkAssignBtn.addEventListener('click', function() {
+        const btn = this;
+        const position = document.getElementById('bulk-position').value;
+        const accessSelect = document.getElementById('bulk-access');
+        const access = Array.from(accessSelect.selectedOptions).map(o => o.value);
+
+        if (!position) {
+            alert('❌ Please select a Position');
+            return;
+        }
+        if (!access.length) {
+            alert('❌ Please select at least one access type to grant');
+            return;
+        }
+        if (!confirm(`Grant [${access.join(', ')}] to every user with position "${position}"?\n\nExisting access for these users will not be removed.`)) {
+            return;
+        }
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        btn.disabled = true;
+        btn.innerText = 'Assigning...';
+
+        fetch('/users/bulk-access', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ position, access })
+            })
+            .then(async res => {
+                const response = await res.json();
+                if (!res.ok) throw response;
+                return response;
+            })
+            .then(response => {
+                alert('✅ ' + response.message);
+
+                if (choicesInstances['bulk-position']) {
+                    choicesInstances['bulk-position'].removeActiveItems();
+                    choicesInstances['bulk-position'].setChoiceByValue('');
+                }
+                if (choicesInstances['bulk-access']) {
+                    choicesInstances['bulk-access'].removeActiveItems();
+                }
+
+                const modalEl = document.getElementById('bulk-access-modal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                modal.hide();
+            })
+            .catch(err => {
+                console.error(err);
+                if (err.errors) {
+                    let messages = Object.values(err.errors).flat().join("\n");
+                    alert("❌ " + messages);
+                } else if (err.message) {
+                    alert('❌ ' + err.message);
+                } else {
+                    alert("❌ Something went wrong");
+                }
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerText = 'Assign Access';
+            });
+    });
+}

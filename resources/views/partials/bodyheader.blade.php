@@ -112,8 +112,25 @@
                         <span class="menu-item" data-key="t-my-evaluations">My Evaluations</span>
                     </a>
                 </li>
-                <li class="menu-title" data-key="t-menu">Dashboard</li>
 
+                <!-- Hypercare Tool — admin only for now; more roles/access to come -->
+                @if($access->contains('access_type', 'admin'))
+                <li class="menu-title" data-key="t-menu">Hypercare Tool</li>
+                <li>
+                    <a href="/hypercare-dashboard">
+                        <i class="bx bx-user-check icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-my-evaluations">Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/sign-off">
+                        <i class="bx bx-user-check icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-my-evaluations">Sign Off</span>
+                    </a>
+                </li>
+                @endif
+
+                <li class="menu-title" data-key="t-menu">Dashboard</li>
                 @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_dashboard'))
                     <li>
                         <a href="/dashboard-qa">
@@ -184,7 +201,8 @@
                     || $access->contains('access_type', 'web_report_monitoring')
                     || $access->contains('access_type', 'web_report_action_register')
                     || $access->contains('access_type', 'web_report_coaching')
-                    || $access->contains('access_type', 'web_report_triad'))
+                    || $access->contains('access_type', 'web_report_triad')
+                    || $access->contains('access_type', 'web_user_lda'))
                 <li class="menu-title" data-key="t-applications">Reports </li>
                     @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_report_monitoring'))
                     <!-- <li>
@@ -229,7 +247,7 @@
                         
                     </li>
                     @endif
-                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_report_action_register'))
+                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_report_action_register') || $access->contains('access_type', 'web_user_lda'))
                     <li>
                         <a href="/recon-ticket">
                             <i class="bx bx-receipt icon nav-icon"></i>
@@ -237,6 +255,8 @@
                         </a>
 
                     </li>
+                    @endif
+                    @if($access->contains('access_type', 'admin') || $access->contains('access_type', 'web_managers') || $access->contains('access_type', 'web_report_action_register'))
                     <li>
                         <a href="/recon-overdue">
                             <i class="bx bx-time-five icon nav-icon"></i>

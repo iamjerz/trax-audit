@@ -46,8 +46,11 @@ class AccessRoles
             'extension_monitoring',
         ],
 
-        // LDA: Main + My Evaluations are open to all authenticated users already;
-        // this role only adds the Action Register extension capability.
+        // LDA: Main + My Evaluations are open to all authenticated users already.
+        // On top of that, this role grants the Action Register Ticket list page
+        // (web) and the Action Register extension capability (Chrome extension).
+        // Deliberately excludes Overdue Items and Client/Carrier Health — those
+        // stay restricted to web_report_action_register / web_managers / admin.
         'web_user_lda' => [
             'extension_action_register',
         ],

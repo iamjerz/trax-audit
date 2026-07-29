@@ -183,7 +183,7 @@ Permissions are stored per user in the `extension_access` table. The `access` ro
 | `web_user_manager` | Everything except admin (web + all extension capabilities) |
 | `web_user_sup` | Dashboards, Forms, all Reports; extension: action register, monitoring, triad |
 | `web_user_sme` | Dashboards, Forms, Reports **except** Triad Ticket; extension: action register, monitoring |
-| `web_user_lda` | Main + My Evaluations; extension: action register |
+| `web_user_lda` | Main + My Evaluations + Action Register Ticket (list only, not Overdue Items or Client/Carrier Health); extension: action register |
 
 > Main and My Evaluations are open to any authenticated user. Admin-only areas (Users, Audit Trail, Extension Details) are never granted by these roles.
 

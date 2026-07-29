@@ -23,6 +23,12 @@ class UserListMonitoringPage extends Controller
             'allusers' => User::select('employeeid', 'first_name', 'last_name')
                 ->orderBy('first_name')
                 ->get(),
+
+            'positions' => User::whereNotNull('position')
+                ->where('position', '!=', '')
+                ->distinct()
+                ->orderBy('position')
+                ->pluck('position'),
         ];
     }
 

@@ -250,6 +250,89 @@ class UserPageController extends Controller
         ]);
     }
 
+    /**
+     * Bulk-grant one or more access types to every user with a given Position.
+     * Additive only — never removes access a user already has, and skips
+     * anyone who already holds a given access_type to avoid duplicate rows.
+     */
+    public function bulkAssignAccessByPosition(Request $request)
+    {
+        $allowedAccess = [
+            'admin', 'web_user_manager', 'web_user_sup', 'web_user_sme', 'web_user_lda',
+            'web_managers', 'web_score_approval', 'web_reports',
+            'web_report_monitoring', 'web_report_action_register', 'web_report_triad', 'web_report_coaching',
+            'web_forms', 'web_dashboard',
+            'extension_action_register', 'extension_monitoring', 'extension_coaching', 'extension_triad',
+        ];
+
+        $validated = $request->validate([
+            'position' => 'required|string',
+            'access'   => 'required|array|min:1',
+            'access.*' => 'string|in:' . implode(',', $allowedAccess),
+        ]);
+
+        $employeeIds = User::where('position', $validated['position'])->pluck('employeeid');
+
+        if ($employeeIds->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No users found with that position.',
+            ], 404);
+        }
+
+        // Existing access per affected user, so we don't insert duplicate rows.
+        $existingByUser = DB::table('extension_access')
+            ->whereIn('employeeid', $employeeIds)
+            ->get(['employeeid', 'access_type'])
+            ->groupBy('employeeid')
+            ->map(fn ($rows) => $rows->pluck('access_type')->all());
+
+        $now = now();
+        $actor = auth()->user()->employeeid ?? 'system';
+        $rows = [];
+
+        foreach ($employeeIds as $employeeid) {
+            $already = $existingByUser->get($employeeid, []);
+            foreach ($validated['access'] as $accessType) {
+                if (! in_array($accessType, $already, true)) {
+                    $rows[] = [
+                        'employeeid'  => $employeeid,
+                        'access_type' => $accessType,
+                        'created_by'  => $actor,
+                        'created_at'  => $now,
+                        'updated_at'  => $now,
+                    ];
+                }
+            }
+        }
+
+        if (! empty($rows)) {
+            DB::table('extension_access')->insert($rows);
+        }
+
+        AuditTrail::record([
+            'event'          => 'bulk_access_assigned',
+            'description'    => 'Bulk-assigned access [' . implode(', ', $validated['access']) . '] to '
+                . $employeeIds->count() . ' user(s) with position "' . $validated['position']
+                . '" (' . count($rows) . ' new grant(s); duplicates skipped)',
+            'auditable_type' => 'extension_access',
+            'auditable_id'   => $validated['position'],
+            'new_values'     => [
+                'access_type' => $validated['access'],
+                'position'    => $validated['position'],
+                'employeeids' => $employeeIds->values()->all(),
+            ],
+        ]);
+
+        return response()->json([
+            'success'        => true,
+            'message'        => 'Assigned access to ' . $employeeIds->count() . ' user(s) — '
+                . count($rows) . ' new grant(s) added. Existing access was left untouched.',
+            'affected_users' => $employeeIds->count(),
+            'new_grants'     => count($rows),
+        ]);
+    }
+
     public function updateAccessOnly(Request $request, $employeeid)
     {
         try {
