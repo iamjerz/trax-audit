@@ -109,26 +109,7 @@
                                     <div class="p-3 mt-3">
                                         @php
                                                 $selectedAccess = old('access', $access ?? []);
-                                                $options = [
-                                                    'admin',
-                                                    'web_user_manager',
-                                                    'web_user_sup',
-                                                    'web_user_sme',
-                                                    'web_user_lda',
-                                                    'web_managers',
-                                                    'web_score_approval',
-                                                    'web_reports',
-                                                    'web_report_monitoring',
-                                                    'web_report_action_register',
-                                                    'web_report_triad',
-                                                    'web_report_coaching',
-                                                    'web_forms',
-                                                    'web_dashboard',
-                                                    'extension_action_register',
-                                                    'extension_monitoring',
-                                                    'extension_coaching',
-                                                    'extension_triad'
-                                                ];
+                                                $options = \App\Support\AccessRoles::$assignableAccessTypes;
                                         @endphp
                                         <div class="">
                                             <div class="fw-bold mb-2">
@@ -225,30 +206,8 @@
                                     <div class="col-lg-6">
                                         <div class="mb-3">
                                             <label for="formrow-firstname-input" class="form-label">Position</label>
-                                            @php
-                                            $positions = [
-                                                'user',
-                                                'Audit Supervisor',
-                                                'Vendor Manager',
-                                                'Duplicate',
-                                                'LDA',
-                                                'Duplicate Manager',
-                                                'GSS Supervisor',
-                                                'Audit Manager',
-                                                'VP, Audit',
-                                                'Rate Loading Supervisor',
-                                                'Post Audit Supervisor',
-                                                'Audit Sr. Manager',
-                                                'SME',
-                                                'GSS',
-                                                'Post Audit',
-                                                'GSS Manager',
-                                                'AI Prompting Engineer',
-                                                'Rate Loading Analyst',
-                                                'Ops Analytics Manager',
-                                                'Service',
-                                            ];
-                                            @endphp
+                                            {{-- $positions now comes from UserPageController::index() (Position::orderBy('sort_order')->pluck('name')),
+                                                 managed at /positions instead of hardcoded here. --}}
 
                                             <select class="form-control dropdown-choices" data-trigger id="position" name="position">
                                                 <option value="">Select Position</option>
@@ -283,17 +242,12 @@
                         <div class="card">
                             <div class="card-body">
                                 <div class="col-lg-12">
-                                    <div class="mb-3">
-                                        <label for="formrow-firstname-input" class="form-label">Access</label>
-                                        
-
-                                        <select name="access[]" class="form-control dropdown-choices" id="access" multiple>
-                                            @foreach ($options as $opt)
-                                                <option value="{{ $opt }}" {{ in_array($opt, $selectedAccess) ? 'selected' : '' }}>
-                                                    {{ $opt }}
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                    <div class="mb-3 form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="access-admin" value="admin" {{ in_array('admin', $selectedAccess) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="access-admin">Admin</label>
+                                        <div class="text-muted font-size-12">
+                                            Full access to every page and Chrome-extension form, regardless of Position. Kept per-person on purpose — everything else is assigned by Position via Page Access.
+                                        </div>
                                     </div>
                                 </div>
                                 <button type="button" id="update-access-btn" class="btn btn-primary">

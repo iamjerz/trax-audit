@@ -43,51 +43,74 @@
     <script src="assets/libs/gridjs/gridjs.umd.js"></script>
     <script>
         const limit = 10;
+        const canDelete = @json($canDelete ?? false);
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-        new gridjs.Grid({
-            columns: [
-                {
-                    name: 'Triad Reference ID',
-                    formatter: (cell) => {
-                        const safe = String(cell).replace(/"/g, '&quot;');
-                        return gridjs.html(`
+        const columns = [
+            {
+                name: 'Triad Reference ID',
+                formatter: (cell) => {
+                    const safe = String(cell).replace(/"/g, '&quot;');
+                    return gridjs.html(`
                 <a href="/coaching-ticket-view/${safe}" class="text-primary fw-bold">
                     ${safe}
                 </a>
                 `);
-                    }
-                },
-                'Coaching Reference',
-                'Coaching Type',
-                {
-                    name: 'Coaching Date',
-                    formatter: (cell) => {
-                        if (!cell) return '';
+                }
+            },
+            'Coaching Reference',
+            'Coaching Type',
+            {
+                name: 'Coaching Date',
+                formatter: (cell) => {
+                    if (!cell) return '';
 
-                        const date = new Date(cell);
-                        if (isNaN(date)) return cell;
+                    const date = new Date(cell);
+                    if (isNaN(date)) return cell;
 
-                        return date.toLocaleDateString('en-PH', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                        });
-                    }
-                },
-                'Created By',
-            ],
+                    return date.toLocaleDateString('en-PH', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                }
+            },
+            'Created By',
+        ];
+
+        if (canDelete) {
+            columns.push({
+                name: 'Actions',
+                sort: false,
+                formatter: (cell) => {
+                    const safe = String(cell).replace(/"/g, '&quot;');
+                    return gridjs.html(`
+                        <button type="button" class="btn btn-sm btn-danger"
+                            onclick="deleteAudit('${safe}')">
+                            <i class="bx bx-trash"></i> Delete
+                        </button>
+                    `);
+                }
+            });
+        }
+
+        const grid = new gridjs.Grid({
+            columns: columns,
 
             server: {
                 url: '/coaching-data',
 
-                then: data => data.data.map(item => [
-                    item.reference_id,
-                    item.reference,
-                    item.reference_type,
-                    item.created_at,
-                    item.full_name || ''
-                    
-                ]),
+                then: data => data.data.map(item => {
+                    const row = [
+                        item.reference_id,
+                        item.reference,
+                        item.reference_type,
+                        item.created_at,
+                        item.full_name || ''
+                    ];
+                    if (canDelete) row.push(item.reference_id);
+                    return row;
+                }),
 
                 total: data => data.total
             },
@@ -118,7 +141,33 @@
             },
 
             sort: false
-        }).render(document.getElementById('table-recon'));
+        });
+
+        grid.render(document.getElementById('table-recon'));
+
+        function deleteAudit(id) {
+            if (!confirm('Delete coaching ticket ' + id + '? This cannot be undone.')) {
+                return;
+            }
+
+            fetch('/coaching-ticket/' + encodeURIComponent(id), {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json().then(body => ({ ok: res.ok, body })))
+            .then(({ ok, body }) => {
+                if (!ok || !body.success) {
+                    notifyError(body.message || 'Failed to delete the record.');
+                    return;
+                }
+                notifySuccess(body.message || 'Deleted successfully.');
+                grid.forceRender();
+            })
+            .catch(() => notifyError('Failed to delete the record.'));
+        }
     </script>
 
 

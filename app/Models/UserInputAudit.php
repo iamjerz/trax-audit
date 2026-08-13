@@ -18,9 +18,15 @@ class UserInputAudit extends Model
         'audit_date_2',
         'invoice_id',
         'carrier_name',
+        'client_code',
         'exception_status',
         'exception_owner',
+        'is_calibration',
         'created_by',
+    ];
+
+    protected $casts = [
+        'is_calibration' => 'boolean',
     ];
 
     public function verification()

@@ -48,6 +48,9 @@ class ReconActionItemController extends Controller
             'jira_ticket' => 'nullable|string',
             'status' => 'nullable|string',
             'raw_data' => 'nullable|array',
+            'completion_date' => 'nullable|string',
+            'action_owner' => 'nullable|string',
+            'invoice_status' => 'nullable|string',
         ]);
 
         // Insert
@@ -63,6 +66,9 @@ class ReconActionItemController extends Controller
             'action_item_details' => $validated['action_item_details'] ?? null,
             'jira_ticket' => $validated['jira_ticket'] ?? null,
             'status' => $validated['status'] ?? null,
+            'completion_date' => $validated['completion_date'] ?? null,
+            'action_owner' => $validated['action_owner'] ?? null,
+            'invoice_status' => $validated['invoice_status'] ?? null,
             'raw_data' => isset($validated['raw_data']) ? json_encode($validated['raw_data']) : null,
             'created_at' => now(),
         ]);

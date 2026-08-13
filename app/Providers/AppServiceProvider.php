@@ -30,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
             $user = auth()->user();
 
             $access = collect();
+            $pageAccess = collect();
 
             if ($user) {
                 $types = \App\Support\AccessRoles::expand(
@@ -41,9 +42,21 @@ class AppServiceProvider extends ServiceProvider
 
                 // Keep the ->contains('access_type', X) shape the views use
                 $access = collect($types)->map(fn ($t) => (object) ['access_type' => $t]);
+
+                // Web-page access is granted per Position, not per user (see
+                // page_access + the `page:` middleware). Admins see every
+                // page regardless of Position, same bypass as CheckAccess.
+                if (in_array('admin', $types, true)) {
+                    $pageAccess = collect(array_keys(\App\Support\PageRegistry::$pages));
+                } elseif (! empty($user->position)) {
+                    $pageAccess = DB::table('page_access')
+                        ->where('position', $user->position)
+                        ->pluck('page_key');
+                }
             }
 
             $view->with('access', $access);
+            $view->with('pageAccess', $pageAccess);
         });
     }
 }

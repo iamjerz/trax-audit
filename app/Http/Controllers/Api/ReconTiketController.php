@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use App\Models\User;
 use App\Models\AuditTrail;
+use App\Support\AccessRoles;
+use App\Support\PositionScope;
 
 class ReconTiketController extends Controller
 {
@@ -15,12 +18,12 @@ class ReconTiketController extends Controller
     {
         return [
             'logisticsUsers' => User::select('employeeid', 'first_name', 'last_name')
-                ->where('position', 'Logistics Data Analyst')
+                ->where('position', 'LDA')
                 ->orderBy('first_name')
                 ->get(),
 
             'supervisors' => User::select('employeeid', 'first_name', 'last_name')
-                ->where('position', '!=', 'Logistics Data Analyst')
+                ->where('position', '!=', 'LDA')
                 ->orderBy('first_name')
                 ->get(),
 
@@ -32,7 +35,49 @@ class ReconTiketController extends Controller
 
     public function index(){
 
-        return view("inputrecon");
+        $access = AccessRoles::expand(
+            DB::table('extension_access')
+                ->where('employeeid', auth()->user()->employeeid)
+                ->pluck('access_type')
+                ->all()
+        );
+
+        $canDelete = in_array('admin', $access, true);
+
+        return view("inputrecon", compact('canDelete'));
+    }
+
+    public function destroy($id)
+    {
+        $record = DB::table('recon_action_items')->where('submission_id', $id)->first();
+
+        if (! $record) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Record not found.',
+            ], 404);
+        }
+
+        DB::transaction(function () use ($id) {
+            if (Schema::hasTable('recon_item_comments') && Schema::hasColumn('recon_item_comments', 'submission_id')) {
+                DB::table('recon_item_comments')->where('submission_id', $id)->delete();
+            }
+
+            DB::table('recon_action_items')->where('submission_id', $id)->delete();
+        });
+
+        AuditTrail::record([
+            'event'          => 'deleted',
+            'description'    => 'Deleted recon ticket ' . $id,
+            'auditable_type' => 'recon_action_items',
+            'auditable_id'   => $id,
+            'old_values'     => (array) $record,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Recon ticket deleted successfully.',
+        ]);
     }
 
     /**
@@ -102,16 +147,44 @@ class ReconTiketController extends Controller
 
         $usersData = $this->getUsersData();
 
+        $userEmail = auth()->user()->email;
+        $userEmployeeid = auth()->user()->employeeid;
+        $scope = PositionScope::forPosition(auth()->user()->position);
 
-        $data = DB::table('recon_action_items')
-            ->where('submission_id', $id)
-            ->first();
+        // Same LEVEL FILTER as displayTicket(), applied to this one ticket —
+        // so a ticket only opens directly if it would also show up in this
+        // user's own list. "Secondary Owner" on the individualrecon view is
+        // assigned_to, which is exactly what the 'own' branch already checks
+        // (an LDA can see a ticket either as the primary LDA on it, via
+        // lda_email, or as the assigned/secondary owner, via assigned_to).
+        $query = DB::table('recon_action_items')->where('submission_id', $id);
+
+        if ($scope === 'own') {
+            $query->where(function ($q) use ($userEmail, $userEmployeeid) {
+                $q->where('lda_email', $userEmail)
+                  ->orWhere('assigned_to', $userEmployeeid);
+            });
+        } elseif ($scope === 'team') {
+            $query->where(function ($q) use ($userEmployeeid) {
+                $q->whereIn('lda_email', function ($sub) use ($userEmployeeid) {
+                    $sub->select('email')->from('users')->where('supervisor_id', $userEmployeeid);
+                })->orWhereIn('assigned_to', function ($sub) use ($userEmployeeid) {
+                    $sub->select('employeeid')->from('users')->where('supervisor_id', $userEmployeeid);
+                });
+            });
+        }
+
+        $data = $query->first();
+
+        if (! $data) {
+            abort(403, 'You do not have access to this ticket.');
+        }
 
         $assignTo = DB::table('users as u')
         ->join('recon_action_items as r', 'r.assigned_to', '=', 'u.employeeid')
         ->select('u.first_name as FirstName', 'u.last_name as LastName')
         ->where('r.submission_id', $id)
-        ->first(); 
+        ->first();
         return view("individualrecon", compact('data', 'usersData', 'assignTo'));
     }
 
@@ -188,11 +261,22 @@ class ReconTiketController extends Controller
             $query->whereDate('recon_action_items.recon_call_date', '<=', $f_date_to);
         }
 
-        // 👤 ROLE FILTER
-        if ($user_position == "LDA") {
+        // 👤 LEVEL FILTER — scope comes from the positions table (see
+        // App\Support\PositionScope), not a hardcoded string match.
+        $scope = PositionScope::forPosition($user_position);
+
+        if ($scope === 'own') {
             $query->where(function ($q) use ($user_email, $user_employeeid) {
                 $q->where('recon_action_items.lda_email', $user_email)
                   ->orWhere('recon_action_items.assigned_to', $user_employeeid);
+            });
+        } elseif ($scope === 'team') {
+            $query->where(function ($q) use ($user_employeeid) {
+                $q->whereIn('recon_action_items.lda_email', function ($sub) use ($user_employeeid) {
+                    $sub->select('email')->from('users')->where('supervisor_id', $user_employeeid);
+                })->orWhereIn('recon_action_items.assigned_to', function ($sub) use ($user_employeeid) {
+                    $sub->select('employeeid')->from('users')->where('supervisor_id', $user_employeeid);
+                });
             });
         }
 
@@ -239,11 +323,21 @@ class ReconTiketController extends Controller
 
             $base = DB::table('recon_action_items');
 
-            // 👤 ROLE FILTER — same logic as displayTicket
-            if ($user_position == "LDA") {
+            // 👤 LEVEL FILTER — same logic as displayTicket
+            $scope = PositionScope::forPosition($user_position);
+
+            if ($scope === 'own') {
                 $base->where(function ($q) use ($user_email, $user_employeeid) {
                     $q->where('lda_email', $user_email)
                     ->orWhere('assigned_to', $user_employeeid);
+                });
+            } elseif ($scope === 'team') {
+                $base->where(function ($q) use ($user_employeeid) {
+                    $q->whereIn('lda_email', function ($sub) use ($user_employeeid) {
+                        $sub->select('email')->from('users')->where('supervisor_id', $user_employeeid);
+                    })->orWhereIn('assigned_to', function ($sub) use ($user_employeeid) {
+                        $sub->select('employeeid')->from('users')->where('supervisor_id', $user_employeeid);
+                    });
                 });
             }
 

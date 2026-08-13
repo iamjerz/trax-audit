@@ -78,7 +78,7 @@
 
                                 <div class="col-lg-4 col-md-6">
                                     <div class="mb-3">
-                                        <label class="form-label">Carrier Name <span class="text-danger">*</span></label>
+                                        <label class="form-label">Carrier Code <span class="text-danger">*</span></label>
                                         <!-- <input type="text" class="form-control" id="" name="carrier-name" placeholder="Enter Carrier Name"> -->
                                         <select class="form-control choices-js" data-trigger name="carrier-name" id="carrier-name" placeholder="This is a search placeholder">
                                             <option value="">Select Carrier Name</option>
@@ -90,6 +90,22 @@
                                         </select>
                                     </div>
                                 </div>
+
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Client Code <span class="text-danger">*</span></label>
+                                        <select class="form-control choices-js" data-trigger name="client-code" id="client-code" placeholder="This is a search placeholder">
+                                            <option value="">Select Client Code</option>
+                                            @foreach($clientCode as $item)
+                                                <option value="{{ $item['client_code'] }}">
+                                                    {{ $item['client_code'] }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+
+
 
                                 <div class="col-lg-4 col-md-6">
                                     <div class="mb-3">
@@ -118,6 +134,14 @@
 
                                             
                                         </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Is this Calibration?</label>
+                                        </br>
+                                        <input type="checkbox" id="calibration" name="is-calibration" switch="primary"/>
+                                        <label for="calibration" data-on-label="Yes" data-off-label="No"></label>
                                     </div>
                                 </div>
                             </div>

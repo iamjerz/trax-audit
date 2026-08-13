@@ -5,7 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\AuditTrail;
+use App\Support\AccessRoles;
+use App\Support\PositionScope;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class TriadTicket extends Controller
 {
@@ -14,12 +18,12 @@ class TriadTicket extends Controller
     {
         return [
             'logisticsUsers' => User::select('employeeid', 'first_name', 'last_name')
-                ->where('position', 'Logistics Data Analyst')
+                ->where('position', 'LDA')
                 ->orderBy('first_name')
                 ->get(),
 
             'supervisors' => User::select('employeeid', 'first_name', 'last_name')
-                ->where('position', '!=', 'Logistics Data Analyst')
+                ->where('position', '!=', 'LDA')
                 ->orderBy('first_name')
                 ->get(),
 
@@ -30,7 +34,52 @@ class TriadTicket extends Controller
     }
 
     public function index(){
-        return view('ticketriad');
+        $access = AccessRoles::expand(
+            DB::table('extension_access')
+                ->where('employeeid', auth()->user()->employeeid)
+                ->pluck('access_type')
+                ->all()
+        );
+
+        $canDelete = in_array('admin', $access, true);
+
+        return view('ticketriad', compact('canDelete'));
+    }
+
+    public function destroy($id)
+    {
+        $record = DB::table('triad_items')->where('reference_id', $id)->first();
+
+        if (! $record) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Record not found.',
+            ], 404);
+        }
+
+        DB::transaction(function () use ($id) {
+            if (Schema::hasTable('acknowledgements') && Schema::hasColumn('acknowledgements', 'reference_id')) {
+                DB::table('acknowledgements')
+                    ->where('reference_type', 'triad')
+                    ->where('reference_id', $id)
+                    ->delete();
+            }
+
+            DB::table('triad_items')->where('reference_id', $id)->delete();
+        });
+
+        AuditTrail::record([
+            'event'          => 'deleted',
+            'description'    => 'Deleted triad ticket ' . $id,
+            'auditable_type' => 'triad_items',
+            'auditable_id'   => $id,
+            'old_values'     => (array) $record,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Triad ticket deleted successfully.',
+        ]);
     }
 
     public function fullDetails($id)
@@ -82,12 +131,17 @@ class TriadTicket extends Controller
                 });
             }
 
-            // 👤 ROLE FILTER
-            if ($user_position == "Logistics Data Analyst") {
+            // 👤 LEVEL FILTER — scope comes from the positions table (see
+            // App\Support\PositionScope), not a hardcoded string match.
+            $scope = PositionScope::forPosition($user_position);
+
+            if ($scope === 'own') {
                 $query->where(function ($q) use ($user_email, $user_employeeid) {
                     $q->where('triad_items.created_by', $user_email)
                     ->orWhere('triad_items.created_by', $user_employeeid);
                 });
+            } elseif ($scope === 'team') {
+                $query->where('users.supervisor_id', $user_employeeid);
             }
 
             // ✅ COUNT

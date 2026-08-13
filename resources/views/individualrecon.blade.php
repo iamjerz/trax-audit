@@ -267,7 +267,7 @@
 
                 error: function(xhr) {
                     console.log(xhr.responseText);
-                    alert('Error saving comment');
+                    notifyError('Error saving comment');
                 },
 
                 // 👉 always runs

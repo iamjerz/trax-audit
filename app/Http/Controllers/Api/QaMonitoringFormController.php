@@ -12,9 +12,10 @@ class QaMonitoringFormController extends Controller
     public function index(DropdownService $service, Request $request)
     {
 
-        $email = $request->email; 
+        $email = $request->email;
         $exceptionStatus = $service->auditCondition();
         $carrierCodeND = $service->carrierCodesND();
+        $clientCode = $service->clientCode();
         $Users = DB::table('users')->select('email','employeeid','first_name','last_name')->get();
         $requestor = DB::table('users')
             ->where('email', $email)
@@ -24,6 +25,7 @@ class QaMonitoringFormController extends Controller
         return view('extension.qa', compact(
             'Users',
             'carrierCodeND',
+            'clientCode',
             'exceptionStatus',
             'requestor'
         ));

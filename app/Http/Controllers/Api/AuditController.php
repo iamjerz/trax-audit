@@ -67,8 +67,10 @@ class AuditController extends Controller
                 'audit_date_2'     => $user['AuditDate2'],
                 'invoice_id'       => $user['InvoiceID'],
                 'carrier_name'     => $user['CarrierName'],
+                'client_code'      => $user['ClientCode'] ?? null,
                 'exception_status' => $user['ExceptionStatus'],
                 'exception_owner'  => $user['ExceptionOwner'],
+                'is_calibration'   => $user['IsCalibration'] ?? false,
                 'created_by'       => $employeeId,
             ]);
 

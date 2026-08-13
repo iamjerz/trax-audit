@@ -49,16 +49,16 @@ document.getElementById("edit-user").addEventListener("click", function() {
                 // ✅ Reload page
                 location.reload();
             } else {
-                alert(res.message || 'Update failed');
+                notifyError(res.message || 'Update failed');
             }
         })
         .catch(err => {
             console.error(err);
 
             if (err.errors) {
-                alert('Validation error');
+                notifyError('Validation error');
             } else {
-                alert('Something went wrong');
+                notifyError('Something went wrong');
             }
         });
 });
@@ -85,14 +85,14 @@ document.getElementById('reset-password-btn').addEventListener('click', function
     })
     .then(res => {
         if (res.success) {
-            alert('✅ ' + (res.message || 'Password reset to default.'));
+            notifySuccess(res.message || 'Password reset to default.');
         } else {
-            alert(res.message || 'Failed to reset password');
+            notifyError(res.message || 'Failed to reset password');
         }
     })
     .catch(err => {
         console.error(err);
-        alert('Error resetting password');
+        notifyError('Error resetting password');
     });
 
 });
@@ -101,8 +101,7 @@ document.getElementById('update-access-btn').addEventListener('click', function 
 
     const employeeid = document.getElementById('employeeid').value;
 
-    const access = Array.from(document.getElementById("access").selectedOptions)
-        .map(opt => opt.value);
+    const access = document.getElementById("access-admin").checked ? ['admin'] : [];
 
     fetch(`/users/${employeeid}/access`, {
         method: 'PUT',
@@ -119,15 +118,14 @@ document.getElementById('update-access-btn').addEventListener('click', function 
     })
     .then(res => {
         if (res.success) {
-            alert('✅ Access updated!');
-            location.reload();
+            notifySuccess('Access updated!', () => location.reload());
         } else {
-            alert(res.message || 'Failed');
+            notifyError(res.message || 'Failed');
         }
     })
     .catch(err => {
         console.error(err);
-        alert('Error updating access');
+        notifyError('Error updating access');
     });
 
 });

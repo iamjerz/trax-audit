@@ -3,57 +3,31 @@
 namespace App\Support;
 
 /**
- * Role bundles → underlying capability access types.
+ * Historically: role bundles → underlying capability access types, so a user
+ * could be assigned one role (e.g. web_user_sup) instead of many individual
+ * capabilities.
  *
- * A user can be assigned a single role (e.g. web_user_sup) instead of many
- * individual capabilities; expand() turns the role into the capabilities the
- * rest of the app already checks for (CheckAccess middleware, sidebar, extension).
+ * Retired. Web-page access moved to page_access (Position-based, see
+ * PageRegistry + the `page:` middleware); the 4 Chrome extension
+ * capabilities followed the same move (Position-based, checked directly by
+ * menu.blade.php against page_access). With both now assigned directly per
+ * Position, the bundle shorthand had nothing left to add, so $roles is empty
+ * — kept only so expand() and its existing call sites (CheckAccess,
+ * CheckPageAccess, the sidebar/menu composers) don't need to change. The
+ * only thing still genuinely per-user is 'admin' (see $assignableAccessTypes).
  */
 class AccessRoles
 {
-    public static array $roles = [
-        // Everything except admin (web + all extension capabilities)
-        'web_user_manager' => [
-            'web_managers',        // grants dashboards, forms, all reports, management reports, evaluation viewing
-            'web_score_approval',  // Manager Tools → Score Approvals
-            'extension_action_register',
-            'extension_monitoring',
-            'extension_coaching',
-            'extension_triad',
-        ],
+    public static array $roles = [];
 
-        // Supervisor: Dashboards, Forms, all Reports, + 3 extension capabilities
-        'web_user_sup' => [
-            'web_dashboard',
-            'web_forms',
-            'web_report_monitoring',
-            'web_report_action_register',
-            'web_report_coaching',
-            'web_report_triad',
-            'extension_action_register',
-            'extension_monitoring',
-            'extension_triad',
-        ],
-
-        // SME: Dashboard, Forms, Reports (except Triad Ticket), + 2 extension capabilities
-        'web_user_sme' => [
-            'web_dashboard',
-            'web_forms',
-            'web_report_monitoring',
-            'web_report_action_register',
-            'web_report_coaching',
-            'extension_action_register',
-            'extension_monitoring',
-        ],
-
-        // LDA: Main + My Evaluations are open to all authenticated users already.
-        // On top of that, this role grants the Action Register Ticket list page
-        // (web) and the Action Register extension capability (Chrome extension).
-        // Deliberately excludes Overdue Items and Client/Carrier Health — those
-        // stay restricted to web_report_action_register / web_managers / admin.
-        'web_user_lda' => [
-            'extension_action_register',
-        ],
+    /**
+     * Every access_type value that can be assigned to a user via the Edit
+     * User picker. Just 'admin' — the one flag that's deliberately kept
+     * per-person rather than Position-based, so a single individual can be
+     * made an admin without their whole Position becoming one.
+     */
+    public static array $assignableAccessTypes = [
+        'admin',
     ];
 
     /**

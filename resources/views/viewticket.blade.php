@@ -90,6 +90,17 @@
                                                     <th class="fw-bold">Email :</th>
                                                     <td class="text-muted">{{ $data->email }}</td>
                                                 </tr>
+                                                <tr>
+                                                    <th class="fw-bold">Is Callibration? :</th>
+                                                    <td class="">
+                                                        @if($data->is_calibration)
+                                                            <button type="button" class="btn btn-subtle-success waves-effect waves-light"><i class="bx bx-check-double font-size-16 align-middle"></i></button>
+                                                        @else
+                                                        <button type="button" class="btn btn-subtle-danger  waves-effect waves-light"><i class="bx bx-block font-size-16 align-middle"></i></button>
+                                                        @endif
+
+                                                    </td>
+                                                </tr>
                                                 
                                                 <!-- end tr -->
                                             </tbody><!-- end tbody -->
@@ -106,8 +117,13 @@
                                                 
                                                 <!-- end tr -->
                                                 <tr>
-                                                    <th class="fw-bold">Carrier Name :</th>
+                                                    <th class="fw-bold">Carrier Code :</th>
                                                     <td class="text-muted">{{ $data->carrier_name }}</td>
+                                                </tr>
+                                                <!-- end tr -->
+                                                 <tr>
+                                                    <th class="fw-bold">Client Code :</th>
+                                                    <td class="text-muted">{{ $data->client_code }}</td>
                                                 </tr>
                                                 <!-- end tr -->
                                                 <tr>

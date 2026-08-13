@@ -117,6 +117,8 @@
         });
 
         const limit = 10;
+        const canDelete = @json($canDelete ?? false);
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         // Holds current filter values
         const filters = {
@@ -145,104 +147,126 @@
             return `/recon-data?${params.toString()}`;
         }
 
+        const columns = [{
+                name: 'Submission ID',
+                formatter: (cell) => {
+                    const safe = String(cell).replace(/"/g, '&quot;');
+                    return gridjs.html(`
+                        <a href="/recon-ticket-view/${safe}" class="text-primary fw-bold">
+                            ${safe}
+                        </a>
+                    `);
+                }
+            },
+            'Name',
+            {
+                name: 'Recon Date',
+                formatter: (cell) => {
+                    if (!cell) return '';
+                    const date = new Date(cell);
+                    if (isNaN(date)) return cell;
+                    return date.toLocaleDateString('en-PH', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                }
+            },
+            'Client Code',
+            'Carrier Code',
+            'Region',
+            {
+                name: 'Action Item Summary',
+                formatter: (cell) => {
+                    const t = cell ? String(cell) : '';
+                    if (t.length <= 60) return t;
+                    return gridjs.html(`<span title="${t.replace(/"/g,'&quot;')}">${t.slice(0,60)}…</span>`);
+                }
+            },
+            {
+                name: 'Action Item Details',
+                formatter: (cell) => {
+                    const t = cell ? String(cell) : '';
+                    if (t.length <= 60) return t;
+                    return gridjs.html(`<span title="${t.replace(/"/g,'&quot;')}">${t.slice(0,60)}…</span>`);
+                }
+            },
+            'Jira Ticket',
+            {
+                name: 'Status',
+                formatter: (cell) => {
+                    let color = 'secondary';
+                    if (cell === 'Pending') color = 'warning';
+                    if (cell === 'To Do') color = 'secondary';
+                    if (cell === 'Closed') color = 'success';
+                    if (cell === 'In Progress') color = 'primary';
+
+                    return gridjs.html(`
+                        <span class="badge bg-${color}">
+                            ${cell}
+                        </span>
+                    `);
+                }
+            },
+            {
+                name: "Created At",
+                formatter: (cell) => {
+                    if (!cell) return '';
+                    const iso = cell.replace(' ', 'T').replace('+08', '+08:00');
+                    const date = new Date(iso);
+                    if (isNaN(date)) return cell;
+                    return date.toLocaleString('en-PH', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                    });
+                }
+            }
+        ];
+
+        if (canDelete) {
+            columns.push({
+                name: 'Actions',
+                sort: false,
+                formatter: (cell) => {
+                    const safe = String(cell).replace(/"/g, '&quot;');
+                    return gridjs.html(`
+                        <button type="button" class="btn btn-sm btn-danger"
+                            onclick="deleteAudit('${safe}')">
+                            <i class="bx bx-trash"></i> Delete
+                        </button>
+                    `);
+                }
+            });
+        }
+
         // ============================================================
         // Grid.js Setup
         // ============================================================
         const grid = new gridjs.Grid({
-            columns: [{
-                    name: 'Submission ID',
-                    formatter: (cell) => {
-                        const safe = String(cell).replace(/"/g, '&quot;');
-                        return gridjs.html(`
-                            <a href="/recon-ticket-view/${safe}" class="text-primary fw-bold">
-                                ${safe}
-                            </a>
-                        `);
-                    }
-                },
-                'Name',
-                {
-                    name: 'Recon Date',
-                    formatter: (cell) => {
-                        if (!cell) return '';
-                        const date = new Date(cell);
-                        if (isNaN(date)) return cell;
-                        return date.toLocaleDateString('en-PH', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                        });
-                    }
-                },
-                'Client Code',
-                'Carrier Code',
-                'Region',
-                {
-                    name: 'Action Item Summary',
-                    formatter: (cell) => {
-                        const t = cell ? String(cell) : '';
-                        if (t.length <= 60) return t;
-                        return gridjs.html(`<span title="${t.replace(/"/g,'&quot;')}">${t.slice(0,60)}…</span>`);
-                    }
-                },
-                {
-                    name: 'Action Item Details',
-                    formatter: (cell) => {
-                        const t = cell ? String(cell) : '';
-                        if (t.length <= 60) return t;
-                        return gridjs.html(`<span title="${t.replace(/"/g,'&quot;')}">${t.slice(0,60)}…</span>`);
-                    }
-                },
-                'Jira Ticket',
-                {
-                    name: 'Status',
-                    formatter: (cell) => {
-                        let color = 'secondary';
-                        if (cell === 'Pending') color = 'warning';
-                        if (cell === 'To Do') color = 'secondary';
-                        if (cell === 'Closed') color = 'success';
-                        if (cell === 'In Progress') color = 'primary';
-
-                        return gridjs.html(`
-                            <span class="badge bg-${color}">
-                                ${cell}
-                            </span>
-                        `);
-                    }
-                },
-                {
-                    name: "Created At",
-                    formatter: (cell) => {
-                        if (!cell) return '';
-                        const iso = cell.replace(' ', 'T').replace('+08', '+08:00');
-                        const date = new Date(iso);
-                        if (isNaN(date)) return cell;
-                        return date.toLocaleString('en-PH', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                        });
-                    }
-                }
-            ],
+            columns: columns,
 
             server: {
                 url: buildQuery(),
-                then: data => data.data.map(item => [
-                    item.submission_id,
-                    item.full_name || '',
-                    item.recon_call_date,
-                    item.client_code,
-                    item.carrier_code,
-                    item.region,
-                    item.action_item_summary || '',
-                    item.action_item_details || '',
-                    item.jira_ticket || '',
-                    item.status,
-                    item.created_at
-                ]),
+                then: data => data.data.map(item => {
+                    const row = [
+                        item.submission_id,
+                        item.full_name || '',
+                        item.recon_call_date,
+                        item.client_code,
+                        item.carrier_code,
+                        item.region,
+                        item.action_item_summary || '',
+                        item.action_item_details || '',
+                        item.jira_ticket || '',
+                        item.status,
+                        item.created_at
+                    ];
+                    if (canDelete) row.push(item.submission_id);
+                    return row;
+                }),
                 total: data => data.total
             },
 
@@ -271,7 +295,33 @@
             },
 
             sort: false
-        }).render(document.getElementById('table-recon'));
+        });
+
+        grid.render(document.getElementById('table-recon'));
+
+        function deleteAudit(id) {
+            if (!confirm('Delete recon ticket ' + id + '? This will also remove its comments and cannot be undone.')) {
+                return;
+            }
+
+            fetch('/recon-ticket/' + encodeURIComponent(id), {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json().then(body => ({ ok: res.ok, body })))
+            .then(({ ok, body }) => {
+                if (!ok || !body.success) {
+                    notifyError(body.message || 'Failed to delete the record.');
+                    return;
+                }
+                notifySuccess(body.message || 'Deleted successfully.');
+                grid.forceRender();
+            })
+            .catch(() => notifyError('Failed to delete the record.'));
+        }
 
         // ============================================================
         // Filter wiring
@@ -307,19 +357,23 @@
             grid.updateConfig({
                 server: {
                     url: buildQuery(),
-                    then: data => data.data.map(item => [
-                        item.submission_id,
-                        item.full_name || '',
-                        item.recon_call_date,
-                        item.client_code,
-                        item.carrier_code,
-                        item.region,
-                        item.action_item_summary || '',
-                        item.action_item_details || '',
-                        item.jira_ticket || '',
-                        item.status,
-                        item.created_at
-                    ]),
+                    then: data => data.data.map(item => {
+                        const row = [
+                            item.submission_id,
+                            item.full_name || '',
+                            item.recon_call_date,
+                            item.client_code,
+                            item.carrier_code,
+                            item.region,
+                            item.action_item_summary || '',
+                            item.action_item_details || '',
+                            item.jira_ticket || '',
+                            item.status,
+                            item.created_at
+                        ];
+                        if (canDelete) row.push(item.submission_id);
+                        return row;
+                    }),
                     total: data => data.total
                 }
             }).forceRender();

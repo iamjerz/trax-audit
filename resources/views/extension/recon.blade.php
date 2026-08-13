@@ -79,7 +79,21 @@
                             </select>
                         </div>
                     </div>
-
+                    <div class="mb-3">
+                        <label class="form-label">Target Completion Date</label>
+                        <input type="text" name="completion-date" class="form-control datetime-js" id="completion-date">
+                    </div>
+                    <div class="mb-3">
+                        <div class="mb-3">
+                            <label for="choices-single-default" class="form-label font-size-13">Action Owner</label>
+                            <select class="form-control choices-js" data-trigger name="action-owner" id="action-owner" placeholder="This is a search placeholder" required>
+                                <option value="" disabled selected></option>
+                                <option value="Trax">Trax</option>
+                                <option value="Carrier">Carrier</option>
+                                <option value="Customer">Customer</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label" for="formrow-firstname-input">Action Item Summary</label>
                         <input type="text" class="form-control" name="actionItemSummary" placeholder="Enter Action Item Summary" id="action-item-summary" required>
@@ -91,6 +105,16 @@
                     <div class="mb-3">
                         <label class="form-label" for="formrow-firstname-input">Jira Link</label>
                         <input type="text" class="form-control" name="jiraLink" placeholder="Enter Jira Link" id="jira-link" required>
+                    </div>
+                    <div class="mb-3">
+                        <div class="mb-3">
+                            <label for="choices-single-default" class="form-label font-size-13">Invoice Status</label>
+                            <select class="form-control choices-js" data-trigger name="invoice-status" id="invoice-status" placeholder="This is a search placeholder" required>
+                                <option value="" disabled selected></option>
+                                <option value="Current">Current</option>
+                                <option value="Past Due">Past Due</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <div class="mb-3">

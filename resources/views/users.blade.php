@@ -24,9 +24,6 @@
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3  text-end">
-                            <button type="button" class="btn btn-outline-primary waves-effect waves-light me-2" data-bs-toggle="modal" data-bs-target="#bulk-access-modal">
-                                <i class="bx bx-shield-plus font-size-16 align-middle me-2"></i> Bulk Assign Access
-                            </button>
                             <button type="button" class="btn btn-primary waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#add-user">
                                 <i class="bx bx-user-plus font-size-16 align-middle me-2"></i> Add new user
                             </button>
@@ -90,30 +87,13 @@
                         <label for="position" class="form-label">Position</label>
                         <select class="form-control dropdown-choices" data-trigger id="position" placeholder="This is a search placeholder">
                             <option value="">Select Position</option>
-                            <option value="Audit Supervisor">Audit Supervisor</option>
-                            <option value="Vendor Manager">Vendor Manager</option>
-                            <option value="Duplicate">Duplicate</option>
-                            <option value="LDA">LDA</option>
-                            <option value="Duplicate Manager">Duplicate Manager</option>
-                            <option value="GSS Supervisor">GSS Supervisor</option>
-                            <option value="Audit Manager">Audit Manager</option>
-                            <option value="VP, Audit">VP, Audit</option>
-                            <option value="Rate Loading Supervisor">Rate Loading Supervisor</option>
-                            <option value="Post Audit Supervisor">Post Audit Supervisor</option>
-                            <option value="Audit Sr. Manager">Audit Sr. Manager</option>
-                            <option value="SME">SME</option>
-                            <option value="GSS">GSS</option>
-                            <option value="Post Audit">Post Audit</option>
-                            <option value="GSS Manager">GSS Manager</option>
-                            <option value="AI Prompting Engineer">AI Prompting Engineer</option>
-                            <option value="Rate Loading Analyst">Rate Loading Analyst</option>
-                            <option value="Ops Analytics Manager">Ops Analytics Manager</option>
-                            <option value="Service">Service</option>
-                            <option value="Chief Operating Officer">Chief Operating Officer</option>
-                            <option value="Chief Executive Officer">Chief Executive Officer</option>
-                            <option value="Chief Financial Officer">Chief Financial Officer</option>
-                            <option value="Chief Technology Officer">Chief Technology Officer</option>
-                            <option value="Chief Product Officer">Chief Product Officer</option>
+                            {{-- $positions comes from UserListMonitoringPage::getUsersData() (Position::orderBy('sort_order')->pluck('name')),
+                                 managed at /positions instead of hardcoded here. Previously this list and
+                                 edituser.blade.php's had drifted out of sync (5 Chief * titles existed only here) —
+                                 both now read from the same table. --}}
+                            @foreach ($positions as $position)
+                                <option value="{{ $position }}">{{ $position }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="mb-3 col-lg-6">
@@ -138,52 +118,6 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" id="update-assigned-to">Update</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bulk Assign Access by Position -->
-    <div class="modal fade" id="bulk-access-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="bulkAccessLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="bulkAccessLabel">Bulk Assign Access by Position</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body row">
-                    <div class="mb-3 col-lg-12">
-                        <label for="bulk-position" class="form-label">Position</label>
-                        <select class="form-control dropdown-choices" data-trigger id="bulk-position" placeholder="This is a search placeholder">
-                            <option value="">Select Position</option>
-                            @foreach ($positions ?? [] as $position)
-                                <option value="{{ $position }}">{{ $position }}</option>
-                            @endforeach
-                        </select>
-                        <small class="text-muted">Access is granted to every user currently assigned this Position.</small>
-                    </div>
-                    <div class="mb-3 col-lg-12">
-                        @php
-                            $bulkAccessOptions = [
-                                'admin', 'web_user_manager', 'web_user_sup', 'web_user_sme', 'web_user_lda',
-                                'web_managers', 'web_score_approval', 'web_reports',
-                                'web_report_monitoring', 'web_report_action_register', 'web_report_triad', 'web_report_coaching',
-                                'web_forms', 'web_dashboard',
-                                'extension_action_register', 'extension_monitoring', 'extension_coaching', 'extension_triad',
-                            ];
-                        @endphp
-                        <label for="bulk-access" class="form-label">Access to grant</label>
-                        <select name="access[]" class="form-control dropdown-choices" id="bulk-access" multiple>
-                            @foreach ($bulkAccessOptions as $opt)
-                                <option value="{{ $opt }}">{{ $opt }}</option>
-                            @endforeach
-                        </select>
-                        <small class="text-muted">Selecting a Position pre-fills a suggested role — adjust freely. This only adds access; nothing already assigned to these users is removed.</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="bulk-assign-access-btn">Assign Access</button>
                 </div>
             </div>
         </div>

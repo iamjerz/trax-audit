@@ -45,6 +45,8 @@ use App\Http\Controllers\Api\TriadTicket;
 use App\Http\Controllers\Api\UserPageController;
 use App\Http\Controllers\Api\CoachingTicket;
 use App\Http\Controllers\Api\MonitoringTicket;
+use App\Http\Controllers\Api\PageAccessController;
+use App\Http\Controllers\Api\PositionController;
 /*
 |--------------------------------------------------------------------------
 | 
@@ -140,22 +142,27 @@ Route::middleware('auth')->group(function () {
         Route::put('/users/edit/{employeeid}', [UserPageController::class, 'updateUser'])->name('users.update');
         Route::put('/users/{employeeid}/access', [UserPageController::class, 'updateAccessOnly']);
         Route::put('/users/{employeeid}/reset-password', [UserPageController::class, 'resetPassword']);
-        Route::post('/users/bulk-access', [UserPageController::class, 'bulkAssignAccessByPosition'])->name('users.bulk-access');
+        Route::get('/page-access', [PageAccessController::class, 'index'])->name('page-access');
+        Route::post('/page-access/save', [PageAccessController::class, 'save'])->name('page-access.save');
+
+        Route::get('/positions', [PositionController::class, 'index'])->name('positions');
+        Route::post('/positions', [PositionController::class, 'store'])->name('positions.store');
+        Route::put('/positions/{id}/scope', [PositionController::class, 'updateScope'])->name('positions.update-scope');
     });
 
     /* -----------------------------------------------------------------
-     | Manager Tools — Score correction approvals (web_score_approval)
+     | Manager Tools — Score correction approvals
      | ----------------------------------------------------------------*/
-    Route::middleware('access:web_score_approval')->group(function () {
+    Route::middleware('page:score-approvals')->group(function () {
         Route::get('/reports/corrections', [CorrectionApprovalController::class, 'index'])->name('reports.corrections');
         Route::post('/reports/corrections/{id}/approve', [CorrectionApprovalController::class, 'approve'])->name('reports.corrections.approve');
         Route::post('/reports/corrections/{id}/reject', [CorrectionApprovalController::class, 'reject'])->name('reports.corrections.reject');
     });
 
     /* -----------------------------------------------------------------
-     | Dashboards (web_dashboard)
+     | Dashboards — each dashboard is its own independently-assignable page
      | ----------------------------------------------------------------*/
-    Route::middleware('access:web_dashboard,web_managers')->group(function () {
+    Route::middleware('page:dashboard-qa')->group(function () {
         Route::get('/dashboard-qa', function () {
             return view('dashboard');
         });
@@ -164,20 +171,24 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard/cause-issue', [DashboardControllerMain::class, 'cause_issue_count']);
         Route::get('/dashboard/root-cause', [DashboardControllerMain::class, 'root_cause_count']);
         Route::get('/dashboard/trend', [DashboardControllerMain::class, 'trend']);
+    });
 
+    Route::middleware('page:dashboard-recon')->group(function () {
         Route::get('/dashboard-recon', [DashboardReconController::class, 'index']);
         Route::get('/dashboard-recon-aging', [DashboardReconController::class, 'Aging']);
         Route::get('/dashboard-recon-table-top10', [DashboardReconController::class, 'Top10Breakdown']);
         Route::get('/dashboard-recon-chart-clientcode', [DashboardReconController::class, 'TopClientsChart']);
         Route::get('/dashboard-recon-chart-carriercode', [DashboardReconController::class, 'TopCarriers']);
+    });
 
+    Route::middleware('page:dashboard-triad')->group(function () {
         Route::get('/dashboard-triad', [DashboardTriadController::class, 'index']);
         Route::get('/dashboard-triad-criteria', [DashboardTriadController::class, 'CriteriaBreakdown']);
         Route::get('/dashboard-triad-evaluators', [DashboardTriadController::class, 'EvaluatorBreakdown']);
     });
 
-    // Shared endpoints — viewing evaluations/timeline (dashboards, monitoring, and managers)
-    Route::middleware('access:web_dashboard,web_report_monitoring,web_managers')->group(function () {
+    // Shared endpoints — viewing evaluations/timeline (used by the QA dashboard and Evaluations report)
+    Route::middleware('page:dashboard-qa,eval-individual')->group(function () {
         Route::get('/dashboard/cards', [DashboardControllerMain::class, 'dashbaordCard']);
         Route::get('/dashboard/filter-options', [DashboardControllerMain::class, 'filterOptions']);
         Route::get('/ticket/view/{id}', [ViewTicket::class, 'viewTicket'])->name('viewticket');
@@ -185,17 +196,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/export/evaluations', [ExportController::class, 'evaluations'])->name('export.evaluations');
         Route::get('/evaluations/{auditId}/timeline', [AnalyticsController::class, 'timeline'])->name('evaluations.timeline');
     });
-    Route::middleware('access:web_dashboard,web_report_action_register,web_managers')->group(function () {
+    Route::middleware('page:dashboard-recon,recon-ticket')->group(function () {
         Route::get('/dashboard-recon-cards', [DashboardReconController::class, 'CardCount']);
     });
-    Route::middleware('access:web_dashboard,web_report_triad,web_managers')->group(function () {
+    Route::middleware('page:dashboard-triad,triad-ticket')->group(function () {
         Route::get('/dashboard-triad-cards', [DashboardTriadController::class, 'CardCount']);
     });
 
     /* -----------------------------------------------------------------
-     | Forms (web_forms)
+     | Forms
      | ----------------------------------------------------------------*/
-    Route::middleware('access:web_forms,web_managers')->group(function () {
+    Route::middleware('page:form-builder')->group(function () {
         Route::get('/formbuilder', function () {
             return view('formbuilder');
         })->name('formbuilder');
@@ -205,54 +216,70 @@ Route::middleware('auth')->group(function () {
         })->name('viewforms');
         Route::post('/viewforms/form', [FormInsertController::class, 'createForm'])->name('viewforms.createForm');
         Route::get('/forms/data', [DisplayFormListController::class, 'displayFormList'])->name('forms.data');
+    });
 
+    Route::middleware('page:monitoring-form')->group(function () {
         Route::get('/monitoringform', [UserListMonitoringPage::class, 'UserList'])->name('monitoringform');
         Route::post('/api/audits', [AuditController::class, 'store']);
     });
 
     /* -----------------------------------------------------------------
-     | Evaluations report (web_report_monitoring)
+     | Evaluations report
      | ----------------------------------------------------------------*/
-    Route::middleware('access:web_report_monitoring,web_managers')->group(function () {
+    Route::middleware('page:eval-individual')->group(function () {
         Route::get('/eval-individual', [UserListMonitoringPage::class, 'EvalIndiData']);
         Route::get('/load-blade', [EvalIndividual::class, 'userTicket']);
         Route::get('/evaluation/individual-recent', [EvalIndividual::class, 'recentTableAPI']);
         Route::get('/evaluation/individual-cause-issue', [EvalIndividual::class, 'cause_issue_count']);
         Route::get('/evaluation/individual-accountable-factor', [EvalIndividual::class, 'impact_factor_count']);
-        Route::get('/monitoring-ticket', [MonitoringTicket::class, 'index']);
-        Route::get('/monitoring-data', [MonitoringTicket::class, 'displayTicket']);
-        Route::delete('/monitoring-ticket/{id}', [MonitoringTicket::class, 'destroy'])
-            ->middleware('access:admin');
     });
 
     /* -----------------------------------------------------------------
-     | Management Reports (web_managers)
+     | QA Monitoring List
      | ----------------------------------------------------------------*/
-    Route::middleware('access:web_managers')->group(function () {
+    Route::middleware('page:monitoring-ticket')->group(function () {
+        Route::get('/monitoring-ticket', [MonitoringTicket::class, 'index']);
+        Route::get('/monitoring-data', [MonitoringTicket::class, 'displayTicket']);
+    });
+    // Deleting a QA Monitoring ticket stays admin-only regardless of page access.
+    Route::delete('/monitoring-ticket/{id}', [MonitoringTicket::class, 'destroy'])
+        ->middleware('access:admin');
+
+    /* -----------------------------------------------------------------
+     | Management Reports — each report is its own independently-assignable page
+     | ----------------------------------------------------------------*/
+    Route::middleware('page:lda-scorecard')->group(function () {
         Route::get('/lda-scorecard', [LdaScorecardController::class, 'index'])->name('lda-scorecard');
+    });
+    Route::middleware('page:pending-acknowledgements')->group(function () {
         Route::get('/reports/pending-acknowledgements', [ReportController::class, 'pendingAcknowledgements'])->name('reports.pending-acknowledgements');
+    });
+    Route::middleware('page:auditor-productivity')->group(function () {
         Route::get('/analytics/auditor-productivity', [AnalyticsController::class, 'auditorProductivity'])->name('analytics.auditor-productivity');
+    });
+    Route::middleware('page:root-cause')->group(function () {
         Route::get('/analytics/root-cause', [AnalyticsController::class, 'rootCause'])->name('analytics.root-cause');
+    });
+    Route::middleware('page:audit-coverage')->group(function () {
         Route::get('/analytics/audit-coverage', [AnalyticsController::class, 'auditCoverage'])->name('analytics.audit-coverage');
+    });
+
+    /* -----------------------------------------------------------------
+     | Disputes review (+ the score-correction flow a dispute opens into —
+     | previously gated to web_managers only, separately from Disputes
+     | itself; folded together here since it's reached from this page)
+     | ----------------------------------------------------------------*/
+    Route::middleware('page:disputes')->group(function () {
+        Route::get('/reports/disputes', [DisputeController::class, 'index'])->name('reports.disputes');
+        Route::post('/reports/disputes/{id}/resolve', [DisputeController::class, 'resolve'])->name('reports.disputes.resolve');
         Route::get('/evaluations/{auditId}/correct', [ScoreCorrectionController::class, 'edit'])->name('evaluations.correct');
         Route::post('/evaluations/{auditId}/correct', [ScoreCorrectionController::class, 'update'])->name('evaluations.correct.save');
     });
 
     /* -----------------------------------------------------------------
-     | Disputes review (managers + supervisors + SMEs; not LDAs)
+     | Action Register Ticket (+ its view/comment/assign/status/export actions)
      | ----------------------------------------------------------------*/
-    Route::middleware('access:web_managers,web_user_sup,web_user_sme')->group(function () {
-        Route::get('/reports/disputes', [DisputeController::class, 'index'])->name('reports.disputes');
-        Route::post('/reports/disputes/{id}/resolve', [DisputeController::class, 'resolve'])->name('reports.disputes.resolve');
-    });
-
-    /* -----------------------------------------------------------------
-     | Action Register report (web_report_action_register)
-     | LDA gets only the ticket list itself (+ its view/comment/assign/
-     | status/export actions) via web_user_lda. Overdue Items and
-     | Client/Carrier Health stay out of LDA's reach — see group below.
-     | ----------------------------------------------------------------*/
-    Route::middleware('access:web_report_action_register,web_managers,web_user_lda')->group(function () {
+    Route::middleware('page:recon-ticket')->group(function () {
         Route::get('/recon-ticket', [ReconTiketController::class, 'index']);
         Route::get('/recon-data', [ReconTiketController::class, 'displayTicket']);
         Route::get('/recon-filter-options', [ReconTiketController::class, 'filterOptions']);
@@ -263,16 +290,21 @@ Route::middleware('auth')->group(function () {
         Route::post('/recon/status-change/{id}', [ReconTiketController::class, 'ChangeStatus']);
         Route::get('/export/recon', [ExportController::class, 'recon'])->name('export.recon');
     });
+    // Deleting a recon ticket stays admin-only regardless of page access.
+    Route::delete('/recon-ticket/{id}', [ReconTiketController::class, 'destroy'])
+        ->middleware('access:admin');
 
-    Route::middleware('access:web_report_action_register,web_managers')->group(function () {
+    Route::middleware('page:recon-overdue')->group(function () {
         Route::get('/recon-overdue', [ReconTiketController::class, 'overdue'])->name('recon-overdue');
+    });
+    Route::middleware('page:client-carrier-health')->group(function () {
         Route::get('/analytics/client-carrier-health', [AnalyticsController::class, 'clientCarrierHealth'])->name('analytics.client-carrier-health');
     });
 
     /* -----------------------------------------------------------------
-     | Coaching report (web_report_coaching)
+     | Coaching Ticket
      | ----------------------------------------------------------------*/
-    Route::middleware('access:web_report_coaching,web_managers')->group(function () {
+    Route::middleware('page:coaching-ticket')->group(function () {
         Route::get('/viewcoaching', [UserListMonitoringPage::class, 'CoachingFormData']);
         Route::post('/coaching', [CoachingController::class, 'store']);
         Route::get('/coaching-ticket', [CoachingTicket::class, 'index']);
@@ -280,11 +312,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/coaching-ticket-view/{id}', [CoachingTicket::class, 'fullDetails']);
         Route::get('/api/coaching-ticket', [CoachingFormController::class, 'coachingTicketInformation']);
     });
+    // Deleting a coaching ticket stays admin-only regardless of page access.
+    Route::delete('/coaching-ticket/{id}', [CoachingTicket::class, 'destroy'])
+        ->middleware('access:admin');
 
     /* -----------------------------------------------------------------
-     | Triad report (web_report_triad)
+     | Triad Ticket
      | ----------------------------------------------------------------*/
-    Route::middleware('access:web_report_triad,web_managers')->group(function () {
+    Route::middleware('page:triad-ticket')->group(function () {
         Route::get('/viewtriad', [UserListMonitoringPage::class, 'CoachingTriadData']);
         Route::get('/triad-ticket', [TriadTicket::class, 'index']);
         Route::get('/triad-data', [TriadTicket::class, 'displayTicket']);
@@ -300,6 +335,9 @@ Route::middleware('auth')->group(function () {
             Route::put('/{reference}', [TriadItemController::class, 'update']);
         });
     });
+    // Deleting a triad ticket stays admin-only regardless of page access.
+    Route::delete('/triad-ticket/{id}', [TriadTicket::class, 'destroy'])
+        ->middleware('access:admin');
 });
 /*
 |--------------------------------------------------------------------------

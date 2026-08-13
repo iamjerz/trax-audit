@@ -7,8 +7,10 @@ document.addEventListener("DOMContentLoaded", function() {
         AuditDate2: "",
         InvoiceID: "",
         CarrierName: "",
+        ClientCode: "",
         ExceptionStatus: "",
-        ExceptionOwner: ""
+        ExceptionOwner: "",
+        IsCalibration: false
     };
 
     const verificationData = {
@@ -62,6 +64,7 @@ document.addEventListener("DOMContentLoaded", function() {
         "lda-name": "ldaName",
         "audit-sup-name": "AuditSupName",
         "auditors-name": "AuditorsName",
+        "client-code": "ClientCode",
 
     };
 
@@ -351,6 +354,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     });
 
+    const calibrationCheckbox = document.getElementById("calibration");
+    if (calibrationCheckbox) {
+        calibrationCheckbox.addEventListener("change", function() {
+            userInputData.IsCalibration = this.checked;
+            console.log("User Input:", userInputData);
+        });
+    }
 
     document.querySelectorAll(".datepicker-humanfd").forEach(el => {
         flatpickr(el, {

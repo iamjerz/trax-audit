@@ -162,12 +162,13 @@
             .then(res => res.json().then(body => ({ ok: res.ok, body })))
             .then(({ ok, body }) => {
                 if (!ok || !body.success) {
-                    alert(body.message || 'Failed to delete the record.');
+                    notifyError(body.message || 'Failed to delete the record.');
                     return;
                 }
+                notifySuccess(body.message || 'Deleted successfully.');
                 grid.forceRender();
             })
-            .catch(() => alert('Failed to delete the record.'));
+            .catch(() => notifyError('Failed to delete the record.'));
         }
     </script>
 

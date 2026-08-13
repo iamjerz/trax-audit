@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'ms.jwt' => \App\Http\Middleware\VerifyMicrosoftToken::class,
             'access' => \App\Http\Middleware\CheckAccess::class,
+            'page' => \App\Http\Middleware\CheckPageAccess::class,
         ]);
 
         // Force users still on the default password to change it before using the app.

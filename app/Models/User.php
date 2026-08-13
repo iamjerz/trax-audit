@@ -23,6 +23,7 @@ class User extends Authenticatable
         'first_name',
         'last_name',
         'position',
+        'position_id',
         'department',
         'role',
         'status',
@@ -58,5 +59,15 @@ class User extends Authenticatable
     public function supervisor()
     {
         return $this->belongsTo(User::class, 'supervisor_id', 'audit_sup_name');
+    }
+
+    /**
+     * The canonical Position row (name + scope). Named to avoid colliding
+     * with the existing raw 'position' string column/attribute, which stays
+     * as-is for backward compatibility with existing query-builder code.
+     */
+    public function positionRecord()
+    {
+        return $this->belongsTo(Position::class, 'position_id');
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\AuditTrail;
 use App\Support\AccessRoles;
+use App\Support\PositionScope;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -104,9 +105,14 @@ class MonitoringTicket extends Controller
                 });
             }
 
-            // 👤 ROLE FILTER — LDAs only see their own evaluations
-            if (in_array($user_position, ['LDA', 'Logistics Data Analyst'], true)) {
+            // 👤 LEVEL FILTER — scope comes from the positions table (see
+            // App\Support\PositionScope), not a hardcoded string match.
+            $scope = PositionScope::forPosition($user_position);
+
+            if ($scope === 'own') {
                 $query->where('a.lda_id', $user_employeeid);
+            } elseif ($scope === 'team') {
+                $query->where('lda.supervisor_id', $user_employeeid);
             }
 
             // ✅ COUNT

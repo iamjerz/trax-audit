@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\User;
+use App\Models\Position;
 
 use Illuminate\Http\Request;
 
@@ -24,11 +25,7 @@ class UserListMonitoringPage extends Controller
                 ->orderBy('first_name')
                 ->get(),
 
-            'positions' => User::whereNotNull('position')
-                ->where('position', '!=', '')
-                ->distinct()
-                ->orderBy('position')
-                ->pluck('position'),
+            'positions' => Position::orderBy('sort_order')->orderBy('name')->pluck('name'),
         ];
     }
 
