@@ -91,7 +91,7 @@
                                                     <td class="text-muted">{{ $data->email }}</td>
                                                 </tr>
                                                 <tr>
-                                                    <th class="fw-bold">Is Callibration? :</th>
+                                                    <th class="fw-bold">Is this Callibration? :</th>
                                                     <td class="">
                                                         @if($data->is_calibration)
                                                             <button type="button" class="btn btn-subtle-success waves-effect waves-light"><i class="bx bx-check-double font-size-16 align-middle"></i></button>
