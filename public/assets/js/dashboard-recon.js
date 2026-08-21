@@ -1,7 +1,9 @@
 // ================================================================
 // Recon Dashboard
-// Filters: Scope (All / My Team) + Date Range (on recon_call_date)
-// A single set of filters drives the cards, aging card, charts and table.
+// Filters: Date Range (on recon_call_date) + Carrier Code + Client Code +
+// Manager/Supervisor scope (All / My Team / a specific person). Mirrors the
+// QA dashboard's filter bar — a single set of filters drives the cards,
+// aging card, charts and table.
 // ================================================================
 
 let reconChoices = null;
@@ -17,17 +19,26 @@ function animateValue(el, start, end) {
     el.text(end);
 }
 
-// 🔧 Shared filter values (scope + date range) for every AJAX call
+// 🔧 Shared filter values (date range + carrier + client + scope) for every
+// AJAX call — folded in here once so every endpoint (including the status
+// count cards, which previously got no scope at all) picks up all of them
+// uniformly, instead of each call site having to remember to merge scope in.
 function reconScope() {
-    return $('#chartFilter').val() || 'all';
+    return $('#chartFilter').val() || '';
 }
 
 function reconFilterData(extra) {
     const from = $('#recon-date-from').val();
     const to = $('#recon-date-to').val();
+    const carrierCode = $('#recon-carrier-code').val();
+    const clientCode = $('#recon-client-code').val();
+    const scope = reconScope();
     const data = Object.assign({}, extra || {});
     if (from) data.date_from = from;
     if (to) data.date_to = to;
+    if (carrierCode) data.carrier_code = carrierCode;
+    if (clientCode) data.client_code = clientCode;
+    if (scope) data.scope = scope;
     return data;
 }
 
@@ -56,7 +67,7 @@ function loadTop10() {
     $.ajax({
         url: '/dashboard-recon-table-top10',
         type: 'GET',
-        data: reconFilterData({ scope: reconScope() }),
+        data: reconFilterData(),
         success: function (data) {
             let rows = '';
             data.forEach(item => {
@@ -118,7 +129,7 @@ function loadClientChart() {
     $.ajax({
         url: '/dashboard-recon-chart-clientcode',
         type: 'GET',
-        data: reconFilterData({ scope: reconScope() }),
+        data: reconFilterData(),
         success: function (data) {
             const categories = [];
             const totals = [];
@@ -149,7 +160,7 @@ function loadCarrierChart() {
     $.ajax({
         url: '/dashboard-recon-chart-carriercode',
         type: 'GET',
-        data: reconFilterData({ scope: reconScope() }),
+        data: reconFilterData(),
         success: function (data) {
             const categories = [];
             const totals = [];
@@ -180,7 +191,7 @@ function loadAging() {
     $.ajax({
         url: '/dashboard-recon-aging',
         type: 'GET',
-        data: reconFilterData({ scope: reconScope() }),
+        data: reconFilterData(),
         success: function (data) {
             const b = data.buckets || {};
             $('#aging-overdue').text(data.overdue || 0);
@@ -208,20 +219,126 @@ $(document).ready(function () {
         reconChoices = new Choices(element, {
             searchEnabled: true,
             itemSelectText: '',
-            shouldSort: false
+            shouldSort: false,
+            allowHTML: false
         });
     }
+
+    const reconCarrierChoices = new Choices(document.getElementById('recon-carrier-code'), {
+        searchEnabled: true,
+        itemSelectText: '',
+        shouldSort: false,
+        allowHTML: false
+    });
+
+    const reconClientChoices = new Choices(document.getElementById('recon-client-code'), {
+        searchEnabled: true,
+        itemSelectText: '',
+        shouldSort: false,
+        allowHTML: false
+    });
+
+    // Populate Carrier Code + Client Code + Manager/Supervisor options.
+    $.ajax({
+        url: '/dashboard-recon-filter-options',
+        type: 'GET',
+        dataType: 'json',
+        success: function (opts) {
+            if (Array.isArray(opts.carrier_codes)) {
+                reconCarrierChoices.setChoices(
+                    opts.carrier_codes.map(c => ({ value: c, label: c })),
+                    'value', 'label', false
+                );
+            }
+            if (Array.isArray(opts.client_codes)) {
+                reconClientChoices.setChoices(
+                    opts.client_codes.map(c => ({ value: c, label: c })),
+                    'value', 'label', false
+                );
+            }
+            if (reconChoices && opts.managers) {
+                // opts.managers is {"Managers": [{value,label}, ...], "SMEs": [...], ...}
+                // Choices.js groups need {label, id, choices: [...]}, appended
+                // after the two baked-in "All Tickets"/"My Team" <option>s.
+                const groups = Object.keys(opts.managers).map((groupName, idx) => ({
+                    label: groupName,
+                    id: idx + 1,
+                    choices: opts.managers[groupName]
+                }));
+                reconChoices.setChoices(groups, 'value', 'label', false);
+            }
+        },
+        error: function () { console.warn('Could not load recon filter options'); }
+    });
+
+    // Date Range picker (daterangepicker.com) — same widget/config as the QA
+    // dashboard: presets + calendars always visible together, one click
+    // applies (whether it's a preset or a manual range), theme matched to
+    // #556ee6. See dashboard.blade.php for the full rationale on the options
+    // below (autoUpdateInput/autoApply/alwaysShowCalendars).
+    function reconDaysAgo(n) {
+        return moment().startOf('day').subtract(n, 'days');
+    }
+
+    function reconMonthsAgo(n) {
+        return moment().startOf('day').subtract(n, 'months');
+    }
+
+    const reconDateInput = $('#recon-date-range');
+
+    reconDateInput.daterangepicker({
+        autoUpdateInput: false, // keep the "All dates" placeholder until a range is actually chosen
+        autoApply: true, // no separate confirm click, for both presets and manual picks
+        alwaysShowCalendars: true, // presets + calendars visible together
+        maxDate: moment(), // this dashboard only ever has past recon data
+        locale: {
+            format: 'MMM D, YYYY',
+            separator: ' - '
+        },
+        ranges: {
+            'Today': [moment().startOf('day'), moment().startOf('day')],
+            'Yesterday': [reconDaysAgo(1), reconDaysAgo(1)],
+            'Last 7 days': [reconDaysAgo(7), moment().startOf('day')],
+            'Last 30 days': [reconDaysAgo(30), moment().startOf('day')],
+            'Last 6 months': [reconMonthsAgo(6), moment().startOf('day')],
+            'Last 1 year': [reconMonthsAgo(12), moment().startOf('day')]
+        }
+    });
+
+    reconDateInput.on('apply.daterangepicker', function (ev, picker) {
+        $(this).val(picker.startDate.format('MMM D, YYYY') + ' - ' + picker.endDate.format('MMM D, YYYY'));
+        $('#recon-date-from').val(picker.startDate.format('YYYY-MM-DD'));
+        $('#recon-date-to').val(picker.endDate.format('YYYY-MM-DD'));
+        reconReloadAll();
+    });
+
+    reconDateInput.on('cancel.daterangepicker', function () {
+        $(this).val('');
+        $('#recon-date-from').val('');
+        $('#recon-date-to').val('');
+        reconReloadAll();
+    });
 
     // Initial load
     reconReloadAll();
 
     // Filter changes
     $('#chartFilter').on('change', reconReloadAll);
+    $('#recon-carrier-code').on('change', reconReloadAll);
+    $('#recon-client-code').on('change', reconReloadAll);
     $('#recon-apply').on('click', reconReloadAll);
     $('#recon-reset').on('click', function () {
         $('#recon-date-from').val('');
         $('#recon-date-to').val('');
-        if (reconChoices) reconChoices.setChoiceByValue('all');
+        reconDateInput.val('');
+        const reconPickerInstance = reconDateInput.data('daterangepicker');
+        if (reconPickerInstance) {
+            reconPickerInstance.setStartDate(moment());
+            reconPickerInstance.setEndDate(moment());
+        }
+        if (reconChoices) reconChoices.setChoiceByValue('');
+        if (reconCarrierChoices) reconCarrierChoices.setChoiceByValue('');
+        if (reconClientChoices) reconClientChoices.setChoiceByValue('');
         reconReloadAll();
     });
 

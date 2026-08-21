@@ -2,6 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <link rel="stylesheet" href="assets/libs/gridjs/theme/mermaid.min.css">
 <link rel="stylesheet" href="{{ asset('assets/libs/choices.js/public/assets/styles/choices.min.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.css">
 @include('partials.header')
 <style>
     .counter {
@@ -11,6 +12,54 @@
 
     .counter.show {
         opacity: 1;
+    }
+
+    /* Date Range Picker (daterangepicker.com) theming — matches this app's
+       primary accent (#556ee6, same shade already used for SweetAlert2
+       buttons and the Litepicker widget this replaced) instead of the
+       library's own default colors (#08c / #357ebd). This library doesn't
+       expose CSS custom properties like Litepicker did, so these are plain
+       selectors with !important to beat the stylesheet loaded via <link>
+       above. */
+    .daterangepicker td.active,
+    .daterangepicker td.active:hover {
+        background-color: #556ee6 !important;
+    }
+
+    .daterangepicker td.in-range {
+        background-color: rgba(85, 110, 230, 0.15) !important;
+    }
+
+    .daterangepicker .ranges li.active {
+        background-color: #556ee6 !important;
+        color: #fff !important;
+    }
+
+    .daterangepicker .applyBtn {
+        background-color: #556ee6 !important;
+        border-color: #556ee6 !important;
+    }
+
+    /* Safety net for the Recent Audit Ticket gridjs table: even with the
+       Grid's own width:"100%" option set, any single unbreakable long value
+       in a cell (a long name, a long invoice id, etc.) could still force the
+       table wider than its card. This keeps that overflow contained to a
+       local scrollbar on the table itself instead of the whole page. */
+    #table-gridjs {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    /* The actual root cause of the page-level horizontal scrollbar: this card
+       is a flex item (.flex-fill, inside .col-xl-6.d-flex) and Bootstrap's
+       .flex-fill utility never sets min-width, so it falls back to the
+       flexbox default of min-width:auto — meaning the card refuses to
+       shrink below the gridjs table's natural content width, no matter what
+       width is set *inside* the table. min-width:0 lets it actually shrink
+       to the column's real width, so the table's own overflow-x:auto (above)
+       can finally kick in instead of the whole card/row/page overflowing. */
+    #recent-ticket-card {
+        min-width: 0;
     }
 </style>
 <body>
@@ -29,19 +78,24 @@
                     <div class="card-body">
                         <div class="row g-2 align-items-end">
                             <div class="col-md-3">
-                                <label class="form-label font-size-13 mb-1">From</label>
-                                <input type="date" id="dash-date-from" class="form-control form-control">
+                                <label class="form-label font-size-13 mb-1">Date Range</label>
+                                <input type="text" id="dash-date-range" class="form-control" placeholder="All dates" readonly>
+                                <input type="hidden" id="dash-date-from">
+                                <input type="hidden" id="dash-date-to">
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label font-size-13 mb-1">To</label>
-                                <input type="date" id="dash-date-to" class="form-control form-control">
+                            <div class="col-md-2">
+                                <label class="form-label font-size-13 mb-1">Client Code</label>
+                                <select id="dash-client-code" class="form-select form-select-sm">
+                                    <option value="">All Client Codes</option>
+                                </select>
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label font-size-13 mb-1">Carrier Name</label>
+                            <div class="col-md-2">
+                                <label class="form-label font-size-13 mb-1">Carrier Code</label>
                                 <select id="dash-carrier" class="form-select form-select-sm">
                                     <option value="">All Carriers</option>
                                 </select>
                             </div>
+                            
                             <div class="col-md-3">
                                 <label class="form-label font-size-13 mb-1">Manager / Supervisor</label>
                                 <select id="dash-supervisor" class="form-select form-select">
@@ -49,7 +103,7 @@
                                     <option value="my_team">My Team</option>
                                 </select>
                             </div>
-                            <div class="col-12">
+                            <div class="col-12 mt-3">
                                 <button type="button" id="dash-apply" class="btn btn-sm btn-primary">Apply</button>
                                 <button type="button" id="dash-reset" class="btn btn-sm btn-light">Reset</button>
                             </div>
@@ -162,7 +216,7 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header">
-                                <h4 class="card-title">Evaluations Trend (last 12 months)</h4>
+                                <h4 class="card-title" id="trend-chart-title">Evaluations Trend (last 12 months)</h4>
                             </div>
                             <div class="card-body">
                                 <div id="evalTrendChart"></div>
@@ -173,7 +227,7 @@
 
                 <div class="row h-100">
                     <div class="col-xl-6 d-flex">
-                        <div class="card flex-fill">
+                        <div class="card flex-fill" id="recent-ticket-card">
                             <div class="card-header">
                                 <h4 class="card-title">Recent Audit Ticket</h4>
                             </div>
@@ -229,6 +283,14 @@
     <script src="assets/libs/gridjs/gridjs.umd.js"></script>
     <!-- apexcharts -->
     <script src="assets/libs/apexcharts/apexcharts.min.js"></script>
+    <!-- Date Range Picker (daterangepicker.com) — needs jQuery + Moment.js loaded first.
+         Moment.js is via CDN, not the locally vendored assets/libs/moment/moment.js —
+         that local copy is actually moment's ES-module source (it ends in
+         "export default hooks;"), which throws "Unexpected token 'export'" when
+         loaded as a plain script tag, so it can't be used here. -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.js"></script>
     <script>
         function animateCount(element, start, end, duration = 800) {
             let startTime = null;
@@ -255,12 +317,14 @@
             const from       = document.getElementById("dash-date-from").value;
             const to         = document.getElementById("dash-date-to").value;
             const carrier    = document.getElementById("dash-carrier").value;
+            const clientCode = document.getElementById("dash-client-code").value;
             const scope      = document.getElementById("dash-supervisor").value;
 
             const params = new URLSearchParams();
             if (from) params.append("date_from", from);
             if (to) params.append("date_to", to);
             if (carrier) params.append("carrier_name", carrier);
+            if (clientCode) params.append("client_code", clientCode);
             if (scope) params.append("scope", scope);
             return params;
         }
@@ -281,9 +345,26 @@
             .catch(err => console.error(err));
         }
 
-        // Evaluations trend (last 12 months) — re-rendered when filters change.
+        // Evaluations trend — re-rendered when filters change. With no date
+        // filter this is a fixed "last 12 months" view (backend default); with
+        // one active, the backend re-buckets to daily/monthly/yearly based on
+        // the selected range's span, so the title needs to follow along too.
+        function updateTrendTitle() {
+            const titleEl = document.getElementById("trend-chart-title");
+            if (!titleEl) return;
+            const from = document.getElementById("dash-date-from").value;
+            const to = document.getElementById("dash-date-to").value;
+            if (from && to) {
+                const displayRange = document.getElementById("dash-date-range").value || (from + " - " + to);
+                titleEl.textContent = "Evaluations Trend (" + displayRange + ")";
+            } else {
+                titleEl.textContent = "Evaluations Trend (last 12 months)";
+            }
+        }
+
         let trendChart = null;
         function loadTrend() {
+            updateTrendTitle();
             fetch("/dashboard/trend?" + dashFilterParams().toString(), {
                 headers: { "Accept": "application/json" }
             })
@@ -319,8 +400,7 @@
             loadRootCause();
         }
 
-        // Searchable Choices.js on the Carrier dropdown (many options).
-        // Manager/Supervisor stays a plain 2-option select (All / My Team).
+        // Searchable Choices.js on every filter dropdown.
         const dashChoices = {};
         dashChoices["dash-carrier"] = new Choices(document.getElementById("dash-carrier"), {
             searchEnabled: true,
@@ -328,8 +408,22 @@
             shouldSort: false,
             allowHTML: false
         });
+        dashChoices["dash-client-code"] = new Choices(document.getElementById("dash-client-code"), {
+            searchEnabled: true,
+            itemSelectText: '',
+            shouldSort: false,
+            allowHTML: false
+        });
+        // "All" and "My Team" stay as the two baked-in <option>s; the
+        // Manager/SME/Supervisor names get appended as grouped choices below.
+        dashChoices["dash-supervisor"] = new Choices(document.getElementById("dash-supervisor"), {
+            searchEnabled: true,
+            itemSelectText: '',
+            shouldSort: false,
+            allowHTML: false
+        });
 
-        // Populate Carrier Name options.
+        // Populate Carrier Name + Client Code + Manager/Supervisor options.
         fetch("/dashboard/filter-options", { headers: { "Accept": "application/json" } })
             .then(res => res.json())
             .then(opts => {
@@ -339,9 +433,83 @@
                         "value", "label", false
                     );
                 }
+                if (dashChoices["dash-client-code"] && Array.isArray(opts.client_codes)) {
+                    dashChoices["dash-client-code"].setChoices(
+                        opts.client_codes.map(c => ({ value: c, label: c })),
+                        "value", "label", false
+                    );
+                }
+                if (dashChoices["dash-supervisor"] && opts.managers) {
+                    // opts.managers is {"Managers": [{value,label}, ...], "SMEs": [...], ...}
+                    // Choices.js groups need {label, id, choices: [...]}.
+                    const groups = Object.keys(opts.managers).map((groupName, idx) => ({
+                        label: groupName,
+                        id: idx + 1,
+                        choices: opts.managers[groupName]
+                    }));
+                    dashChoices["dash-supervisor"].setChoices(groups, "value", "label", false);
+                }
             })
             .catch(err => console.warn("Could not load dashboard filter options:", err));
 
+        // Date Range picker (daterangepicker.com): a persistent sidebar of
+        // preset ranges next to two calendars (alwaysShowCalendars keeps both
+        // visible together, matching the split preset+calendar layout this
+        // filter had with Litepicker, instead of this library's own default
+        // of hiding the calendars until "Custom Range" is clicked). Selecting
+        // anything — preset or a manual range drawn on the calendar — writes
+        // into the hidden dash-date-from/dash-date-to inputs, which is all
+        // dashFilterParams() and the backend ever look at, so nothing else
+        // had to change.
+        //
+        // Unlike Litepicker (where a preset click fired a different event,
+        // "ranges.selected", than a manual calendar selection's "onSelect" —
+        // the bug that made presets silently not reload the dashboard until
+        // that was found and fixed), this library fires the same
+        // apply.daterangepicker event for both a predefined range click and
+        // an Apply button click, so one handler covers both paths.
+        function daysAgo(n) {
+            return moment().startOf('day').subtract(n, 'days');
+        }
+
+        function monthsAgo(n) {
+            return moment().startOf('day').subtract(n, 'months');
+        }
+
+        const dashDateInput = $('#dash-date-range');
+
+        dashDateInput.daterangepicker({
+            autoUpdateInput: false, // keep the "All dates" placeholder until a range is actually chosen
+            autoApply: true, // no separate confirm click — matches Litepicker's instant-apply feel
+            alwaysShowCalendars: true,
+            maxDate: moment(), // this dashboard only ever has past audit data
+            locale: {
+                format: 'MMM D, YYYY',
+                separator: ' - '
+            },
+            ranges: {
+                'Today': [moment().startOf('day'), moment().startOf('day')],
+                'Yesterday': [daysAgo(1), daysAgo(1)],
+                'Last 7 days': [daysAgo(7), moment().startOf('day')],
+                'Last 30 days': [daysAgo(30), moment().startOf('day')],
+                'Last 6 months': [monthsAgo(6), moment().startOf('day')],
+                'Last 1 year': [monthsAgo(12), moment().startOf('day')]
+            }
+        });
+
+        dashDateInput.on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('MMM D, YYYY') + ' - ' + picker.endDate.format('MMM D, YYYY'));
+            document.getElementById('dash-date-from').value = picker.startDate.format('YYYY-MM-DD');
+            document.getElementById('dash-date-to').value = picker.endDate.format('YYYY-MM-DD');
+            reloadDashboard();
+        });
+
+        dashDateInput.on('cancel.daterangepicker', function () {
+            $(this).val('');
+            document.getElementById('dash-date-from').value = '';
+            document.getElementById('dash-date-to').value = '';
+            reloadDashboard();
+        });
 
         // ============================================================
         // Recent Audit Ticket table (filter-aware)
@@ -374,6 +542,10 @@
                     pagination: { limit: 20 },
                     search: false,
                     sort: false,
+                    width: "100%", // without this, gridjs's outer container is display:inline-block
+                                   // with no width set, so it shrinks-to-fit its content instead of
+                                   // the card — the table grows past the column edge and the page
+                                   // (not the card) gets a horizontal scrollbar.
                     server
                 });
                 recentGrid.render(document.getElementById('table-gridjs'));
@@ -677,8 +849,15 @@
         document.getElementById("dash-reset").addEventListener("click", function () {
             document.getElementById("dash-date-from").value = "";
             document.getElementById("dash-date-to").value = "";
-            document.getElementById("dash-supervisor").value = "";
+            dashDateInput.val("");
+            const dashPickerInstance = dashDateInput.data("daterangepicker");
+            if (dashPickerInstance) {
+                dashPickerInstance.setStartDate(moment());
+                dashPickerInstance.setEndDate(moment());
+            }
             if (dashChoices["dash-carrier"]) dashChoices["dash-carrier"].setChoiceByValue("");
+            if (dashChoices["dash-client-code"]) dashChoices["dash-client-code"].setChoiceByValue("");
+            if (dashChoices["dash-supervisor"]) dashChoices["dash-supervisor"].setChoiceByValue("");
             reloadDashboard();
         });
 

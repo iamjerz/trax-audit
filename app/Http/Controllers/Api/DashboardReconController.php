@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\Concerns\FiltersByManagerScope;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 class DashboardReconController extends Controller
 {
-    //
+    use FiltersByManagerScope;
+
     public function index(){
 
         return view("dashboardrecon");
@@ -32,19 +34,11 @@ class DashboardReconController extends Controller
     }
     public function Top10Breakdown(Request $request)
     {
-        $scope = $request->input('scope', 'all');
-        $user = auth()->user();
-
         $query = DB::table('recon_action_items as rai')
             ->leftJoin('users as u', 'rai.lda_email', '=', 'u.email')
             ->whereNotNull('rai.status');
             // 👉 OPTIONAL: exclude closed (same as charts)
             // ->whereRaw("LOWER(rai.status) != 'closed'");
-
-        // 🔥 Apply dropdown filter
-        if ($scope === 'team') {
-            $query->where('u.supervisor_id', $user->employeeid);
-        }
 
         $this->applyReconFilters($query, $request);
 
@@ -70,18 +64,10 @@ class DashboardReconController extends Controller
 
     public function TopClientsChart(Request $request)
     {
-        $scope = $request->input('scope', 'all');
-        $user = auth()->user();
-
         $query = DB::table('recon_action_items as rai')
             ->join('users as u', 'rai.lda_email', '=', 'u.email')
             ->whereNotNull('rai.status')
             ->whereRaw("LOWER(rai.status) != 'closed'");
-
-        // 🔥 Apply filter
-        if ($scope === 'team') {
-            $query->where('u.supervisor_id', $user->employeeid);
-        }
 
         $this->applyReconFilters($query, $request);
 
@@ -97,9 +83,6 @@ class DashboardReconController extends Controller
 
     public function Aging(Request $request)
     {
-        $scope = $request->input('scope', 'all');
-        $user = auth()->user();
-
         $today = \Carbon\Carbon::today();
 
         $query = DB::table('recon_action_items as rai')
@@ -107,11 +90,6 @@ class DashboardReconController extends Controller
             ->whereNotNull('rai.recon_call_date')
             // Exclude items dated today — count as of yesterday, not the current day.
             ->whereDate('rai.recon_call_date', '!=', $today->toDateString());
-
-        if ($scope === 'team') {
-            $query->join('users as u', 'rai.lda_email', '=', 'u.email')
-                  ->where('u.supervisor_id', $user->employeeid);
-        }
 
         $this->applyReconFilters($query, $request);
 
@@ -139,17 +117,10 @@ class DashboardReconController extends Controller
 
     public function TopCarriers(Request $request)
     {
-        $scope = $request->input('scope', 'all');
-        $user = auth()->user();
-
         $query = DB::table('recon_action_items as rai')
             ->join('users as u', 'rai.lda_email', '=', 'u.email')
             ->whereNotNull('rai.status')
             ->whereRaw("LOWER(rai.status) != 'closed'");
-
-        if ($scope === 'team') {
-            $query->where('u.supervisor_id', $user->employeeid);
-        }
 
         $this->applyReconFilters($query, $request);
 
@@ -164,15 +135,63 @@ class DashboardReconController extends Controller
     }
 
     /**
-     * Apply the whole-dashboard Date Range filter (on recon_call_date).
-     * $alias is the alias of the recon_action_items table in the query.
+     * Carrier Code + Client Code + Manager/Supervisor options for the Recon
+     * dashboard's filter bar — mirrors DashboardControllerMain::filterOptions()
+     * for the QA dashboard, just sourced from recon_action_items instead of
+     * user_input_audits. managerPickerOptions() itself is data-model-generic
+     * (reads only from users), so it's reused as-is via the shared trait.
+     */
+    public function filterOptions()
+    {
+        $carrierCodes = DB::table('recon_action_items')
+            ->whereNotNull('carrier_code')
+            ->where('carrier_code', '!=', '')
+            ->distinct()
+            ->orderBy('carrier_code')
+            ->pluck('carrier_code');
+
+        $clientCodes = DB::table('recon_action_items')
+            ->whereNotNull('client_code')
+            ->where('client_code', '!=', '')
+            ->distinct()
+            ->orderBy('client_code')
+            ->pluck('client_code');
+
+        return response()->json([
+            'carrier_codes' => $carrierCodes,
+            'client_codes'  => $clientCodes,
+            'managers'      => $this->managerPickerOptions(),
+        ]);
+    }
+
+    /**
+     * Apply the whole-dashboard filters (date range, carrier code, client
+     * code, Manager/Supervisor scope) to a query, where $alias is the alias
+     * of the recon_action_items table in it.
+     *
+     * Scope is resolved via resolveScopeLdaEmails() (not resolveScopeLdaIds())
+     * because recon_action_items identifies its LDA by lda_email, not the
+     * employeeid user_input_audits.lda_id uses — same underlying org-tree
+     * walk, just keyed differently to match this table.
+     *
+     * This supersedes the old per-method `if ($scope === 'team') { ... }`
+     * checks (direct reports only, via a users join) — those only handled
+     * one level and didn't support second_supervisor_id or picking a specific
+     * person, which resolveScopeLdaEmails() now does for every method here,
+     * including CardCount, which previously had no scope handling at all.
      */
     private function applyReconFilters($query, Request $request, string $alias = 'rai'): void
     {
-        $from = $request->input('date_from');
-        $to   = $request->input('date_to');
+        $from        = $request->input('date_from');
+        $to          = $request->input('date_to');
+        $carrierCode = $request->input('carrier_code') ?: null;
+        $clientCode  = $request->input('client_code') ?: null;
+        $ldaEmails   = $this->resolveScopeLdaEmails($request->input('scope'));
 
-        if ($from) $query->whereDate("$alias.recon_call_date", '>=', $from);
-        if ($to)   $query->whereDate("$alias.recon_call_date", '<=', $to);
+        if ($from)              $query->whereDate("$alias.recon_call_date", '>=', $from);
+        if ($to)                $query->whereDate("$alias.recon_call_date", '<=', $to);
+        if ($carrierCode)       $query->where("$alias.carrier_code", $carrierCode);
+        if ($clientCode)        $query->where("$alias.client_code", $clientCode);
+        if ($ldaEmails !== null) $query->whereIn("$alias.lda_email", $ldaEmails);
     }
 }

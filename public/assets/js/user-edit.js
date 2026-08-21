@@ -23,6 +23,7 @@ document.getElementById("edit-user").addEventListener("click", function() {
         last_name: capitalizeFirst(document.getElementById("last-name").value.trim().toLowerCase()),
         role: document.getElementById("role").value,
         supervisor_id: document.getElementById("supervisor").value,
+        second_supervisor_id: document.getElementById("second-supervisor").value,
         status: document.getElementById("status").value,
         position: document.getElementById("position").value
     };

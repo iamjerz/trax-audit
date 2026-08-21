@@ -99,10 +99,15 @@
                         <div class="card">
                             <div class="card-body">
 
-                                <div class="d-flex align-items-start border-bottom">
-                                    <div class="flex-grow-1">
-                                        <h5 class="font-size-14 mb-3 pb-3">Comments</h5>
-                                    </div>
+                                <div class="d-flex align-items-center justify-content-between border-bottom mb-3 pb-2">
+                                    <ul class="nav nav-tabs card-header-tabs border-0" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="comment-tab-btn" data-bs-toggle="tab" data-bs-target="#comment-tab-pane" type="button" role="tab" aria-controls="comment-tab-pane" aria-selected="true">Comment</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="history-tab-btn" data-bs-toggle="tab" data-bs-target="#history-tab-pane" type="button" role="tab" aria-controls="history-tab-pane" aria-selected="false">History</button>
+                                        </li>
+                                    </ul>
                                     <div class="flex-shrink-0">
                                         <div class="dropdown">
                                             <button type="button" class="btn btn-primary waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#addCommentModal">
@@ -130,8 +135,14 @@
                                     </div>
                                 </div>
 
-                                <div class="comment" id="comment"></div>
-
+                                <div class="tab-content">
+                                    <div class="tab-pane fade show active" id="comment-tab-pane" role="tabpanel" aria-labelledby="comment-tab-btn" tabindex="0">
+                                        <div class="comment" id="comment"></div>
+                                    </div>
+                                    <div class="tab-pane fade" id="history-tab-pane" role="tabpanel" aria-labelledby="history-tab-btn" tabindex="0">
+                                        <div class="history" id="history"></div>
+                                    </div>
+                                </div>
 
                             </div>
                         </div>
@@ -161,25 +172,68 @@
                         </div>
                         <div class="card">
                             <div class="card-body">
-                                <div class="card-header bg-white border-0">
+                                <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
                                     <h6 class="mb-0 fw-semibold">Action Item Summary</h6>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editSummaryModal">
+                                        <i class="bx bx-edit-alt"></i> Edit
+                                    </button>
                                 </div>
                                 <div class="card-body">
-                                    <p class="text-muted mb-0">
+                                    <p class="text-muted mb-0" id="action-item-summary-text">
                                         {{ $data->action_item_summary }}
                                     </p>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="modal fade" id="editSummaryModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="editSummaryModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editSummaryModalLabel">Edit Action Item Summary</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <textarea class="form-control" id="editSummaryText" rows="8">{{ $data->action_item_summary }}</textarea>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-primary" id="saveSummaryBtn">Save</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="card">
                             <div class="card-body">
-                                <div class="card-header bg-white border-0">
+                                <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
                                     <h6 class="mb-0 fw-semibold">Action Item Details</h6>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editDetailsModal">
+                                        <i class="bx bx-edit-alt"></i> Edit
+                                    </button>
                                 </div>
                                 <div class="card-body">
-                                    <p class="text-muted mb-0">
+                                    <p class="text-muted mb-0" id="action-item-details-text">
                                         {{ $data->action_item_details }}
                                     </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal fade" id="editDetailsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="editDetailsModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editDetailsModalLabel">Edit Action Item Details</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <textarea class="form-control" id="editDetailsText" rows="8">{{ $data->action_item_details }}</textarea>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-primary" id="saveDetailsBtn">Save</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -278,6 +332,88 @@
 
         });
 
+        $('#saveSummaryBtn').click(function() {
+
+            let id = window.location.pathname.split('/').filter(Boolean).pop();
+            let summary = $('#editSummaryText').val();
+
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            $.ajax({
+                url: '/recon/update-summary/' + id,
+                type: 'POST',
+                data: {
+                    action_item_summary: summary
+                },
+
+                beforeSend: function() {
+                    $('#saveSummaryBtn').prop('disabled', true).text('Saving...');
+                },
+
+                success: function(response) {
+                    $('#action-item-summary-text').text(summary);
+                    $('#editSummaryModal').modal('hide');
+                    loadHistory();
+                    notifySuccess('Action Item Summary updated.');
+                },
+
+                error: function(xhr) {
+                    console.log(xhr.responseText);
+                    notifyError('Error saving Action Item Summary');
+                },
+
+                complete: function() {
+                    $('#saveSummaryBtn').prop('disabled', false).text('Save');
+                }
+            });
+
+        });
+
+        $('#saveDetailsBtn').click(function() {
+
+            let id = window.location.pathname.split('/').filter(Boolean).pop();
+            let details = $('#editDetailsText').val();
+
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            $.ajax({
+                url: '/recon/update-details/' + id,
+                type: 'POST',
+                data: {
+                    action_item_details: details
+                },
+
+                beforeSend: function() {
+                    $('#saveDetailsBtn').prop('disabled', true).text('Saving...');
+                },
+
+                success: function(response) {
+                    $('#action-item-details-text').text(details);
+                    $('#editDetailsModal').modal('hide');
+                    loadHistory();
+                    notifySuccess('Action Item Details updated.');
+                },
+
+                error: function(xhr) {
+                    console.log(xhr.responseText);
+                    notifyError('Error saving Action Item Details');
+                },
+
+                complete: function() {
+                    $('#saveDetailsBtn').prop('disabled', false).text('Save');
+                }
+            });
+
+        });
+
         function loadComments() {
             let id = window.location.pathname.split('/').filter(Boolean).pop();
 
@@ -301,8 +437,34 @@
             });
         }
 
+        // History tab: assign/status-change events, sourced from audit_trails
+        // (see historyList() in ReconTiketController) instead of the comment
+        // list, so real comments and system history stay visually separate.
+        function loadHistory() {
+            let id = window.location.pathname.split('/').filter(Boolean).pop();
+
+            $('#history').html(`
+            <div class="text-center p-3">
+                <div class="spinner-border text-primary"></div>
+                <div>Loading history...</div>
+            </div>
+            `);
+
+            $.ajax({
+                url: '/recon-view-history/' + id,
+                type: 'GET',
+                success: function(response) {
+                    $('#history').html(response);
+                },
+                error: function(xhr) {
+                    console.log(xhr.responseText);
+                }
+            });
+        }
+
         $(document).ready(function() {
             loadComments();
+            loadHistory();
         });
 
 
@@ -394,7 +556,9 @@
 
                     const data = await res.json();
                     console.log(data);
-                    loadComments();
+                    // Status changes are logged to audit_trails now, not as a
+                    // comment, so refresh History rather than Comments.
+                    loadHistory();
                 } catch (err) {
                     console.error("Request failed:", err);
                 }

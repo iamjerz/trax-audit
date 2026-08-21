@@ -3,7 +3,34 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <link rel="stylesheet" href="assets/libs/gridjs/theme/mermaid.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.css">
 @include('partials.header')
+<style>
+    /* Date Range Picker (daterangepicker.com) theming — matches this app's
+       primary accent (#556ee6, same shade used on the QA and Recon
+       dashboards' date filters and SweetAlert2 buttons) instead of the
+       library's own default colors (#08c / #357ebd). Plain selectors, not
+       CSS custom properties — this library doesn't expose theming vars —
+       with !important to beat the stylesheet loaded via <link> above. */
+    .daterangepicker td.active,
+    .daterangepicker td.active:hover {
+        background-color: #556ee6 !important;
+    }
+
+    .daterangepicker td.in-range {
+        background-color: rgba(85, 110, 230, 0.15) !important;
+    }
+
+    .daterangepicker .ranges li.active {
+        background-color: #556ee6 !important;
+        color: #fff !important;
+    }
+
+    .daterangepicker .applyBtn {
+        background-color: #556ee6 !important;
+        border-color: #556ee6 !important;
+    }
+</style>
 
 <body>
     <div id="layout-wrapper">
@@ -65,10 +92,9 @@
                                     </div>
                                     <div class="col-md-6 col-lg-3">
                                         <label class="form-label">Date Range (Recon Date)</label>
-                                        <div class="d-flex gap-2">
-                                            <input type="date" id="filter-date-from" class="form-control" placeholder="From">
-                                            <input type="date" id="filter-date-to" class="form-control" placeholder="To">
-                                        </div>
+                                        <input type="text" id="filter-date-range" class="form-control" placeholder="All dates" readonly>
+                                        <input type="hidden" id="filter-date-from">
+                                        <input type="hidden" id="filter-date-to">
                                     </div>
                                     <div class="col-12 d-flex justify-content-end">
                                         <button id="btn-reset-filters" class="btn btn-outline-secondary btn-sm">
@@ -101,6 +127,9 @@
     @include('partials.script')
     <!-- <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script> -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Date Range Picker (daterangepicker.com) — needs jQuery (above) + Moment.js loaded first -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.js"></script>
     <script src="assets/libs/gridjs/gridjs.umd.js"></script>
     <script>
         // ============================================================
@@ -385,14 +414,70 @@
             reloadGrid();
         }, 500));
 
-        // Selects + dates - reload immediately on change
-        // Note: Choices.js dispatches 'change' on the underlying <select>, so this works for both
-        ['filter-client-code', 'filter-carrier-code', 'filter-status', 'filter-date-from', 'filter-date-to'].forEach(id => {
+        // Selects - reload immediately on change
+        // Note: Choices.js dispatches 'change' on the underlying <select>, so this works for both.
+        // Date range is handled separately below (daterangepicker.com), since
+        // filter-date-from/filter-date-to are now hidden inputs driven by the
+        // picker's own events, not something a user types/changes directly.
+        ['filter-client-code', 'filter-carrier-code', 'filter-status'].forEach(id => {
             document.getElementById(id).addEventListener('change', (e) => {
                 const key = id.replace('filter-', '').replace(/-/g, '_');
                 filters[key] = e.target.value;
                 reloadGrid();
             });
+        });
+
+        // ============================================================
+        // Date Range picker (daterangepicker.com) — same widget/config as the
+        // QA and Recon dashboards: presets + calendars always visible
+        // together, one click applies (preset or manual range), theme
+        // matched to #556ee6.
+        // ============================================================
+        function reconTicketDaysAgo(n) {
+            return moment().startOf('day').subtract(n, 'days');
+        }
+
+        function reconTicketMonthsAgo(n) {
+            return moment().startOf('day').subtract(n, 'months');
+        }
+
+        const dateRangeInput = $('#filter-date-range');
+
+        dateRangeInput.daterangepicker({
+            autoUpdateInput: false, // keep the "All dates" placeholder until a range is actually chosen
+            autoApply: true, // no separate confirm click, for both presets and manual picks
+            alwaysShowCalendars: true, // presets + calendars visible together
+            maxDate: moment(), // this list only ever has past recon data
+            locale: {
+                format: 'MMM D, YYYY',
+                separator: ' - '
+            },
+            ranges: {
+                'Today': [moment().startOf('day'), moment().startOf('day')],
+                'Yesterday': [reconTicketDaysAgo(1), reconTicketDaysAgo(1)],
+                'Last 7 days': [reconTicketDaysAgo(7), moment().startOf('day')],
+                'Last 30 days': [reconTicketDaysAgo(30), moment().startOf('day')],
+                'Last 6 months': [reconTicketMonthsAgo(6), moment().startOf('day')],
+                'Last 1 year': [reconTicketMonthsAgo(12), moment().startOf('day')]
+            }
+        });
+
+        dateRangeInput.on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('MMM D, YYYY') + ' - ' + picker.endDate.format('MMM D, YYYY'));
+            filters.date_from = picker.startDate.format('YYYY-MM-DD');
+            filters.date_to = picker.endDate.format('YYYY-MM-DD');
+            document.getElementById('filter-date-from').value = filters.date_from;
+            document.getElementById('filter-date-to').value = filters.date_to;
+            reloadGrid();
+        });
+
+        dateRangeInput.on('cancel.daterangepicker', function () {
+            $(this).val('');
+            filters.date_from = '';
+            filters.date_to = '';
+            document.getElementById('filter-date-from').value = '';
+            document.getElementById('filter-date-to').value = '';
+            reloadGrid();
         });
 
         // Reset button
@@ -401,8 +486,18 @@
 
             // Plain inputs
             document.getElementById('filter-name').value = '';
+
+            // Date range picker: clear the visible input + hidden fields, and
+            // reset the picker's own internal state back to today so
+            // reopening the calendar doesn't still show a stale range.
+            dateRangeInput.val('');
             document.getElementById('filter-date-from').value = '';
             document.getElementById('filter-date-to').value = '';
+            const dateRangePickerInstance = dateRangeInput.data('daterangepicker');
+            if (dateRangePickerInstance) {
+                dateRangePickerInstance.setStartDate(moment());
+                dateRangePickerInstance.setEndDate(moment());
+            }
 
             // Choices.js dropdowns - reset to empty value
             ['filter-client-code', 'filter-carrier-code', 'filter-status'].forEach(id => {

@@ -114,6 +114,17 @@
                             @endforeach
                         </select>
                     </div>
+                    <div class="mb-3 col-lg-6">
+                        <label for="second-supervisor" class="form-label">2nd Supervisor</label>
+                        <select class="form-control dropdown-choices" data-trigger id="second-supervisor" placeholder="This is a search placeholder">
+                            <option value="">Select 2nd Supervisor</option>
+                            @foreach ($supervisors as $supervisor)
+                            <option value="{{ $supervisor->employeeid }}">
+                                {{ $supervisor->first_name }} {{ $supervisor->last_name }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>

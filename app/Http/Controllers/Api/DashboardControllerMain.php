@@ -9,27 +9,30 @@ use App\Models\Engagement;
 use App\Models\BusinessAnalytic;
 use App\Models\ProcessCompliance;
 use App\Models\Verification;
+use App\Http\Controllers\Api\Concerns\FiltersByManagerScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 
 class DashboardControllerMain extends Controller
 {
-    private const LDA_POSITIONS = ['LDA', 'Logistics Data Analyst'];
+    use FiltersByManagerScope;
 
     public function dashbaordCard(Request $request)
     {
         $from = $request->input('date_from');
         $to   = $request->input('date_to');
 
-        // Carrier Name + Manager/Supervisor scope (All | My Team) filters
-        $carrier = $request->input('carrier_name') ?: null;
-        $ldaIds  = $this->resolveScopeLdaIds($request->input('scope'));
+        // Carrier Name + Client Code + Manager/Supervisor scope (All | My Team) filters
+        $carrier    = $request->input('carrier_name') ?: null;
+        $clientCode = $request->input('client_code') ?: null;
+        $ldaIds     = $this->resolveScopeLdaIds($request->input('scope'));
 
         $auditQuery = UserInputAudit::query();
         if ($from) $auditQuery->whereDate('audit_date_1', '>=', $from);
         if ($to)   $auditQuery->whereDate('audit_date_1', '<=', $to);
         if ($carrier)          $auditQuery->where('carrier_name', $carrier);
+        if ($clientCode)       $auditQuery->where('client_code', $clientCode);
         if ($ldaIds !== null)  $auditQuery->whereIn('lda_id', $ldaIds);
         $auditCount = $auditQuery->count();
 
@@ -64,6 +67,7 @@ class DashboardControllerMain extends Controller
         if ($from) $scoresQuery->whereDate('a.audit_date_1', '>=', $from);
         if ($to)   $scoresQuery->whereDate('a.audit_date_1', '<=', $to);
         if ($carrier)          $scoresQuery->where('a.carrier_name', $carrier);
+        if ($clientCode)       $scoresQuery->where('a.client_code', $clientCode);
         if ($ldaIds !== null)  $scoresQuery->whereIn('a.lda_id', $ldaIds);
         $scores = $scoresQuery->get();
 
@@ -184,30 +188,93 @@ class DashboardControllerMain extends Controller
     }
 
     /**
-     * Evaluations per month for the last 12 months (trend line).
+     * Evaluations trend line. With no date filter this is the original fixed
+     * "last 12 calendar months" view. With a date filter active (date_from +
+     * date_to), the window and bucket size follow the selected range instead:
+     * daily buckets for a range of up to 31 days, monthly for up to ~24
+     * months, yearly beyond that — chosen so every preset on the date filter
+     * (Today, Last 7 days, Last 30 days, Last 6 months, Last 1 year) lands
+     * comfortably inside one tier instead of on a boundary.
      */
     public function trend(Request $request)
     {
-        $carrier = $request->input('carrier_name') ?: null;
-        $ldaIds  = $this->resolveScopeLdaIds($request->input('scope'));
+        $carrier    = $request->input('carrier_name') ?: null;
+        $clientCode = $request->input('client_code') ?: null;
+        $ldaIds     = $this->resolveScopeLdaIds($request->input('scope'));
+        $from       = $request->input('date_from');
+        $to         = $request->input('date_to');
+
+        $rangeStart = null;
+        $rangeEnd   = null;
+
+        if ($from && $to) {
+            try {
+                $rangeStart = \Carbon\Carbon::parse($from)->startOfDay();
+                $rangeEnd   = \Carbon\Carbon::parse($to)->startOfDay();
+                if ($rangeEnd->lt($rangeStart)) {
+                    [$rangeStart, $rangeEnd] = [$rangeEnd, $rangeStart];
+                }
+            } catch (\Throwable $e) {
+                $rangeStart = null;
+                $rangeEnd   = null;
+            }
+        }
+
+        if ($rangeStart && $rangeEnd) {
+            $spanDays = $rangeStart->diffInDays($rangeEnd) + 1;
+            $unit = $spanDays <= 31 ? 'day' : ($spanDays <= 730 ? 'month' : 'year');
+        } else {
+            // No (usable) date filter: unchanged default — fixed last 12 calendar months.
+            $rangeEnd   = \Carbon\Carbon::now();
+            $rangeStart = \Carbon\Carbon::now()->startOfMonth()->subMonths(11);
+            $unit       = 'month';
+        }
+
+        // Build the ordered bucket labels/keys for the chosen unit, spanning
+        // the calendar unit containing $rangeStart through the one containing $rangeEnd.
+        $labels = [];
+        $map    = [];
+        $cursor = $rangeStart->copy();
+
+        if ($unit === 'day') {
+            $keyFormat = 'Y-m-d';
+            while ($cursor->lte($rangeEnd)) {
+                $labels[] = $cursor->format('M j');
+                $map[$cursor->format($keyFormat)] = 0;
+                $cursor->addDay();
+            }
+        } elseif ($unit === 'month') {
+            $keyFormat = 'Y-m';
+            $cursor->startOfMonth();
+            $endBucket = $rangeEnd->copy()->startOfMonth();
+            while ($cursor->lte($endBucket)) {
+                $labels[] = $cursor->format('M Y');
+                $map[$cursor->format($keyFormat)] = 0;
+                $cursor->addMonth();
+            }
+        } else { // year
+            $keyFormat = 'Y';
+            $cursor->startOfYear();
+            $endBucket = $rangeEnd->copy()->startOfYear();
+            while ($cursor->lte($endBucket)) {
+                $labels[] = $cursor->format('Y');
+                $map[$cursor->format($keyFormat)] = 0;
+                $cursor->addYear();
+            }
+        }
 
         $datesQuery = DB::table('user_input_audits')
-            ->whereNotNull('audit_date_1');
+            ->whereNotNull('audit_date_1')
+            ->whereDate('audit_date_1', '>=', $rangeStart->toDateString())
+            ->whereDate('audit_date_1', '<=', $rangeEnd->toDateString());
         if ($carrier)          $datesQuery->where('carrier_name', $carrier);
+        if ($clientCode)       $datesQuery->where('client_code', $clientCode);
         if ($ldaIds !== null)  $datesQuery->whereIn('lda_id', $ldaIds);
         $dates = $datesQuery->pluck('audit_date_1');
 
-        $labels = [];
-        $map = [];
-        for ($i = 11; $i >= 0; $i--) {
-            $m = \Carbon\Carbon::now()->startOfMonth()->subMonths($i);
-            $labels[] = $m->format('M Y');
-            $map[$m->format('Y-m')] = 0;
-        }
-
         foreach ($dates as $d) {
             try {
-                $key = \Carbon\Carbon::parse($d)->format('Y-m');
+                $key = \Carbon\Carbon::parse($d)->format($keyFormat);
             } catch (\Throwable $e) {
                 continue;
             }
@@ -219,6 +286,7 @@ class DashboardControllerMain extends Controller
         return response()->json([
             'labels' => $labels,
             'counts' => array_values($map),
+            'unit'   => $unit,
         ]);
     }
 
@@ -238,101 +306,42 @@ class DashboardControllerMain extends Controller
             ->orderBy('carrier_name')
             ->pluck('carrier_name');
 
+        $clientCodes = DB::table('user_input_audits')
+            ->whereNotNull('client_code')
+            ->where('client_code', '!=', '')
+            ->distinct()
+            ->orderBy('client_code')
+            ->pluck('client_code');
+
         return response()->json([
             'carriers' => $carriers,
+            'client_codes' => $clientCodes,
+            'managers' => $this->managerPickerOptions(),
         ]);
     }
 
-    /**
-     * Resolve the "Manager / Supervisor" scope toggle into a list of LDA ids.
-     *  - scope = "my_team": every LDA beneath the current user in the org tree
-     *    (a manager gets their supervisors' LDAs too, all levels down).
-     *  - anything else ("All"): null, meaning no scope filter.
-     */
-    private function resolveScopeLdaIds(?string $scope): ?array
-    {
-        if (trim((string) $scope) !== 'my_team') {
-            return null;
-        }
-
-        $user = Auth::user();
-        if (! $user) {
-            return [];
-        }
-
-        $users  = $this->allUsersMinimal();
-        $ldaIds = [];
-
-        foreach ($this->descendants($user->employeeid, $users) as $eid => $u) {
-            if ($this->isLda($u->position)) {
-                $ldaIds[] = $eid;
-            }
-        }
-
-        // If the current user is themselves an LDA, include their own audits.
-        if ($this->isLda($user->position ?? null)) {
-            $ldaIds[] = $user->employeeid;
-        }
-
-        return array_values(array_unique($ldaIds));
-    }
-
-    private function allUsersMinimal()
-    {
-        return DB::table('users')
-            ->select('employeeid', 'supervisor_id', 'position', 'first_name', 'last_name')
-            ->get();
-    }
+    // managerPickerOptions() / resolveScopeLdaIds() / allUsersMinimal() /
+    // descendants() / isLda() now live in the FiltersByManagerScope trait
+    // (used above) — shared with DashboardReconController so both dashboards'
+    // Manager/Supervisor scope logic stays identical going forward.
 
     /**
-     * All employees strictly beneath $root in the supervisor_id tree,
-     * keyed by employeeid.
-     */
-    private function descendants(string $root, $users): array
-    {
-        $childrenBySup = [];
-        foreach ($users as $u) {
-            $sup = $u->supervisor_id;
-            if ($sup === null || $sup === '') {
-                continue;
-            }
-            $childrenBySup[$sup][] = $u;
-        }
-
-        $out   = [];
-        $stack = [$root];
-        while ($stack) {
-            $cur = array_pop($stack);
-            foreach ($childrenBySup[$cur] ?? [] as $child) {
-                if (!isset($out[$child->employeeid])) {
-                    $out[$child->employeeid] = $child;
-                    $stack[] = $child->employeeid;
-                }
-            }
-        }
-
-        return $out;
-    }
-
-    private function isLda(?string $position): bool
-    {
-        return in_array($position, self::LDA_POSITIONS, true);
-    }
-
-    /**
-     * Apply the dashboard filters (date range, carrier, All/My Team scope) to a
-     * query, where $alias is the alias of the user_input_audits table in it.
+     * Apply the dashboard filters (date range, carrier, client code, All/My
+     * Team scope) to a query, where $alias is the alias of the
+     * user_input_audits table in it.
      */
     private function applyAuditFilters($query, Request $request, string $alias): void
     {
-        $from    = $request->input('date_from');
-        $to      = $request->input('date_to');
-        $carrier = $request->input('carrier_name') ?: null;
-        $ldaIds  = $this->resolveScopeLdaIds($request->input('scope'));
+        $from       = $request->input('date_from');
+        $to         = $request->input('date_to');
+        $carrier    = $request->input('carrier_name') ?: null;
+        $clientCode = $request->input('client_code') ?: null;
+        $ldaIds     = $this->resolveScopeLdaIds($request->input('scope'));
 
         if ($from)             $query->whereDate("$alias.audit_date_1", '>=', $from);
         if ($to)               $query->whereDate("$alias.audit_date_1", '<=', $to);
         if ($carrier)          $query->where("$alias.carrier_name", $carrier);
+        if ($clientCode)       $query->where("$alias.client_code", $clientCode);
         if ($ldaIds !== null)  $query->whereIn("$alias.lda_id", $ldaIds);
     }
 

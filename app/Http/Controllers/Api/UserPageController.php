@@ -54,6 +54,7 @@ class UserPageController extends Controller
             'position' => 'required|string|max:255|exists:positions,name',
             'department' => 'required|string|max:255',
             'supervisor_id' => 'required|string|max:255',
+            'second_supervisor_id' => 'nullable|string|max:255',
             'email' => 'required|email|unique:users,email',
             'role' => 'nullable|string',
             'status' => 'nullable|string',
@@ -75,6 +76,7 @@ class UserPageController extends Controller
             'position_id' => Position::where('name', $request->position)->value('id'),
             'department' => $request->department,
             'supervisor_id' => $request->supervisor_id,
+            'second_supervisor_id' => $request->second_supervisor_id,
             'email' => $request->email,
             'password' => Hash::make('password123'), // 👈 default password
 
@@ -214,6 +216,7 @@ class UserPageController extends Controller
             'department' => 'nullable|string',
             'role' => 'required|string',
             'supervisor_id' => 'nullable|string',
+            'second_supervisor_id' => 'nullable|string',
             'status' => 'required|string',
             'position' => 'required|string|exists:positions,name',
         ]);

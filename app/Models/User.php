@@ -29,6 +29,7 @@ class User extends Authenticatable
         'status',
         'profile_photo_path',
         'supervisor_id',
+        'second_supervisor_id',
         'email',
         'email_verified_at',
         'password',

@@ -36,15 +36,19 @@ class DataSourceController extends Controller
                 break;
 
             case 'triad':
-                $data = TriadItems::with([
-                    'user_info:employeeid,first_name,last_name,email'
-                ])->get();
+                $data = $this->resolveTriadEmployees(
+                    TriadItems::with([
+                        'user_info:employeeid,first_name,last_name,email'
+                    ])->get()
+                );
                 break;
 
             case 'coaching':
-                $data = Coaching::with([
-                    'user_info:employeeid,first_name,last_name,email'
-                ])->get();
+                $data = $this->resolveCoachedEmployees(
+                    Coaching::with([
+                        'user_info:employeeid,first_name,last_name,email'
+                    ])->get()
+                );
                 break;
 
             default:
@@ -87,17 +91,21 @@ class DataSourceController extends Controller
     }
 
     public function triad(){
-        $data = TriadItems::with([
+        $data = $this->resolveTriadEmployees(
+            TriadItems::with([
                     'user_info:employeeid,first_name,last_name,email'
-                ])->get();
+                ])->get()
+        );
         $this->logAccess('triad', $data->count());
         return response()->json($data);
     }
 
     public function coaching(){
-        $data = Coaching::with([
+        $data = $this->resolveCoachedEmployees(
+            Coaching::with([
                     'user_info:employeeid,first_name,last_name,email'
-                ])->get();
+                ])->get()
+        );
         $this->logAccess('coaching', $data->count());
         return response()->json($data);
     }
@@ -134,6 +142,154 @@ class DataSourceController extends Controller
                 ? trim(($aud->first_name ?? '') . ' ' . ($aud->last_name ?? ''))
                 : $row->auditors_name;
             $data['auditors_email']  = $aud->email ?? null;
+
+            return $data;
+        });
+    }
+
+    /**
+     * Attach the "coached employee" (the LDA whose ticket the coaching
+     * session relates to) plus a flat coach name/email to each coaching
+     * row. The coachings table only stores `reference` (the underlying
+     * ticket's own reference number) and `reference_type` -- since we
+     * can't rely on knowing every string value `reference_type` might
+     * hold, we instead try to match `reference` against each of the
+     * three ticket sources directly and use whichever one hits:
+     *   - QA Monitoring: user_input_audits.audit_id   -> lda_id (employeeid)
+     *   - Triad:         triad_items.reference        -> created_by (employeeid)
+     *   - Recon:         recon_action_items.submission_id -> lda_email (email)
+     */
+    private function resolveCoachedEmployees($rows)
+    {
+        $references = $rows->pluck('reference')->filter()->unique()->values();
+
+        $qaMatches = DB::table('user_input_audits')
+            ->whereIn('audit_id', $references)
+            ->pluck('lda_id', 'audit_id');
+
+        $triadMatches = DB::table('triad_items')
+            ->whereIn('reference', $references)
+            ->pluck('created_by', 'reference');
+
+        $reconMatches = DB::table('recon_action_items')
+            ->whereIn('submission_id', $references)
+            ->pluck('lda_email', 'submission_id');
+
+        $employeeIds = $qaMatches->values()
+            ->merge($triadMatches->values())
+            ->filter()
+            ->unique()
+            ->values();
+
+        $usersByEmployeeId = DB::table('users')
+            ->whereIn('employeeid', $employeeIds)
+            ->get(['employeeid', 'first_name', 'last_name', 'email'])
+            ->keyBy('employeeid');
+
+        $reconEmails = $reconMatches->values()->filter()->unique()->values();
+
+        $usersByEmail = DB::table('users')
+            ->whereIn('email', $reconEmails)
+            ->get(['employeeid', 'first_name', 'last_name', 'email'])
+            ->keyBy('email');
+
+        return $rows->map(function ($row) use ($qaMatches, $triadMatches, $reconMatches, $usersByEmployeeId, $usersByEmail) {
+            $data = $row->toArray();
+
+            $coachedName  = null;
+            $coachedEmail = null;
+
+            if ($row->reference && $qaMatches->has($row->reference)) {
+                $u = $usersByEmployeeId->get($qaMatches->get($row->reference));
+                if ($u) {
+                    $coachedName  = trim(($u->first_name ?? '') . ' ' . ($u->last_name ?? ''));
+                    $coachedEmail = $u->email;
+                }
+            } elseif ($row->reference && $triadMatches->has($row->reference)) {
+                $u = $usersByEmployeeId->get($triadMatches->get($row->reference));
+                if ($u) {
+                    $coachedName  = trim(($u->first_name ?? '') . ' ' . ($u->last_name ?? ''));
+                    $coachedEmail = $u->email;
+                }
+            } elseif ($row->reference && $reconMatches->has($row->reference)) {
+                $email = $reconMatches->get($row->reference);
+                $u = $usersByEmail->get($email);
+                $coachedName  = $u ? trim(($u->first_name ?? '') . ' ' . ($u->last_name ?? '')) : null;
+                $coachedEmail = $u->email ?? $email;
+            }
+
+            $data['coached_employee_name']  = $coachedName;
+            $data['coached_employee_email'] = $coachedEmail;
+
+            $data['coach_name'] = $row->user_info
+                ? trim(($row->user_info->first_name ?? '') . ' ' . ($row->user_info->last_name ?? ''))
+                : null;
+            $data['coach_email'] = $row->user_info->email ?? null;
+
+            return $data;
+        });
+    }
+
+    /**
+     * Attach the "triad'd employee" (the LDA whose ticket the triad
+     * review relates to) plus a flat reviewer name/email to each triad
+     * row. Same approach as resolveCoachedEmployees(): triad_items only
+     * stores `reference` (the underlying ticket's own reference number),
+     * with no type column, so we match it against each candidate ticket
+     * source directly and use whichever one hits:
+     *   - QA Monitoring: user_input_audits.audit_id      -> lda_id (employeeid)
+     *   - Recon:         recon_action_items.submission_id -> lda_email (email)
+     */
+    private function resolveTriadEmployees($rows)
+    {
+        $references = $rows->pluck('reference')->filter()->unique()->values();
+
+        $qaMatches = DB::table('user_input_audits')
+            ->whereIn('audit_id', $references)
+            ->pluck('lda_id', 'audit_id');
+
+        $reconMatches = DB::table('recon_action_items')
+            ->whereIn('submission_id', $references)
+            ->pluck('lda_email', 'submission_id');
+
+        $usersByEmployeeId = DB::table('users')
+            ->whereIn('employeeid', $qaMatches->values()->filter()->unique()->values())
+            ->get(['employeeid', 'first_name', 'last_name', 'email'])
+            ->keyBy('employeeid');
+
+        $reconEmails = $reconMatches->values()->filter()->unique()->values();
+
+        $usersByEmail = DB::table('users')
+            ->whereIn('email', $reconEmails)
+            ->get(['employeeid', 'first_name', 'last_name', 'email'])
+            ->keyBy('email');
+
+        return $rows->map(function ($row) use ($qaMatches, $reconMatches, $usersByEmployeeId, $usersByEmail) {
+            $data = $row->toArray();
+
+            $employeeName  = null;
+            $employeeEmail = null;
+
+            if ($row->reference && $qaMatches->has($row->reference)) {
+                $u = $usersByEmployeeId->get($qaMatches->get($row->reference));
+                if ($u) {
+                    $employeeName  = trim(($u->first_name ?? '') . ' ' . ($u->last_name ?? ''));
+                    $employeeEmail = $u->email;
+                }
+            } elseif ($row->reference && $reconMatches->has($row->reference)) {
+                $email = $reconMatches->get($row->reference);
+                $u = $usersByEmail->get($email);
+                $employeeName  = $u ? trim(($u->first_name ?? '') . ' ' . ($u->last_name ?? '')) : null;
+                $employeeEmail = $u->email ?? $email;
+            }
+
+            $data['triad_employee_name']  = $employeeName;
+            $data['triad_employee_email'] = $employeeEmail;
+
+            $data['reviewer_name'] = $row->user_info
+                ? trim(($row->user_info->first_name ?? '') . ' ' . ($row->user_info->last_name ?? ''))
+                : null;
+            $data['reviewer_email'] = $row->user_info->email ?? null;
 
             return $data;
         });

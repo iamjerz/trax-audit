@@ -412,9 +412,6 @@ class ReconTiketController extends Controller
                 ->where('employeeid', $request->input('assigned_to'))
                 ->first();
 
-
-            $this->logComment($id, "Assigned to {$old_user->first_name} {$old_user->last_name}");
-
             AuditTrail::record([
                 'event'          => 'assigned',
                 'description'    => "Recon ticket {$id} assigned to {$old_user->first_name} {$old_user->last_name}",
@@ -461,14 +458,115 @@ class ReconTiketController extends Controller
 
 
 
-    private function logComment($submission_id, $comment)
+    /**
+     * Assign/status-change history for one ticket — sourced from audit_trails
+     * (already written by insertAssignTo()/ChangeStatus() below via
+     * AuditTrail::record(), which auto-fills actor_name from the logged-in
+     * user) instead of recon_item_comments, which is genuine user comments
+     * only. This used to be logged into recon_item_comments too (via a
+     * logComment() call alongside the AuditTrail::record() call), making a
+     * ticket's real comments indistinguishable from its system-generated
+     * assign/status history — that dual-write has been removed; anything
+     * from before this change stays in recon_item_comments as-is (not
+     * retroactively cleaned up), but is quite bounded and only affected
+     * tickets that changed status/assignment before this file was updated.
+     */
+    public function historyList($id)
     {
-        DB::table('recon_item_comments')->insert([
-            'submission_id' => $submission_id,
-            'comments'      => $comment,
-            'employeeid'    => auth()->user()->employeeid,
-            'created_at'    => now(),
-            'updated_at'    => now()
+        $history = DB::table('audit_trails')
+            ->where('auditable_type', 'recon_action_items')
+            ->where('auditable_id', $id)
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return view('sub.reconhistory', compact('history'));
+    }
+
+    /**
+     * Edit the Action Item Summary field on a ticket. Only logs to
+     * audit_trails (surfaces on the History tab) when the value actually
+     * changed, so re-saving the same text via the edit modal doesn't create
+     * pointless history noise.
+     */
+    public function updateActionItemSummary(Request $request, $id)
+    {
+        $request->validate([
+            'action_item_summary' => 'nullable|string',
+        ]);
+
+        $record = DB::table('recon_action_items')->where('submission_id', $id)->first();
+
+        if (! $record) {
+            return response()->json([
+                'status'  => 404,
+                'message' => 'Record not found.',
+            ], 404);
+        }
+
+        $old = $record->action_item_summary;
+        $new = $request->input('action_item_summary');
+
+        DB::table('recon_action_items')
+            ->where('submission_id', $id)
+            ->update(['action_item_summary' => $new]);
+
+        if ($old !== $new) {
+            AuditTrail::record([
+                'event'          => 'updated',
+                'description'    => "Recon ticket {$id} Action Item Summary updated",
+                'auditable_type' => 'recon_action_items',
+                'auditable_id'   => $id,
+                'old_values'     => ['action_item_summary' => $old],
+                'new_values'     => ['action_item_summary' => $new],
+            ]);
+        }
+
+        return response()->json([
+            'status'  => 200,
+            'message' => 'Action Item Summary updated successfully',
+        ]);
+    }
+
+    /**
+     * Edit the Action Item Details field on a ticket — same shape as
+     * updateActionItemSummary() above, just the other field.
+     */
+    public function updateActionItemDetails(Request $request, $id)
+    {
+        $request->validate([
+            'action_item_details' => 'nullable|string',
+        ]);
+
+        $record = DB::table('recon_action_items')->where('submission_id', $id)->first();
+
+        if (! $record) {
+            return response()->json([
+                'status'  => 404,
+                'message' => 'Record not found.',
+            ], 404);
+        }
+
+        $old = $record->action_item_details;
+        $new = $request->input('action_item_details');
+
+        DB::table('recon_action_items')
+            ->where('submission_id', $id)
+            ->update(['action_item_details' => $new]);
+
+        if ($old !== $new) {
+            AuditTrail::record([
+                'event'          => 'updated',
+                'description'    => "Recon ticket {$id} Action Item Details updated",
+                'auditable_type' => 'recon_action_items',
+                'auditable_id'   => $id,
+                'old_values'     => ['action_item_details' => $old],
+                'new_values'     => ['action_item_details' => $new],
+            ]);
+        }
+
+        return response()->json([
+            'status'  => 200,
+            'message' => 'Action Item Details updated successfully',
         ]);
     }
 
@@ -486,9 +584,6 @@ class ReconTiketController extends Controller
             ]);
 
         if ($updated) {
-
-        
-            $this->logComment($id, "Status changed from $old to " . $request->input('status'));
 
             AuditTrail::record([
                 'event'          => 'status_changed',

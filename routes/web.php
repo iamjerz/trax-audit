@@ -179,6 +179,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard-recon-table-top10', [DashboardReconController::class, 'Top10Breakdown']);
         Route::get('/dashboard-recon-chart-clientcode', [DashboardReconController::class, 'TopClientsChart']);
         Route::get('/dashboard-recon-chart-carriercode', [DashboardReconController::class, 'TopCarriers']);
+        Route::get('/dashboard-recon-filter-options', [DashboardReconController::class, 'filterOptions']);
     });
 
     Route::middleware('page:dashboard-triad')->group(function () {
@@ -286,8 +287,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/recon-ticket-view/{id}', [ReconTiketController::class, 'fullDetails']);
         Route::post('/recon-ticket-add-comment', [ReconTiketController::class, 'addCommentToTicket']);
         Route::get('/recon-view-comment/{id}', [ReconTiketController::class, 'viewComment']);
+        Route::get('/recon-view-history/{id}', [ReconTiketController::class, 'historyList']);
         Route::post('/recon/assignto/{id}', [ReconTiketController::class, 'insertAssignTo']);
         Route::post('/recon/status-change/{id}', [ReconTiketController::class, 'ChangeStatus']);
+        Route::post('/recon/update-summary/{id}', [ReconTiketController::class, 'updateActionItemSummary']);
+        Route::post('/recon/update-details/{id}', [ReconTiketController::class, 'updateActionItemDetails']);
         Route::get('/export/recon', [ExportController::class, 'recon'])->name('export.recon');
     });
     // Deleting a recon ticket stays admin-only regardless of page access.

@@ -197,6 +197,7 @@ document.getElementById("update-assigned-to").addEventListener("click", function
         position: document.getElementById("position").value,
         role: document.getElementById("role").value,
         supervisor_id: document.getElementById("supervisor").value,
+        second_supervisor_id: document.getElementById("second-supervisor").value,
     };
 
 
