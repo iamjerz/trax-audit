@@ -159,14 +159,14 @@
                 @endif
                 <!-- Dashboard End -->
                 @if($pageAccess->contains('monitoring-form'))
-                <li class="menu-title" data-key="t-menu">Forms</li>
+                <!-- <li class="menu-title" data-key="t-menu">Forms</li>
                 <li>
                     <a href="/monitoringform">
                         <i class="bx bx-food-menu icon nav-icon"></i>
                         <span class="menu-item" data-key="t-calendar">QA Monitoring Form</span>
                     </a>
 
-                </li>
+                </li> -->
                 @endif
                 <!-- <li>
                     <a href="/viewcoaching">

@@ -220,7 +220,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::middleware('page:monitoring-form')->group(function () {
-        Route::get('/monitoringform', [UserListMonitoringPage::class, 'UserList'])->name('monitoringform');
+        // Route::get('/monitoringform', [UserListMonitoringPage::class, 'UserList'])->name('monitoringform');
         Route::post('/api/audits', [AuditController::class, 'store']);
     });
 
