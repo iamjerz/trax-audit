@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use App\Models\UserInputAudit;
+use App\Support\AccessRoles;
 
 
 
@@ -72,7 +73,16 @@ class ViewTicket extends Controller
                 ->first();
         }
 
-        return view('viewticket', compact('ticketid', 'data', 'triad_exists', 'coaching_exists', 'acknowledgement'));
+        // "Is this Calibration?" is only editable by admins.
+        $access = AccessRoles::expand(
+            DB::table('extension_access')
+                ->where('employeeid', auth()->user()->employeeid)
+                ->pluck('access_type')
+                ->all()
+        );
+        $isAdmin = in_array('admin', $access, true);
+
+        return view('viewticket', compact('ticketid', 'data', 'triad_exists', 'coaching_exists', 'acknowledgement', 'isAdmin'));
 
 
     }

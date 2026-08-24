@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 
 @include('partials.header')
 
@@ -93,10 +94,17 @@
                                                 <tr>
                                                     <th class="fw-bold">Is this Callibration? :</th>
                                                     <td class="">
+                                                        <span id="calibration-badge">
                                                         @if($data->is_calibration)
                                                             <button type="button" class="btn btn-subtle-success waves-effect waves-light"><i class="bx bx-check-double font-size-16 align-middle"></i></button>
                                                         @else
                                                         <button type="button" class="btn btn-subtle-danger  waves-effect waves-light"><i class="bx bx-block font-size-16 align-middle"></i></button>
+                                                        @endif
+                                                        </span>
+                                                        @if($isAdmin)
+                                                        <button type="button" class="btn btn-sm btn-outline-primary ms-1" data-bs-toggle="modal" data-bs-target="#editCalibrationModal" title="Edit (Admin only)">
+                                                            <i class="bx bx-edit-alt"></i>
+                                                        </button>
                                                         @endif
 
                                                     </td>
@@ -949,12 +957,85 @@
                 
 
                 
+                @if($isAdmin)
+                <div class="modal fade" id="editCalibrationModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="editCalibrationModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editCalibrationModalLabel">Edit "Is this Calibration?"</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <select class="form-select" id="editCalibrationSelect">
+                                    <option value="1" @selected($data->is_calibration)>Yes</option>
+                                    <option value="0" @selected(!$data->is_calibration)>No</option>
+                                </select>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" id="saveCalibrationBtn">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
                 <!-- end modal -->
 
             </div>
         </div>
     </div>
     @include('partials.script')
+    <script>
+        (function () {
+            var saveBtn = document.getElementById('saveCalibrationBtn');
+            if (!saveBtn) return; // not an admin — nothing to wire up
+
+            var auditId = @json($data->audit_id);
+
+            saveBtn.addEventListener('click', function () {
+                var select = document.getElementById('editCalibrationSelect');
+                var isCalibration = select.value === '1';
+
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving...';
+
+                fetch('/ticket/' + encodeURIComponent(auditId) + '/update-calibration', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ is_calibration: isCalibration })
+                })
+                    .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+                    .then(function (result) {
+                        if (!result.ok) {
+                            throw new Error(result.data.message || 'Update failed.');
+                        }
+
+                        var badge = document.getElementById('calibration-badge');
+                        if (result.data.is_calibration) {
+                            badge.innerHTML = '<button type="button" class="btn btn-subtle-success waves-effect waves-light"><i class="bx bx-check-double font-size-16 align-middle"></i></button>';
+                        } else {
+                            badge.innerHTML = '<button type="button" class="btn btn-subtle-danger  waves-effect waves-light"><i class="bx bx-block font-size-16 align-middle"></i></button>';
+                        }
+
+                        var modalEl = document.getElementById('editCalibrationModal');
+                        bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+
+                        notifySuccess('Calibration status updated.');
+                    })
+                    .catch(function (err) {
+                        notifyError(err.message || 'Something went wrong.');
+                    })
+                    .finally(function () {
+                        saveBtn.disabled = false;
+                        saveBtn.textContent = 'Save';
+                    });
+            });
+        })();
+    </script>
 </body>
 
 </html>

@@ -245,6 +245,9 @@ Route::middleware('auth')->group(function () {
     // Deleting a QA Monitoring ticket stays admin-only regardless of page access.
     Route::delete('/monitoring-ticket/{id}', [MonitoringTicket::class, 'destroy'])
         ->middleware('access:admin');
+    // Editing the "Is this Calibration?" flag on a ticket also stays admin-only.
+    Route::post('/ticket/{id}/update-calibration', [MonitoringTicket::class, 'updateCalibration'])
+        ->middleware('access:admin');
 
     /* -----------------------------------------------------------------
      | Management Reports — each report is its own independently-assignable page

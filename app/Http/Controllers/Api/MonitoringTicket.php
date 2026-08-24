@@ -74,6 +74,53 @@ class MonitoringTicket extends Controller
         ]);
     }
 
+    /**
+     * Admin-only: flip the "Is this Calibration?" flag on a QA monitoring
+     * ticket. Route is already gated with access:admin, so no extra check
+     * needed here. Only writes/logs when the value actually changes.
+     */
+    public function updateCalibration(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'is_calibration' => 'required|boolean',
+        ]);
+
+        $audit = DB::table('user_input_audits')->where('audit_id', $id)->first();
+
+        if (! $audit) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Record not found.',
+            ], 404);
+        }
+
+        $newValue = (bool) $validated['is_calibration'];
+        $oldValue = (bool) $audit->is_calibration;
+
+        if ($newValue !== $oldValue) {
+            DB::table('user_input_audits')
+                ->where('audit_id', $id)
+                ->update(['is_calibration' => $newValue]);
+
+            AuditTrail::record([
+                'event'          => 'updated',
+                'description'    => 'Changed "Is this Calibration?" from '
+                    . ($oldValue ? 'Yes' : 'No') . ' to ' . ($newValue ? 'Yes' : 'No')
+                    . ' on audit ' . $id,
+                'auditable_type' => 'user_input_audits',
+                'auditable_id'   => $id,
+                'old_values'     => ['is_calibration' => $oldValue],
+                'new_values'     => ['is_calibration' => $newValue],
+            ]);
+        }
+
+        return response()->json([
+            'status'         => 'success',
+            'message'        => 'Calibration status updated.',
+            'is_calibration' => $newValue,
+        ]);
+    }
+
     public function displayTicket(Request $request)
     {
         try {
