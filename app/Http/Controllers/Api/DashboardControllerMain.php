@@ -24,9 +24,10 @@ class DashboardControllerMain extends Controller
         $to   = $request->input('date_to');
 
         // Carrier Name + Client Code + Manager/Supervisor scope (All | My Team) filters
-        $carrier    = $request->input('carrier_name') ?: null;
-        $clientCode = $request->input('client_code') ?: null;
-        $ldaIds     = $this->resolveScopeLdaIds($request->input('scope'));
+        $carrier            = $request->input('carrier_name') ?: null;
+        $clientCode         = $request->input('client_code') ?: null;
+        $ldaIds             = $this->resolveScopeLdaIds($request->input('scope'));
+        $excludeCalibration = $request->boolean('exclude_calibration');
 
         $auditQuery = UserInputAudit::query();
         if ($from) $auditQuery->whereDate('audit_date_1', '>=', $from);
@@ -34,6 +35,7 @@ class DashboardControllerMain extends Controller
         if ($carrier)          $auditQuery->where('carrier_name', $carrier);
         if ($clientCode)       $auditQuery->where('client_code', $clientCode);
         if ($ldaIds !== null)  $auditQuery->whereIn('lda_id', $ldaIds);
+        if ($excludeCalibration) $auditQuery->where('is_calibration', false);
         $auditCount = $auditQuery->count();
 
         // Data uses the position label "LDA"; accept the long form too for safety.
@@ -69,6 +71,7 @@ class DashboardControllerMain extends Controller
         if ($carrier)          $scoresQuery->where('a.carrier_name', $carrier);
         if ($clientCode)       $scoresQuery->where('a.client_code', $clientCode);
         if ($ldaIds !== null)  $scoresQuery->whereIn('a.lda_id', $ldaIds);
+        if ($excludeCalibration) $scoresQuery->where('a.is_calibration', false);
         $scores = $scoresQuery->get();
 
         $aboveAverage = 0;
@@ -198,9 +201,10 @@ class DashboardControllerMain extends Controller
      */
     public function trend(Request $request)
     {
-        $carrier    = $request->input('carrier_name') ?: null;
-        $clientCode = $request->input('client_code') ?: null;
-        $ldaIds     = $this->resolveScopeLdaIds($request->input('scope'));
+        $carrier            = $request->input('carrier_name') ?: null;
+        $clientCode         = $request->input('client_code') ?: null;
+        $ldaIds             = $this->resolveScopeLdaIds($request->input('scope'));
+        $excludeCalibration = $request->boolean('exclude_calibration');
         $from       = $request->input('date_from');
         $to         = $request->input('date_to');
 
@@ -270,6 +274,7 @@ class DashboardControllerMain extends Controller
         if ($carrier)          $datesQuery->where('carrier_name', $carrier);
         if ($clientCode)       $datesQuery->where('client_code', $clientCode);
         if ($ldaIds !== null)  $datesQuery->whereIn('lda_id', $ldaIds);
+        if ($excludeCalibration) $datesQuery->where('is_calibration', false);
         $dates = $datesQuery->pluck('audit_date_1');
 
         foreach ($dates as $d) {
@@ -332,17 +337,19 @@ class DashboardControllerMain extends Controller
      */
     private function applyAuditFilters($query, Request $request, string $alias): void
     {
-        $from       = $request->input('date_from');
-        $to         = $request->input('date_to');
-        $carrier    = $request->input('carrier_name') ?: null;
-        $clientCode = $request->input('client_code') ?: null;
-        $ldaIds     = $this->resolveScopeLdaIds($request->input('scope'));
+        $from               = $request->input('date_from');
+        $to                 = $request->input('date_to');
+        $carrier            = $request->input('carrier_name') ?: null;
+        $clientCode         = $request->input('client_code') ?: null;
+        $ldaIds             = $this->resolveScopeLdaIds($request->input('scope'));
+        $excludeCalibration = $request->boolean('exclude_calibration');
 
         if ($from)             $query->whereDate("$alias.audit_date_1", '>=', $from);
         if ($to)               $query->whereDate("$alias.audit_date_1", '<=', $to);
         if ($carrier)          $query->where("$alias.carrier_name", $carrier);
         if ($clientCode)       $query->where("$alias.client_code", $clientCode);
         if ($ldaIds !== null)  $query->whereIn("$alias.lda_id", $ldaIds);
+        if ($excludeCalibration) $query->where("$alias.is_calibration", false);
     }
 
 }

@@ -103,6 +103,13 @@
                                     <option value="my_team">My Team</option>
                                 </select>
                             </div>
+                            <div class="col-md-2">
+                                <label class="form-label font-size-13 mb-1 d-block">Calibration</label>
+                                <div class="form-check form-switch mt-1">
+                                    <input class="form-check-input" type="checkbox" id="dash-exclude-calibration">
+                                    <label class="form-check-label" for="dash-exclude-calibration">Remove calibration tickets</label>
+                                </div>
+                            </div>
                             <div class="col-12 mt-3">
                                 <button type="button" id="dash-apply" class="btn btn-sm btn-primary">Apply</button>
                                 <button type="button" id="dash-reset" class="btn btn-sm btn-light">Reset</button>
@@ -314,11 +321,12 @@
 
         // Build the shared query string from every dashboard filter.
         function dashFilterParams() {
-            const from       = document.getElementById("dash-date-from").value;
-            const to         = document.getElementById("dash-date-to").value;
-            const carrier    = document.getElementById("dash-carrier").value;
-            const clientCode = document.getElementById("dash-client-code").value;
-            const scope      = document.getElementById("dash-supervisor").value;
+            const from               = document.getElementById("dash-date-from").value;
+            const to                 = document.getElementById("dash-date-to").value;
+            const carrier            = document.getElementById("dash-carrier").value;
+            const clientCode         = document.getElementById("dash-client-code").value;
+            const scope              = document.getElementById("dash-supervisor").value;
+            const excludeCalibration = document.getElementById("dash-exclude-calibration").checked;
 
             const params = new URLSearchParams();
             if (from) params.append("date_from", from);
@@ -326,6 +334,7 @@
             if (carrier) params.append("carrier_name", carrier);
             if (clientCode) params.append("client_code", clientCode);
             if (scope) params.append("scope", scope);
+            if (excludeCalibration) params.append("exclude_calibration", "1");
             return params;
         }
 
@@ -858,6 +867,7 @@
             if (dashChoices["dash-carrier"]) dashChoices["dash-carrier"].setChoiceByValue("");
             if (dashChoices["dash-client-code"]) dashChoices["dash-client-code"].setChoiceByValue("");
             if (dashChoices["dash-supervisor"]) dashChoices["dash-supervisor"].setChoiceByValue("");
+            document.getElementById("dash-exclude-calibration").checked = false;
             reloadDashboard();
         });
 
