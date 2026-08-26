@@ -47,8 +47,8 @@
                                     <div class="col-md-6">
                                         <small class="text-muted">Recon Call Date</small>
                                         <div class="fw-semibold">
-
-                                            {{ \Carbon\Carbon::parse($data->recon_call_date)->format('F d, Y') }}
+                                            {{ $data->recon_call_date }}
+                                            <!-- {{ \Carbon\Carbon::parse($data->recon_call_date)->format('F d, Y') }} -->
                                         </div>
                                     </div>
                                     <div class="col-md-6">

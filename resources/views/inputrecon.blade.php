@@ -192,13 +192,13 @@
                 name: 'Recon Date',
                 formatter: (cell) => {
                     if (!cell) return '';
-                    const date = new Date(cell);
-                    if (isNaN(date)) return cell;
-                    return date.toLocaleDateString('en-PH', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                    });
+                    const parts = String(cell).split('-');
+                    if (parts.length !== 3) return cell;
+                    const [year, month, day] = parts;
+                    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                    const monthIndex = parseInt(month, 10) - 1;
+                    if (monthIndex < 0 || monthIndex > 11) return cell;
+                    return `${months[monthIndex]} ${parseInt(day, 10)}, ${year}`;
                 }
             },
             'Client Code',
