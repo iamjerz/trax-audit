@@ -32,7 +32,8 @@ class ReconExport extends DefaultValueBinder implements FromArray, WithHeadings,
         return [
             'Submission ID', 'Name', 'Recon Date', 'Client Code', 'Carrier Code',
             'Region', 'Action Item Summary', 'Action Item Details', 'Jira Ticket',
-            'Status', 'Created At',
+            'Status', 'Created At', 'Secondary Owner', 'Target Completion Date',
+            'Action Owner', 'Invoice Status',
         ];
     }
 
@@ -66,9 +67,11 @@ class ReconExport extends DefaultValueBinder implements FromArray, WithHeadings,
 
         $query = DB::table('recon_action_items')
             ->leftJoin('users', 'recon_action_items.lda_email', '=', 'users.email')
+            ->leftJoin('users as assignee', 'recon_action_items.assigned_to', '=', 'assignee.employeeid')
             ->select(
                 'recon_action_items.*',
-                DB::raw("users.first_name || ' ' || users.last_name as full_name")
+                DB::raw("users.first_name || ' ' || users.last_name as full_name"),
+                DB::raw("assignee.first_name || ' ' || assignee.last_name as assignee_name")
             );
 
         // 🔍 Global search (same as the list endpoint)
@@ -126,6 +129,10 @@ class ReconExport extends DefaultValueBinder implements FromArray, WithHeadings,
                     $r->jira_ticket,
                     $r->status,
                     $r->created_at,
+                    $r->assignee_name,
+                    $r->completion_date,
+                    $r->action_owner,
+                    $r->invoice_status,
                 ];
             })
             ->toArray();

@@ -93,6 +93,24 @@
                                             {{ ($assignTo->FirstName ?? 'N/A') . ' ' . ($assignTo->LastName ?? '') }}
                                         </div>
                                     </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">Target Completion Date</small>
+                                        <div class="fw-semibold">
+                                            {{ $data->completion_date }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">Action Owner Owner</small>
+                                        <div class="fw-semibold">
+                                            {{ $data->action_owner }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">Invoice Status</small>
+                                        <div class="fw-semibold">
+                                            {{ $data->invoice_status }}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

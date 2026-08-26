@@ -252,7 +252,11 @@
                         minute: '2-digit',
                     });
                 }
-            }
+            },
+            'Secondary Owner',
+            'Target Completion Date',
+            'Action Owner',
+            'Invoice Status'
         ];
 
         if (canDelete) {
@@ -291,7 +295,11 @@
                         item.action_item_details || '',
                         item.jira_ticket || '',
                         item.status,
-                        item.created_at
+                        item.created_at,
+                        item.assignee_name || '',
+                        item.completion_date || '',
+                        item.action_owner || '',
+                        item.invoice_status || ''
                     ];
                     if (canDelete) row.push(item.submission_id);
                     return row;
@@ -398,7 +406,11 @@
                             item.action_item_details || '',
                             item.jira_ticket || '',
                             item.status,
-                            item.created_at
+                            item.created_at,
+                            item.assignee_name || '',
+                            item.completion_date || '',
+                            item.action_owner || '',
+                            item.invoice_status || ''
                         ];
                         if (canDelete) row.push(item.submission_id);
                         return row;

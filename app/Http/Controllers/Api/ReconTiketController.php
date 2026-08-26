@@ -210,9 +210,11 @@ class ReconTiketController extends Controller
 
         $query = DB::table('recon_action_items')
             ->leftJoin('users', 'recon_action_items.lda_email', '=', 'users.email')
+            ->leftJoin('users as assignee', 'recon_action_items.assigned_to', '=', 'assignee.employeeid')
             ->select(
                 'recon_action_items.*',
-                DB::raw("users.first_name || ' ' || users.last_name as full_name")
+                DB::raw("users.first_name || ' ' || users.last_name as full_name"),
+                DB::raw("assignee.first_name || ' ' || assignee.last_name as assignee_name")
             );
 
         // 🔍 SEARCH (global)

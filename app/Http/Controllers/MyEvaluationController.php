@@ -6,6 +6,7 @@ use App\Models\Acknowledgement;
 use App\Models\AuditTrail;
 use App\Models\Dispute;
 use App\Models\UserInputAudit;
+use App\Support\AccessRoles;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -130,7 +131,17 @@ class MyEvaluationController extends Controller
                 ->first();
         }
 
-        return view('viewticket', compact('ticketid', 'data', 'triad_exists', 'coaching_exists', 'acknowledgement'));
+        // viewticket.blade.php is shared with ViewTicket::viewTicket() and expects
+        // $isAdmin (controls the "Is this Calibration?" edit button, admin-only).
+        $access = AccessRoles::expand(
+            DB::table('extension_access')
+                ->where('employeeid', $employeeid)
+                ->pluck('access_type')
+                ->all()
+        );
+        $isAdmin = in_array('admin', $access, true);
+
+        return view('viewticket', compact('ticketid', 'data', 'triad_exists', 'coaching_exists', 'acknowledgement', 'isAdmin'));
     }
 
     /**
