@@ -96,7 +96,7 @@
                                     <div class="col-md-6">
                                         <small class="text-muted">Target Completion Date</small>
                                         <div class="fw-semibold">
-                                            {{ $data->completion_date }}
+                                            {{ \Carbon\Carbon::parse($data->completion_date)->format('F d, Y') }}
                                         </div>
                                     </div>
                                     <div class="col-md-6">
