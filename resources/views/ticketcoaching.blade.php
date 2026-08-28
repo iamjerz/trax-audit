@@ -48,7 +48,7 @@
 
         const columns = [
             {
-                name: 'Triad Reference ID',
+                name: 'Coaching Reference ID',
                 formatter: (cell) => {
                     const safe = String(cell).replace(/"/g, '&quot;');
                     return gridjs.html(`
