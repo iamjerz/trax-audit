@@ -22,7 +22,8 @@ class CoachingController extends Controller
             'smart' => 'required|array',
             'grow' => 'required|array',
             'apps' => 'required|string',
-            'email' => 'nullable|email'
+            'email' => 'nullable|email',
+            'coached_employeeid' => 'nullable|string',
         ]);
 
         $employeeid = null;
@@ -50,7 +51,8 @@ class CoachingController extends Controller
             'reference_id' => $this->generateReference(),
             'smart' => $validated['smart'],
             'grow' => $validated['grow'],
-            'created_by' => $employeeid
+            'created_by' => $employeeid,
+            'employee_id' => $validated['coached_employeeid']
         ]);
 
         return response()->json([

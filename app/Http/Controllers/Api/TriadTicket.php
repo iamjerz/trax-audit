@@ -96,8 +96,54 @@ class TriadTicket extends Controller
         ->join('triad_items as r', 'r.created_by', '=', 'u.employeeid')
         ->select('u.first_name as FirstName', 'u.last_name as LastName')
         ->where('r.reference_id', $id)
-        ->first(); 
-        return view("individualtriad", compact('data', 'usersData', 'created_by'));
+        ->first();
+
+        $triadEmployee = DB::table('users as u')
+        ->join('triad_items as r', 'r.employee_id', '=', 'u.employeeid')
+        ->select('u.first_name as FirstName', 'u.last_name as LastName')
+        ->where('r.reference_id', $id)
+        ->first();
+
+        return view("individualtriad", compact('data', 'usersData', 'created_by', 'triadEmployee'));
+    }
+
+    /**
+     * Set/change the triad'd employee on a triad ticket. Open to anyone
+     * with access to this page (not admin-gated) -- mirrors ReconTiketController::insertAssignTo().
+     */
+    public function updateEmployee(Request $request, $id)
+    {
+        $employeeId = $request->input('employee_id');
+
+        $updated = DB::table('triad_items')
+            ->where('reference_id', $id)
+            ->update([
+                'employee_id' => $employeeId
+            ]);
+
+        if ($updated) {
+            $user = DB::table('users')
+                ->where('employeeid', $employeeId)
+                ->first();
+
+            AuditTrail::record([
+                'event'          => 'updated',
+                'description'    => "Triad ticket {$id} triad employee set to " . ($user ? "{$user->first_name} {$user->last_name}" : $employeeId),
+                'auditable_type' => 'triad_items',
+                'auditable_id'   => $id,
+                'new_values'     => ['employee_id' => $employeeId],
+            ]);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Triad employee updated successfully'
+            ]);
+        }
+
+        return response()->json([
+            'status' => 404,
+            'message' => 'Record not found or no changes made'
+        ], 404);
     }
 
     public function displayTicket(Request $request)

@@ -14,7 +14,8 @@ class TriadItems extends Model
         'reference',
         'triad',
         'created_by',
-        'reference_id' // 👈 add this
+        'reference_id', // 👈 add this
+        'employee_id'
     ];
 
     protected $casts = [

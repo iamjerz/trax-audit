@@ -19,6 +19,7 @@ class PageRegistry
         'dashboard-qa'             => 'Dashboard — QA Monitoring',
         'dashboard-recon'          => 'Dashboard — Action Register',
         'dashboard-triad'          => 'Dashboard — Triad',
+        'dashboard-coaching'       => 'Dashboard — Coaching',
         'form-builder'             => 'Form Builder',
         'monitoring-form'          => 'QA Monitoring Form',
         'eval-individual'          => 'Evaluations',

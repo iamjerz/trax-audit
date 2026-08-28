@@ -148,20 +148,27 @@ class DataSourceController extends Controller
     }
 
     /**
-     * Attach the "coached employee" (the LDA whose ticket the coaching
-     * session relates to) plus a flat coach name/email to each coaching
-     * row. The coachings table only stores `reference` (the underlying
-     * ticket's own reference number) and `reference_type` -- since we
-     * can't rely on knowing every string value `reference_type` might
-     * hold, we instead try to match `reference` against each of the
-     * three ticket sources directly and use whichever one hits:
+     * Attach the "coached employee" (the person the coaching session was
+     * about) plus a flat coach name/email to each coaching row.
+     *
+     * Preferred source: `coachings.employee_id`, set directly at creation
+     * time (added 2026-08-27) -- this is the reliable source of truth going
+     * forward. Older rows created before that column existed have it as
+     * null, so for those we fall back to the previous guess: match
+     * `reference` (the underlying ticket's own reference number) against
+     * each of the three ticket sources directly and use whichever one
+     * hits:
      *   - QA Monitoring: user_input_audits.audit_id   -> lda_id (employeeid)
      *   - Triad:         triad_items.reference        -> created_by (employeeid)
      *   - Recon:         recon_action_items.submission_id -> lda_email (email)
      */
     private function resolveCoachedEmployees($rows)
     {
-        $references = $rows->pluck('reference')->filter()->unique()->values();
+        $directEmployeeIds = $rows->pluck('employee_id')->filter()->unique()->values();
+
+        // Only rows missing employee_id need the reference-guessing fallback.
+        $fallbackRows = $rows->filter(fn ($r) => empty($r->employee_id));
+        $references   = $fallbackRows->pluck('reference')->filter()->unique()->values();
 
         $qaMatches = DB::table('user_input_audits')
             ->whereIn('audit_id', $references)
@@ -175,7 +182,8 @@ class DataSourceController extends Controller
             ->whereIn('submission_id', $references)
             ->pluck('lda_email', 'submission_id');
 
-        $employeeIds = $qaMatches->values()
+        $employeeIds = $directEmployeeIds
+            ->merge($qaMatches->values())
             ->merge($triadMatches->values())
             ->filter()
             ->unique()
@@ -199,7 +207,11 @@ class DataSourceController extends Controller
             $coachedName  = null;
             $coachedEmail = null;
 
-            if ($row->reference && $qaMatches->has($row->reference)) {
+            if (!empty($row->employee_id) && $usersByEmployeeId->has($row->employee_id)) {
+                $u = $usersByEmployeeId->get($row->employee_id);
+                $coachedName  = trim(($u->first_name ?? '') . ' ' . ($u->last_name ?? ''));
+                $coachedEmail = $u->email;
+            } elseif ($row->reference && $qaMatches->has($row->reference)) {
                 $u = $usersByEmployeeId->get($qaMatches->get($row->reference));
                 if ($u) {
                     $coachedName  = trim(($u->first_name ?? '') . ' ' . ($u->last_name ?? ''));
@@ -231,18 +243,25 @@ class DataSourceController extends Controller
     }
 
     /**
-     * Attach the "triad'd employee" (the LDA whose ticket the triad
-     * review relates to) plus a flat reviewer name/email to each triad
-     * row. Same approach as resolveCoachedEmployees(): triad_items only
-     * stores `reference` (the underlying ticket's own reference number),
-     * with no type column, so we match it against each candidate ticket
-     * source directly and use whichever one hits:
+     * Attach the "triad'd employee" (the person the triad review was
+     * about) plus a flat reviewer name/email to each triad row.
+     *
+     * Preferred source: `triad_items.employee_id`, set directly at creation
+     * time (added 2026-08-27) -- this is the reliable source of truth going
+     * forward. Older rows created before that column existed have it as
+     * null, so for those we fall back to the previous guess: match
+     * `reference` (the underlying ticket's own reference number) against
+     * each candidate ticket source directly and use whichever one hits:
      *   - QA Monitoring: user_input_audits.audit_id      -> lda_id (employeeid)
      *   - Recon:         recon_action_items.submission_id -> lda_email (email)
      */
     private function resolveTriadEmployees($rows)
     {
-        $references = $rows->pluck('reference')->filter()->unique()->values();
+        $directEmployeeIds = $rows->pluck('employee_id')->filter()->unique()->values();
+
+        // Only rows missing employee_id need the reference-guessing fallback.
+        $fallbackRows = $rows->filter(fn ($r) => empty($r->employee_id));
+        $references   = $fallbackRows->pluck('reference')->filter()->unique()->values();
 
         $qaMatches = DB::table('user_input_audits')
             ->whereIn('audit_id', $references)
@@ -252,8 +271,14 @@ class DataSourceController extends Controller
             ->whereIn('submission_id', $references)
             ->pluck('lda_email', 'submission_id');
 
+        $employeeIds = $directEmployeeIds
+            ->merge($qaMatches->values())
+            ->filter()
+            ->unique()
+            ->values();
+
         $usersByEmployeeId = DB::table('users')
-            ->whereIn('employeeid', $qaMatches->values()->filter()->unique()->values())
+            ->whereIn('employeeid', $employeeIds)
             ->get(['employeeid', 'first_name', 'last_name', 'email'])
             ->keyBy('employeeid');
 
@@ -270,7 +295,11 @@ class DataSourceController extends Controller
             $employeeName  = null;
             $employeeEmail = null;
 
-            if ($row->reference && $qaMatches->has($row->reference)) {
+            if (!empty($row->employee_id) && $usersByEmployeeId->has($row->employee_id)) {
+                $u = $usersByEmployeeId->get($row->employee_id);
+                $employeeName  = trim(($u->first_name ?? '') . ' ' . ($u->last_name ?? ''));
+                $employeeEmail = $u->email;
+            } elseif ($row->reference && $qaMatches->has($row->reference)) {
                 $u = $usersByEmployeeId->get($qaMatches->get($row->reference));
                 if ($u) {
                     $employeeName  = trim(($u->first_name ?? '') . ' ' . ($u->last_name ?? ''));

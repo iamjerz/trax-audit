@@ -20,7 +20,8 @@ class TriadItemController extends Controller
             'Reference' => 'required|string',
             'Triad' => 'required|array',
             'Origin' => 'required|string',
-            'email' => 'nullable|email' // for Extension
+            'email' => 'nullable|email', // for Extension
+            'coached_employeeid' => 'nullable|string',
         ]);
 
         $employeeid = null;
@@ -69,7 +70,8 @@ class TriadItemController extends Controller
             'reference' => $validated['Reference'],
             'reference_id' => $this->generateReference(),
             'triad' => $validated['Triad'],
-            'created_by' => $employeeid
+            'created_by' => $employeeid,
+            'employee_id' => $validated['coached_employeeid']
         ]);
 
         return response()->json([

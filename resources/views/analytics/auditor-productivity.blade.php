@@ -1,6 +1,29 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.css">
 @include('partials.header')
+<style>
+    /* Date Range Picker (daterangepicker.com) theming — matches this app's
+       primary accent (#556ee6), same as the QA/Recon dashboards. */
+    .daterangepicker td.active,
+    .daterangepicker td.active:hover {
+        background-color: #556ee6 !important;
+    }
+
+    .daterangepicker td.in-range {
+        background-color: rgba(85, 110, 230, 0.15) !important;
+    }
+
+    .daterangepicker .ranges li.active {
+        background-color: #556ee6 !important;
+        color: #fff !important;
+    }
+
+    .daterangepicker .applyBtn {
+        background-color: #556ee6 !important;
+        border-color: #556ee6 !important;
+    }
+</style>
 <body>
     <div id="layout-wrapper">@include('partials.bodyheader')</div>
 
@@ -14,12 +37,10 @@
                     <div class="card-body">
                         <form method="GET" action="{{ route('analytics.auditor-productivity') }}" class="row g-2 align-items-end mb-3">
                             <div class="col-md-3">
-                                <label class="form-label font-size-13 mb-1">From</label>
-                                <input type="date" name="date_from" value="{{ $from }}" class="form-control form-control-sm">
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label font-size-13 mb-1">To</label>
-                                <input type="date" name="date_to" value="{{ $to }}" class="form-control form-control-sm">
+                                <label class="form-label font-size-13 mb-1">Date Range</label>
+                                <input type="text" id="ap-date-range" class="form-control form-control-sm" placeholder="All dates" readonly>
+                                <input type="hidden" name="date_from" id="ap-date-from" value="{{ $from }}">
+                                <input type="hidden" name="date_to" id="ap-date-to" value="{{ $to }}">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label font-size-13 mb-1">Auditor</label>
@@ -29,6 +50,13 @@
                                         <option value="{{ $u->employeeid }}" @selected($user === $u->employeeid)>{{ $u->first_name }} {{ $u->last_name }}</option>
                                     @endforeach
                                 </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label font-size-13 mb-1 d-block">Calibration</label>
+                                <div class="form-check form-switch mt-1">
+                                    <input class="form-check-input" type="checkbox" name="exclude_calibration" value="1" id="ap-exclude-calibration" @checked($excludeCalibration)>
+                                    <label class="form-check-label" for="ap-exclude-calibration">Remove calibration tickets</label>
+                                </div>
                             </div>
                             <div class="col-md-3">
                                 <button type="submit" class="btn btn-sm btn-primary">Filter</button>
@@ -79,6 +107,71 @@
     </div>
 
     @include('partials.script')
+    <!-- Date Range Picker (daterangepicker.com) — same widget as dashboard-qa,
+         needs jQuery + Moment.js loaded first. Kept in its own separate
+         script block, apart from the ApexCharts/Choices.js block below, so a
+         problem in either of those can't stop this one from running. -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.js"></script>
+    <script>
+        console.log('[auditor-productivity] date range script loaded', {
+            jquery: typeof window.jQuery,
+            moment: typeof window.moment,
+            daterangepicker: typeof (window.jQuery && window.jQuery.fn.daterangepicker)
+        });
+
+        function apDaysAgo(n) {
+            return moment().startOf('day').subtract(n, 'days');
+        }
+        function apMonthsAgo(n) {
+            return moment().startOf('day').subtract(n, 'months');
+        }
+
+        const apDateInput = $('#ap-date-range');
+
+        apDateInput.daterangepicker({
+            autoUpdateInput: false,
+            autoApply: true,
+            alwaysShowCalendars: true,
+            maxDate: moment(),
+            locale: {
+                format: 'MMM D, YYYY',
+                separator: ' - '
+            },
+            ranges: {
+                'Today': [moment().startOf('day'), moment().startOf('day')],
+                'Yesterday': [apDaysAgo(1), apDaysAgo(1)],
+                'Last 7 days': [apDaysAgo(7), moment().startOf('day')],
+                'Last 30 days': [apDaysAgo(30), moment().startOf('day')],
+                'Last 6 months': [apMonthsAgo(6), moment().startOf('day')],
+                'Last 1 year': [apMonthsAgo(12), moment().startOf('day')]
+            }
+        });
+
+        // Restore the visible label after a server round-trip (the hidden
+        // inputs already carry $from/$to via their `value` attributes).
+        @if($from && $to)
+        apDateInput.val(
+            moment('{{ $from }}').format('MMM D, YYYY') + ' - ' + moment('{{ $to }}').format('MMM D, YYYY')
+        );
+        @endif
+
+        apDateInput.on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('MMM D, YYYY') + ' - ' + picker.endDate.format('MMM D, YYYY'));
+            document.getElementById('ap-date-from').value = picker.startDate.format('YYYY-MM-DD');
+            document.getElementById('ap-date-to').value = picker.endDate.format('YYYY-MM-DD');
+            this.form.submit();
+        });
+
+        apDateInput.on('cancel.daterangepicker', function () {
+            $(this).val('');
+            document.getElementById('ap-date-from').value = '';
+            document.getElementById('ap-date-to').value = '';
+            this.form.submit();
+        });
+    </script>
+
     <script src="assets/libs/apexcharts/apexcharts.min.js"></script>
     <script>
         new ApexCharts(document.querySelector("#auditorChart"), {

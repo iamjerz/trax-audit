@@ -94,8 +94,54 @@ class CoachingTicket extends Controller
         ->join('coachings as r', 'r.created_by', '=', 'u.employeeid')
         ->select('u.first_name as FirstName', 'u.last_name as LastName')
         ->where('r.reference_id', $id)
-        ->first(); 
-        return view("individualcoaching", compact('data', 'usersData', 'created_by'));
+        ->first();
+
+        $coachedEmployee = DB::table('users as u')
+        ->join('coachings as r', 'r.employee_id', '=', 'u.employeeid')
+        ->select('u.first_name as FirstName', 'u.last_name as LastName')
+        ->where('r.reference_id', $id)
+        ->first();
+
+        return view("individualcoaching", compact('data', 'usersData', 'created_by', 'coachedEmployee'));
+    }
+
+    /**
+     * Set/change the coached employee on a coaching ticket. Open to anyone
+     * with access to this page (not admin-gated) -- mirrors ReconTiketController::insertAssignTo().
+     */
+    public function updateEmployee(Request $request, $id)
+    {
+        $employeeId = $request->input('employee_id');
+
+        $updated = DB::table('coachings')
+            ->where('reference_id', $id)
+            ->update([
+                'employee_id' => $employeeId
+            ]);
+
+        if ($updated) {
+            $user = DB::table('users')
+                ->where('employeeid', $employeeId)
+                ->first();
+
+            AuditTrail::record([
+                'event'          => 'updated',
+                'description'    => "Coaching ticket {$id} coached employee set to " . ($user ? "{$user->first_name} {$user->last_name}" : $employeeId),
+                'auditable_type' => 'coachings',
+                'auditable_id'   => $id,
+                'new_values'     => ['employee_id' => $employeeId],
+            ]);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Coached employee updated successfully'
+            ]);
+        }
+
+        return response()->json([
+            'status' => 404,
+            'message' => 'Record not found or no changes made'
+        ], 404);
     }
 
     public function displayTicket(Request $request)

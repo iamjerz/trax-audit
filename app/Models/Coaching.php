@@ -16,7 +16,8 @@ class Coaching extends Model
         'reference_id',
         'smart',
         'grow',
-        'created_by'
+        'created_by',
+        'employee_id'
     ];
 
     protected $casts = [

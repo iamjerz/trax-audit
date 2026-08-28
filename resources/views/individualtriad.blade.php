@@ -20,6 +20,13 @@
                             <h5 class="card-title">Triad Details</h5>
                         </div>
                     </div>
+                    <div class="col-md-6">
+                        <div class="mb-3 text-end">
+                            <button type="button" class="btn btn-primary waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#change-triad-employee">
+                                <i class="bx bx-grid-small font-size-16 align-middle me-2"></i> Options
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
@@ -51,7 +58,13 @@
                                             {{ $data->created_at ?? '' }}
                                         </div>
                                     </div>
-                                    
+                                    <div class="col-md-6">
+                                        <small class="text-muted">Triad Employee</small>
+                                        <div class="fw-semibold">
+                                            {{ trim(($triadEmployee->FirstName ?? '') . ' ' . ($triadEmployee->LastName ?? '')) ?: 'N/A' }}
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -218,9 +231,78 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="change-triad-employee" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Options</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="triad-employee" class="form-label">Triad Employee <span class="text-danger">*</span></label>
+                    <select class="form-control" data-choice name="triad-employee" id="triad-employee" placeholder="This is a search placeholder">
+                        <option value="">Select Employee</option>
+                        @foreach ($usersData['allusers'] as $alluser)
+                        <option value="{{ $alluser->employeeid }}">
+                            {{ $alluser->first_name }} {{ $alluser->last_name }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="update-triad-employee">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @include('partials.script')
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const elements = document.querySelectorAll('[data-choice]');
+
+            elements.forEach(el => {
+                new Choices(el);
+            });
+        });
+
+        $(document).ready(function() {
+            $(document).on('click', '#update-triad-employee', async function() {
+                try {
+                    const pathParts = window.location.pathname.split('/');
+                    const id = pathParts[pathParts.length - 1];
+
+                    const employeeId = document.getElementById('triad-employee').value;
+
+                    const res = await fetch(`/triad/assign-employee/${id}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            employee_id: employeeId
+                        })
+                    });
+
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! Status: ${res.status}`);
+                    }
+
+                    const data = await res.json();
+                    if (data.status === 200) {
+                        window.location.reload();
+                    }
+
+                } catch (err) {
+                    console.error("Request failed:", err);
+                }
+            });
+        });
+    </script>
 
 </body>
 

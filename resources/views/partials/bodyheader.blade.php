@@ -157,6 +157,15 @@
 
                     </li>
                 @endif
+                @if($pageAccess->contains('dashboard-coaching'))
+                    <li>
+                        <a href="/dashboard-coaching">
+                            <i class="bx bx-receipt icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-calendar">Coaching</span>
+                        </a>
+
+                    </li>
+                @endif
                 <!-- Dashboard End -->
                 @if($pageAccess->contains('monitoring-form'))
                 <!-- <li class="menu-title" data-key="t-menu">Forms</li>

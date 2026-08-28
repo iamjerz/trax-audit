@@ -40,6 +40,7 @@ use App\Http\Controllers\Api\CoachingController;
 use App\Http\Controllers\Api\ReconTiketController;
 use App\Http\Controllers\Api\DashboardReconController;
 use App\Http\Controllers\Api\DashboardTriadController;
+use App\Http\Controllers\Api\DashboardCoachingController;
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\TriadTicket;
 use App\Http\Controllers\Api\UserPageController;
@@ -188,6 +189,18 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard-triad-evaluators', [DashboardTriadController::class, 'EvaluatorBreakdown']);
     });
 
+    Route::middleware('page:dashboard-coaching')->group(function () {
+        Route::get('/dashboard-coaching', [DashboardCoachingController::class, 'index']);
+        Route::get('/dashboard-coaching-cards', [DashboardCoachingController::class, 'CardCount']);
+        Route::get('/dashboard-coaching-trend', [DashboardCoachingController::class, 'Trend']);
+        Route::get('/dashboard-coaching-per-coach', [DashboardCoachingController::class, 'PerCoachBreakdown']);
+        Route::get('/dashboard-coaching-per-employee', [DashboardCoachingController::class, 'PerCoachedEmployeeBreakdown']);
+        Route::get('/dashboard-coaching-per-type', [DashboardCoachingController::class, 'PerTypeBreakdown']);
+        Route::get('/dashboard-coaching-day-of-week', [DashboardCoachingController::class, 'DayOfWeek']);
+        Route::get('/dashboard-coaching-recent', [DashboardCoachingController::class, 'RecentSessions']);
+        Route::get('/dashboard-coaching-filter-options', [DashboardCoachingController::class, 'filterOptions']);
+    });
+
     // Shared endpoints — viewing evaluations/timeline (used by the QA dashboard and Evaluations report)
     Route::middleware('page:dashboard-qa,eval-individual')->group(function () {
         Route::get('/dashboard/cards', [DashboardControllerMain::class, 'dashbaordCard']);
@@ -318,6 +331,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/coaching-data', [CoachingTicket::class, 'displayTicket']);
         Route::get('/coaching-ticket-view/{id}', [CoachingTicket::class, 'fullDetails']);
         Route::get('/api/coaching-ticket', [CoachingFormController::class, 'coachingTicketInformation']);
+        Route::post('/coaching/assign-employee/{id}', [CoachingTicket::class, 'updateEmployee']);
     });
     // Deleting a coaching ticket stays admin-only regardless of page access.
     Route::delete('/coaching-ticket/{id}', [CoachingTicket::class, 'destroy'])
@@ -334,6 +348,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/api/coaching-triad', [CoachingTriadController::class, 'coachingRef']);
         Route::get('/api/triad-ticket', [CoachingTriadController::class, 'triadTicketInformation']);
         Route::get('/export/triad', [ExportController::class, 'triad'])->name('export.triad');
+        Route::post('/triad/assign-employee/{id}', [TriadTicket::class, 'updateEmployee']);
 
         Route::prefix('triad')->group(function () {
             Route::post('/', [TriadItemController::class, 'store']);

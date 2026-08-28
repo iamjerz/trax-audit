@@ -26,6 +26,7 @@ class AnalyticsController extends Controller
     {
         $user = $request->input('user');
         [$from, $to] = $this->orderDates($request->input('date_from'), $request->input('date_to'));
+        $excludeCalibration = $request->boolean('exclude_calibration');
 
         $q = DB::table('user_input_audits as a')
             ->leftJoin('users as u', 'u.employeeid', '=', 'a.created_by')
@@ -39,6 +40,7 @@ class AnalyticsController extends Controller
         if ($from) $q->whereDate('a.audit_date_1', '>=', $from);
         if ($to)   $q->whereDate('a.audit_date_1', '<=', $to);
         if ($user) $q->where('a.created_by', $user);
+        if ($excludeCalibration) $q->where('a.is_calibration', false);
 
         $g = [];
         foreach ($q->get() as $r) {
@@ -73,6 +75,7 @@ class AnalyticsController extends Controller
             'to'   => $to,
             'user' => $user,
             'users' => $users,
+            'excludeCalibration' => $excludeCalibration,
             'chartLabels' => array_column($rows, 'auditor'),
             'chartCounts' => array_column($rows, 'count'),
         ]);
