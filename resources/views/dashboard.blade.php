@@ -554,7 +554,7 @@
                 recentGrid = new gridjs.Grid({
                     columns: ["Audit ID","Invoice ID", "Employee Name", "Audit Date", "Auditor Name",
                         {
-                            name: "Is Calibration?",
+                            name: "For Calibration?",
                             formatter: (cell) => cell ? 'Yes' : 'No'
                         }
                     ],

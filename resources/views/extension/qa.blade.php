@@ -138,7 +138,7 @@
                                 </div>
                                 <div class="col-lg-4 col-md-6">
                                     <div class="mb-3">
-                                        <label class="form-label">Is this Calibration?</label>
+                                        <label class="form-label">For Calibration?</label>
                                         </br>
                                         <input type="checkbox" id="calibration" name="is-calibration" switch="primary"/>
                                         <label for="calibration" data-on-label="Yes" data-off-label="No"></label>
