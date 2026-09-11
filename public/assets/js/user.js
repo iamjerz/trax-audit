@@ -74,7 +74,7 @@ function initUserTable() {
             }
         ],
 
-        pagination: { limit: 10 },
+        pagination: { limit: 50 },
         sort: true,
         search: true,
 

@@ -219,6 +219,7 @@ class UserPageController extends Controller
             'second_supervisor_id' => 'nullable|string',
             'status' => 'required|string',
             'position' => 'required|string|exists:positions,name',
+            'effectivity_date_leaver' => 'nullable|date',
         ]);
 
         // ✅ Find user
@@ -227,14 +228,17 @@ class UserPageController extends Controller
         // Keep position_id in sync with the position name.
         $validated['position_id'] = Position::where('name', $validated['position'])->value('id');
 
-        // Stamp the leaver effective date the moment a user is set to
-        // inactive — only if it isn't already set, so re-saving an
-        // already-inactive user doesn't keep pushing the date forward.
-        // Reactivating clears it, so the *next* inactivation re-stamps
-        // fresh instead of showing a stale date from a prior leaver spell.
+        // Leaver Date is now admin-editable directly (date picker on the
+        // Edit User form) — an explicit value from the form always wins.
+        // Status still drives it as a convenience default when the admin
+        // doesn't set one: going inactive stamps today (only if one isn't
+        // already on file, so re-saving an already-inactive user doesn't
+        // keep pushing the date forward); going back to active always
+        // clears it, since an active user shouldn't carry a leaver date.
         if ($validated['status'] === 'inactive') {
-            if (empty($user->effectivity_date_leaver)) {
-                $validated['effectivity_date_leaver'] = now()->toDateString();
+            if (empty($validated['effectivity_date_leaver'])) {
+                $validated['effectivity_date_leaver'] = $user->effectivity_date_leaver
+                    ?: now()->toDateString();
             }
         } elseif ($validated['status'] === 'active') {
             $validated['effectivity_date_leaver'] = null;

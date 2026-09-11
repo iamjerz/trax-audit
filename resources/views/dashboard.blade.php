@@ -117,48 +117,7 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="row">
-                    <div class="col-md-6 col-xl">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <h6 class="font-size-15">Total Evaluations</h6>
-                                        <h4 class="mt-3 pt-1 mb-0 font-size-22" id="total-evaluations">0</h4>
-                                    </div>
-                                    <div class="">
-                                        <div class="avatar">
-                                            <div class="avatar-title rounded bg-primary-subtle ">
-                                                <i class="bx bx-cylinder font-size-24 mb-0 text-primary"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6 col-xl">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <h6 class="font-size-15">Total LDA</h6>
-                                        <h4 class="mt-3 pt-1 mb-0 font-size-22" id="total-lda">0</h4>
-                                    </div>
-                                    <div class="">
-                                        <div class="avatar">
-                                            <div class="avatar-title rounded bg-primary-subtle ">
-                                                <i class="bx bx-stats font-size-24 mb-0 text-primary"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="col-md-6 col-xl">
                         <div class="card">
                             <div class="card-body">
@@ -219,6 +178,90 @@
                         </div>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-6 col-xl">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="font-size-15">Total Evaluations</h6>
+                                        <h4 class="mt-3 pt-1 mb-0 font-size-22" id="total-evaluations">0</h4>
+                                    </div>
+                                    <div class="">
+                                        <div class="avatar">
+                                            <div class="avatar-title rounded bg-primary-subtle ">
+                                                <i class="bx bx-cylinder font-size-24 mb-0 text-primary"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-xl">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="font-size-15">Total LDA</h6>
+                                        <h4 class="mt-3 pt-1 mb-0 font-size-22" id="total-lda">0</h4>
+                                    </div>
+                                    <div class="">
+                                        <div class="avatar">
+                                            <div class="avatar-title rounded bg-primary-subtle ">
+                                                <i class="bx bx-stats font-size-24 mb-0 text-primary"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-xl">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="font-size-15">Audited LDAs</h6>
+                                        <h4 class="mt-3 pt-1 mb-0 font-size-22" id="audited-ldas">0</h4>
+                                    </div>
+                                    <div class="">
+                                        <div class="avatar">
+                                            <div class="avatar-title rounded bg-primary-subtle ">
+                                                <i class="bx bx-user-check font-size-24 mb-0 text-primary"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-xl">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="font-size-15">LDAs With No Audits</h6>
+                                        <h4 class="mt-3 pt-1 mb-0 font-size-22" id="ldas-with-no-audits">0</h4>
+                                    </div>
+                                    <div class="">
+                                        <div class="avatar">
+                                            <div class="avatar-title rounded bg-primary-subtle ">
+                                                <i class="bx bx-user-x font-size-24 mb-0 text-primary"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                </div>
+                
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
@@ -349,6 +392,8 @@
             .then(data => {
                 animateCount(document.getElementById("total-evaluations"), 0, data.total || 0);
                 animateCount(document.getElementById("total-lda"), 0, data.total_lda || 0);
+                animateCount(document.getElementById("audited-ldas"), 0, data.audited_ldas || 0);
+                animateCount(document.getElementById("ldas-with-no-audits"), 0, data.ldas_with_no_audits || 0);
                 animateCount(document.getElementById("above-average"), 0, data.above_average || 0);
                 animateCount(document.getElementById("below-average"), 0, data.below_average || 0);
                 document.getElementById("overall-average").textContent =
@@ -382,18 +427,25 @@
             })
             .then(res => res.json())
             .then(data => {
+                // "Acknowledged" is bucketed the same way as "Evaluations"
+                // (same audit date, same filters) so the two lines line up
+                // 1:1 per period — it's always <= the Evaluations count.
+                const series = [
+                    { name: "Evaluations", data: data.counts || [] },
+                    { name: "Acknowledged", data: data.acknowledged_counts || [] }
+                ];
                 if (trendChart) {
                     trendChart.updateOptions({
-                        series: [{ name: "Evaluations", data: data.counts || [] }],
+                        series: series,
                         xaxis: { categories: data.labels || [] }
                     });
                 } else {
                     trendChart = new ApexCharts(document.querySelector("#evalTrendChart"), {
                         chart: { type: "line", height: 320, toolbar: { show: false } },
-                        series: [{ name: "Evaluations", data: data.counts || [] }],
+                        series: series,
                         xaxis: { categories: data.labels || [] },
-                        stroke: { curve: "smooth", width: 3 },
-                        colors: ["#1f58c7"],
+                        stroke: { curve: "smooth", width: 3, dashArray: [0, 6] },
+                        colors: ["#1f58c7", "#4CAF50"],
                         markers: { size: 4 },
                         dataLabels: { enabled: true }
                     });

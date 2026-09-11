@@ -13,6 +13,39 @@ document.addEventListener('DOMContentLoaded', function() {
 const capitalizeFirst = (str) => {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 };
+
+// Leaver Date (daterangepicker.com, single-date mode — same widget as the
+// dashboards). Admin-editable now; Status still auto-manages it as a
+// convenience default server-side (see UserPageController::updateUser).
+const leaverDateInput = $('#leaver-date');
+const leaverDateValue = document.getElementById('leaver-date-value');
+// So the calendar opens navigated to (and highlighting) the date already on
+// file, instead of always jumping to today's month — daterangepicker's
+// startDate/endDate options control calendar navigation independently of
+// the input's displayed text (which autoUpdateInput:false leaves alone).
+const initialLeaverDate = leaverDateValue.value ? moment(leaverDateValue.value, 'YYYY-MM-DD') : moment();
+
+leaverDateInput.daterangepicker({
+    singleDatePicker: true,
+    autoUpdateInput: false,
+    autoApply: true,
+    startDate: initialLeaverDate,
+    endDate: initialLeaverDate,
+    locale: {
+        format: 'MMM D, YYYY'
+    }
+});
+
+leaverDateInput.on('apply.daterangepicker', function (ev, picker) {
+    $(this).val(picker.startDate.format('MMM D, YYYY'));
+    leaverDateValue.value = picker.startDate.format('YYYY-MM-DD');
+});
+
+document.getElementById('leaver-date-clear').addEventListener('click', function () {
+    leaverDateInput.val('');
+    leaverDateValue.value = '';
+});
+
 document.getElementById("edit-user").addEventListener("click", function() {
 
     // Collect form data
@@ -25,7 +58,8 @@ document.getElementById("edit-user").addEventListener("click", function() {
         supervisor_id: document.getElementById("supervisor").value,
         second_supervisor_id: document.getElementById("second-supervisor").value,
         status: document.getElementById("status").value,
-        position: document.getElementById("position").value
+        position: document.getElementById("position").value,
+        effectivity_date_leaver: leaverDateValue.value || null
     };
 
     console.log("DATA :: :: ", data)

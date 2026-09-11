@@ -12,6 +12,7 @@ use App\Models\Verification;
 use App\Http\Controllers\Api\Concerns\FiltersByManagerScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 
 class DashboardControllerMain extends Controller
@@ -41,20 +42,19 @@ class DashboardControllerMain extends Controller
 
         // Data uses the position label "LDA"; accept the long form too for safety.
         // When a supervisor/manager is selected, scope the LDA count to their subtree.
-        // Inactive LDAs don't count toward the headcount — note this is separate
-        // from $ldaIds itself, which stays inclusive of inactive LDAs so their
-        // pre-leave-date audits still filter correctly elsewhere in this method.
-        if ($ldaIds !== null) {
-            $total_lda = DB::table('users')
-                ->whereIn('employeeid', $ldaIds)
-                ->where('status', '!=', 'inactive')
-                ->count();
-        } else {
-            $total_lda = DB::table('users')
-                ->whereIn('position', self::LDA_POSITIONS)
-                ->where('status', '!=', 'inactive')
-                ->count();
-        }
+        // Total LDA is the EXPECTED POPULATION for the selected reporting period:
+        // currently-active people always count, and a leaver counts if they
+        // hadn't left yet as of the start of the range (Leaver Date strictly
+        // after $from — Start Date is exclusive for the leaver date, so a
+        // range that *starts* on someone's Leaver Date doesn't count them, but
+        // a range that merely *ends* on or after it does). See
+        // scopeExpectedLdaPopulation() for the full rule and why End Date
+        // deliberately isn't part of it.
+        $total_lda_query = $ldaIds !== null
+            ? DB::table('users')->whereIn('employeeid', $ldaIds)
+            : DB::table('users')->whereIn('position', self::LDA_POSITIONS);
+        $this->scopeExpectedLdaPopulation($total_lda_query, $from);
+        $total_lda = $total_lda_query->count();
 
         // Overall score per audit (mirrors the ticket view logic):
         //   - Verification is a gate: if its total_score < 200 the audit scores 0%
@@ -65,11 +65,14 @@ class DashboardControllerMain extends Controller
 
         // NOTE: total_score is stored as a string column, so we select the raw
         // values and cast in PHP (avoids COALESCE varchar/int type errors on Postgres).
+        // a.lda_id is selected too so Audited LDAs (below) can be derived from
+        // this exact same filtered/scored row set — never from a separate query.
         $scoresQuery = DB::table('user_input_audits as a')
             ->leftJoin('verifications as v', 'v.audit_id', '=', 'a.audit_id')
             ->leftJoin('process_compliances as p', 'p.audit_id', '=', 'a.audit_id')
             ->leftJoin('engagements as e', 'e.audit_id', '=', 'a.audit_id')
             ->select(
+                'a.lda_id',
                 'v.total_score as ver',
                 'p.total_score as proc',
                 'e.total_score as eng'
@@ -87,6 +90,7 @@ class DashboardControllerMain extends Controller
         $belowAverage = 0;
         $overallSum   = 0;
         $overallCount = 0;
+        $auditedLdaIds = [];
 
         foreach ($scores as $s) {
             $ver  = (float) ($s->ver ?? 0);
@@ -103,15 +107,34 @@ class DashboardControllerMain extends Controller
 
             $overallSum += $overall;
             $overallCount++;
+
+            if (! empty($s->lda_id)) {
+                $auditedLdaIds[$s->lda_id] = true;
+            }
         }
 
         $overallAverage = $overallCount > 0
             ? round($overallSum / $overallCount, 2)
             : 0;
 
+        // Audited LDAs / LDAs With No Audits are coverage metrics, deliberately
+        // distinct from Total LDA (the expected population above): Audited
+        // LDAs is who actually has a filtered audit row; Total LDA minus that
+        // is who was expected to be evaluated this period but has zero audits
+        // on file. Every audited LDA is guaranteed to already be part of Total
+        // LDA — a row only survives the filters/excludeInactiveLdaAudits()
+        // check if its own audit_date is >= $from and before that LDA's Leaver
+        // Date (if any), which together imply Leaver Date > $from too — so
+        // this subtraction can never go negative in practice; max(0, ...) is
+        // just a safety net.
+        $auditedLdas      = count($auditedLdaIds);
+        $ldasWithNoAudits = max(0, $total_lda - $auditedLdas);
+
         return response()->json([
             'total' => $auditCount,
             'total_lda' => $total_lda,
+            'audited_ldas' => $auditedLdas,
+            'ldas_with_no_audits' => $ldasWithNoAudits,
             'above_average' => $aboveAverage,
             'below_average' => $belowAverage,
             'overall_average' => $overallAverage,
@@ -280,28 +303,55 @@ class DashboardControllerMain extends Controller
         $datesQuery = DB::table('user_input_audits')
             ->whereNotNull('audit_date_1')
             ->whereDate('audit_date_1', '>=', $rangeStart->toDateString())
-            ->whereDate('audit_date_1', '<=', $rangeEnd->toDateString());
+            ->whereDate('audit_date_1', '<=', $rangeEnd->toDateString())
+            ->select('audit_id', 'audit_date_1');
         if ($carrier)          $datesQuery->where('carrier_name', $carrier);
         if ($clientCode)       $datesQuery->where('client_code', $clientCode);
         if ($ldaIds !== null)  $datesQuery->whereIn('lda_id', $ldaIds);
         if ($excludeCalibration) $datesQuery->where('is_calibration', false);
         $this->excludeInactiveLdaAudits($datesQuery);
-        $dates = $datesQuery->pluck('audit_date_1');
+        $rows = $datesQuery->get();
 
-        foreach ($dates as $d) {
+        // "Acknowledged" gets its own trend line, bucketed by the SAME
+        // evaluation date as the "Evaluations" line above (not by when the
+        // acknowledgement itself happened), so the two lines compare 1:1 per
+        // period. Acknowledgement is one row per audit in practice — only
+        // the owning LDA can create one, and only once (see
+        // AcknowledgementController / MyEvaluationController::acknowledge) —
+        // so "does at least one ack row exist for this audit_id" is enough;
+        // no risk of double-counting a single evaluation.
+        $ackIds = [];
+        if ($rows->isNotEmpty() && Schema::hasTable('acknowledgements')) {
+            $ackIds = array_flip(
+                DB::table('acknowledgements')
+                    ->where('reference_type', 'audit')
+                    ->whereIn('reference_id', $rows->pluck('audit_id'))
+                    ->distinct()
+                    ->pluck('reference_id')
+                    ->all()
+            );
+        }
+
+        $ackMap = array_fill_keys(array_keys($map), 0);
+
+        foreach ($rows as $r) {
             try {
-                $key = \Carbon\Carbon::parse($d)->format($keyFormat);
+                $key = \Carbon\Carbon::parse($r->audit_date_1)->format($keyFormat);
             } catch (\Throwable $e) {
                 continue;
             }
             if (isset($map[$key])) {
                 $map[$key]++;
+                if (isset($ackIds[$r->audit_id])) {
+                    $ackMap[$key]++;
+                }
             }
         }
 
         return response()->json([
             'labels' => $labels,
             'counts' => array_values($map),
+            'acknowledged_counts' => array_values($ackMap),
             'unit'   => $unit,
         ]);
     }
@@ -366,10 +416,12 @@ class DashboardControllerMain extends Controller
     }
 
     /**
-     * Exclude an audit if its LDA is now inactive and this audit is dated
-     * on/after their effectivity_date_leaver — audits from while they were
-     * still active still count. $alias is the alias of user_input_audits in
-     * the query, or null for an unaliased query (columns referenced bare).
+     * Exclude an audit if its LDA is now inactive and this audit is dated on
+     * or after their effectivity_date_leaver — Leaver Date is the date they
+     * became a leaver (their first inactive day), so audits dated before it
+     * still count but audits dated ON it (or later) don't. $alias is the
+     * alias of user_input_audits in the query, or null for an unaliased
+     * query (columns referenced bare).
      */
     private function excludeInactiveLdaAudits($query, ?string $alias = null): void
     {
@@ -383,6 +435,48 @@ class DashboardControllerMain extends Controller
                 ->where('users.status', 'inactive')
                 ->whereNotNull('users.effectivity_date_leaver')
                 ->whereColumn($dateCol, '>=', 'users.effectivity_date_leaver');
+        });
+    }
+
+    /**
+     * Restrict a `users` query to the EXPECTED LDA POPULATION for a reporting
+     * period starting at $startDate — i.e. people who were part of the team
+     * at some point during the selected range, not just people with audit
+     * rows in it (a person with zero audits this period is still part of the
+     * expected population — see "LDAs With No Audits" in dashbaordCard()).
+     *
+     * Business rule:
+     *   - No Leaver Date at all (still active, or never left): always counts.
+     *   - Has a Leaver Date: counts unless they'd already left BEFORE the
+     *     range even started, i.e. counts iff Leaver Date > $startDate.
+     *     Start Date is exclusive for the Leaver Date (leaver_date ==
+     *     $startDate is EXCLUDED — as of day 1 of the range they were
+     *     already gone), which also means a Leaver Date landing anywhere
+     *     from the day after $startDate onward counts them in — including
+     *     Leaver Date == the range's End Date, or Leaver Date well past the
+     *     End Date (a range that ends before they even left still counts
+     *     them, since they were clearly part of the team for that entire
+     *     window).
+     *   - $startDate empty (no lower bound / "all time"): always counts,
+     *     leavers included — there's no "before the beginning of time" for
+     *     leaver_date to fail against.
+     *
+     * Deliberately does NOT compare against an end date: once someone is
+     * confirmed present as of the start of the range, they're part of that
+     * period's expected population no matter how the range ends — trimming
+     * on the end date as well would wrongly drop someone from a report
+     * covering a period entirely before their (later) departure.
+     */
+    private function scopeExpectedLdaPopulation($query, ?string $startDate): void
+    {
+        if (! $startDate) {
+            return; // no lower bound — every LDA, active or historical leaver, counts
+        }
+
+        $query->where(function ($q) use ($startDate) {
+            $q->whereNull('effectivity_date_leaver')
+                ->orWhere('status', '!=', 'inactive')
+                ->orWhereDate('effectivity_date_leaver', '>', $startDate);
         });
     }
 

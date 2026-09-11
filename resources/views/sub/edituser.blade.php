@@ -1,9 +1,27 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <link rel="stylesheet" href="assets/libs/gridjs/theme/mermaid.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.css">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 @include('partials.header')
+<style>
+    /* Date Range Picker (daterangepicker.com) theming — matches this app's
+       primary accent (#556ee6), same override used on the dashboards. */
+    .daterangepicker td.active,
+    .daterangepicker td.active:hover {
+        background-color: #556ee6 !important;
+    }
 
+    .daterangepicker .ranges li.active {
+        background-color: #556ee6 !important;
+        color: #fff !important;
+    }
+
+    .daterangepicker .applyBtn {
+        background-color: #556ee6 !important;
+        border-color: #556ee6 !important;
+    }
+</style>
 
 <body>
     <div id="layout-wrapper">
@@ -106,7 +124,7 @@
                                                  <tr>
                                                     <th class="fw-bold">
                                                         Leaver Date :</th>
-                                                    <td class="text-muted">{{ $user->effectivity_date_leaver }}</td>
+                                                    <td class="text-muted">{{ $user->effectivity_date_leaver ? \Carbon\Carbon::parse($user->effectivity_date_leaver)->format('M j, Y') : '—' }}</td>
                                                 </tr>
                                                 <!-- end tr -->
                                             </tbody><!-- end tbody -->
@@ -214,6 +232,20 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="mb-3">
+                                            <label for="leaver-date" class="form-label">Leaver Date</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="leaver-date" placeholder="Not set" autocomplete="off"
+                                                    value="{{ $user->effectivity_date_leaver ? \Carbon\Carbon::parse($user->effectivity_date_leaver)->format('M j, Y') : '' }}">
+                                                <button class="btn btn-outline-secondary" type="button" id="leaver-date-clear" title="Clear">
+                                                    <i class="bx bx-x"></i>
+                                                </button>
+                                            </div>
+                                            <input type="hidden" id="leaver-date-value" value="{{ $user->effectivity_date_leaver ? \Carbon\Carbon::parse($user->effectivity_date_leaver)->format('Y-m-d') : '' }}">
+                                            <small class="text-muted font-size-12">Admin-editable. Auto-clears when Status is set back to Active.</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
                                             <label for="formrow-firstname-input" class="form-label">Role</label>
                                             <select class="form-control dropdown-choices" data-trigger id="role" placeholder="This is a search placeholder">
                                                 <option value="">Select Role</option>
@@ -284,6 +316,10 @@
     </div>
     @include('partials.script')
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Date Range Picker (daterangepicker.com) — needs jQuery (above) + Moment.js loaded first -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.js"></script>
 
     <!-- gridjs js -->
     <script src="assets/libs/gridjs/gridjs.umd.js"></script>
