@@ -177,7 +177,7 @@
         }
 
         const columns = [{
-                name: 'Submission ID',
+                name: 'Submission ID No.',
                 formatter: (cell) => {
                     const safe = String(cell).replace(/"/g, '&quot;');
                     return gridjs.html(`
@@ -187,9 +187,9 @@
                     `);
                 }
             },
-            'Name',
+            'Employee Name',
             {
-                name: 'Recon Date',
+                name: 'Action Register Date',
                 formatter: (cell) => {
                     if (!cell) return '';
                     const parts = String(cell).split('-');
