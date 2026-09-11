@@ -41,8 +41,11 @@ class LoginVerifyController extends Controller
             $readable = Carbon::createFromTimestamp($exp)->setTimezone('Asia/Manila');
             $email = $user['upn'];
             $userip = $user['ipaddr'];
-            // Validate audience
-            if ($user['aud'] !== env('MICROSOFT_CLIENT_ID')) {
+            // Validate audience (read via config(), not env() directly — see
+            // config/services.php's 'microsoft' entry for why: a raw env()
+            // call here would silently return null once config is cached,
+            // which is what was happening on production).
+            if ($user['aud'] !== config('services.microsoft.client_id')) {
                 return response()->json(['error' => 'Invalid audience'], 401);
             }
 
