@@ -31,6 +31,10 @@
                                             Acknowledged by {{ $acknowledgement->ack_name }}
                                             on {{ \Carbon\Carbon::parse($acknowledgement->acknowledged_at)->format('Y-m-d H:i') }}
                                         </span>
+                                    @elseif(!empty($openDispute))
+                                        <span class="badge bg-warning-subtle text-warning font-size-12">
+                                            <i class="bx bx-error-circle"></i> Pending Dispute
+                                        </span>
                                     @elseif(auth()->user()->employeeid === $data->lda_id)
                                         <form method="POST" action="{{ route('my-evaluations.acknowledge', $data->audit_id) }}" class="d-inline">
                                             @csrf

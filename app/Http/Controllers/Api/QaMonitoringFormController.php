@@ -11,6 +11,8 @@ class QaMonitoringFormController extends Controller
     //
     public function index(DropdownService $service, Request $request)
     {
+        $clientCodes = DB::table('client_codes')->select('name')->get();
+        $carrierCodes = DB::table('carrier_codes')->select('name')->get();
 
         $email = $request->email;
         $exceptionStatus = $service->auditCondition();
@@ -26,6 +28,8 @@ class QaMonitoringFormController extends Controller
             'Users',
             'carrierCodeND',
             'clientCode',
+            'clientCodes',
+            'carrierCodes',
             'exceptionStatus',
             'requestor'
         ));

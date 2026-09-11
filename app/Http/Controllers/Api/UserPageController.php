@@ -227,6 +227,19 @@ class UserPageController extends Controller
         // Keep position_id in sync with the position name.
         $validated['position_id'] = Position::where('name', $validated['position'])->value('id');
 
+        // Stamp the leaver effective date the moment a user is set to
+        // inactive — only if it isn't already set, so re-saving an
+        // already-inactive user doesn't keep pushing the date forward.
+        // Reactivating clears it, so the *next* inactivation re-stamps
+        // fresh instead of showing a stale date from a prior leaver spell.
+        if ($validated['status'] === 'inactive') {
+            if (empty($user->effectivity_date_leaver)) {
+                $validated['effectivity_date_leaver'] = now()->toDateString();
+            }
+        } elseif ($validated['status'] === 'active') {
+            $validated['effectivity_date_leaver'] = null;
+        }
+
         // ✅ Update
         $user->update($validated);
 

@@ -51,6 +51,9 @@ class ReconActionItemController extends Controller
             'completion_date' => 'nullable|string',
             'action_owner' => 'nullable|string',
             'invoice_status' => 'nullable|string',
+            'is_cancelled' => 'nullable|string',
+            'who_cancelled' => 'nullable|string',
+            'cancellation_reason' => 'nullable|string',
         ]);
 
         // Insert
@@ -71,6 +74,9 @@ class ReconActionItemController extends Controller
             'invoice_status' => $validated['invoice_status'] ?? null,
             'raw_data' => isset($validated['raw_data']) ? json_encode($validated['raw_data']) : null,
             'created_at' => now(),
+            'is_recon_cancelled' => filter_var($validated['is_cancelled'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'who_cancelled' => $validated['who_cancelled'] ?? null,
+            'reason_cancelled' => $validated['cancellation_reason'] ?? null,
         ]);
 
         $data = DB::table('recon_action_items')->where('id', $id)->first();

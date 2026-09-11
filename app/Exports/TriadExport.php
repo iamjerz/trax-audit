@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Support\PositionScope;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -21,10 +22,30 @@ class TriadExport implements FromArray, WithHeadings, ShouldAutoSize
 
     public function array(): array
     {
-        return DB::table('triad_items as t')
+        $query = DB::table('triad_items as t')
             ->leftJoin('users as u', 't.created_by', '=', 'u.employeeid')
             ->select('t.reference_id', 't.reference', 't.triad', 't.created_at',
-                DB::raw("CONCAT(u.first_name, ' ', u.last_name) as evaluator"))
+                DB::raw("CONCAT(u.first_name, ' ', u.last_name) as evaluator"));
+
+        // 👤 LEVEL FILTER — scope comes from the positions table (see
+        // App\Support\PositionScope), not a hardcoded string match. Mirrors
+        // TriadTicket::displayTicket() exactly — this export previously had
+        // no user-scoping at all, so it dumped every triad_items row.
+        $user = auth()->user();
+        if ($user) {
+            $scope = PositionScope::forPosition($user->position);
+
+            if ($scope === 'own') {
+                $query->where(function ($q) use ($user) {
+                    $q->where('t.created_by', $user->email)
+                      ->orWhere('t.created_by', $user->employeeid);
+                });
+            } elseif ($scope === 'team') {
+                $query->where('u.supervisor_id', $user->employeeid);
+            }
+        }
+
+        return $query
             ->orderByDesc('t.id')
             ->get()
             ->map(function ($r) {

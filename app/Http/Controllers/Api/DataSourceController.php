@@ -12,6 +12,57 @@ class DataSourceController extends Controller
 {
     //
 
+    /**
+     * Value -> label scales for the coded outcome fields on verification,
+     * processCompliance, and engagement, sourced from the <option> lists in
+     * resources/views/extension/qa.blade.php. Scales differ per exact field
+     * (e.g. pc_outcome_2/3 are worth 15/8/0 while pc_outcome_1/4 are worth
+     * 10/5/0), so this is keyed per field name rather than one shared scale.
+     */
+    private const OUTCOME_SCALES = [
+        'verification' => [
+            'ver_outcome_1' => [0 => 'Fail', 100 => 'Pass'],
+            'ver_outcome_2' => [0 => 'Fail', 100 => 'Pass'],
+        ],
+        'process_compliance' => [
+            'pc_outcome_1' => [0 => 'Not Met', 5 => 'Coached', 10 => 'Met'],
+            'pc_outcome_2' => [0 => 'Not Met', 8 => 'Coached', 15 => 'Met'],
+            'pc_outcome_3' => [0 => 'Not Met', 8 => 'Coached', 15 => 'Met'],
+            'pc_outcome_4' => [0 => 'Not Met', 5 => 'Coached', 10 => 'Met'],
+        ],
+        'engagement' => [
+            'eng_outcome_1' => [0 => 'Not Met', 5 => 'Coached', 10 => 'Met'],
+            'eng_outcome_2' => [0 => 'Not Met', 5 => 'Coached', 10 => 'Met'],
+            'eng_outcome_3' => [0 => 'Not Met', 8 => 'Coached', 15 => 'Met'],
+            'eng_outcome_4' => [0 => 'Not Met', 8 => 'Coached', 15 => 'Met'],
+        ],
+    ];
+
+    /**
+     * Add a "_text" field alongside each coded outcome value (ver_outcome_*,
+     * pc_outcome_*, eng_outcome_*) inside its relation, e.g.
+     * engagement.eng_outcome_1 = "10" -> engagement.eng_outcome_1_text = "Met".
+     */
+    private function addOutcomeLabels(array $data): array
+    {
+        foreach (self::OUTCOME_SCALES as $relation => $fields) {
+            if (empty($data[$relation]) || ! is_array($data[$relation])) {
+                continue;
+            }
+
+            foreach ($fields as $field => $scale) {
+                if (! array_key_exists($field, $data[$relation])) {
+                    continue;
+                }
+
+                $value = (int) $data[$relation][$field];
+                $data[$relation][$field . '_text'] = $scale[$value] ?? null;
+            }
+        }
+
+        return $data;
+    }
+
     public function index(Request $request)
     {
          $user_request = $request->input('name'); // ✅ safer
@@ -142,6 +193,8 @@ class DataSourceController extends Controller
                 ? trim(($aud->first_name ?? '') . ' ' . ($aud->last_name ?? ''))
                 : $row->auditors_name;
             $data['auditors_email']  = $aud->email ?? null;
+
+            $data = $this->addOutcomeLabels($data);
 
             return $data;
         });

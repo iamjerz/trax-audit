@@ -43,6 +43,7 @@ trait FiltersByManagerScope
 
         $people = DB::table('users')
             ->where('position', '!=', 'LDA')
+            ->where('status', '!=', 'inactive')
             ->whereIn('employeeid', $reportIds)
             ->orderBy('first_name')
             ->get(['employeeid', 'first_name', 'last_name', 'position']);

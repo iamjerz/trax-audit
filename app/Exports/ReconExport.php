@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Support\PositionScope;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -104,13 +105,28 @@ class ReconExport extends DefaultValueBinder implements FromArray, WithHeadings,
         if ($f_date_from) $query->whereDate('recon_action_items.recon_call_date', '>=', $f_date_from);
         if ($f_date_to)   $query->whereDate('recon_action_items.recon_call_date', '<=', $f_date_to);
 
-        // 👤 Role filter — LDAs only see their own tickets (mirrors displayTicket)
+        // 👤 LEVEL FILTER — scope comes from the positions table (see
+        // App\Support\PositionScope), not a hardcoded string match. Mirrors
+        // ReconTiketController::displayTicket() exactly, so the export can't
+        // pull rows outside what the same user sees on the /recon-ticket grid.
         $user = auth()->user();
-        if ($user && $user->position === 'LDA') {
-            $query->where(function ($q) use ($user) {
-                $q->where('recon_action_items.lda_email', $user->email)
-                  ->orWhere('recon_action_items.assigned_to', $user->employeeid);
-            });
+        if ($user) {
+            $scope = PositionScope::forPosition($user->position);
+
+            if ($scope === 'own') {
+                $query->where(function ($q) use ($user) {
+                    $q->where('recon_action_items.lda_email', $user->email)
+                      ->orWhere('recon_action_items.assigned_to', $user->employeeid);
+                });
+            } elseif ($scope === 'team') {
+                $query->where(function ($q) use ($user) {
+                    $q->whereIn('recon_action_items.lda_email', function ($sub) use ($user) {
+                        $sub->select('email')->from('users')->where('supervisor_id', $user->employeeid);
+                    })->orWhereIn('recon_action_items.assigned_to', function ($sub) use ($user) {
+                        $sub->select('employeeid')->from('users')->where('supervisor_id', $user->employeeid);
+                    });
+                });
+            }
         }
 
         return $query

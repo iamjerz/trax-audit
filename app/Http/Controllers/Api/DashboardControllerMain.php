@@ -36,15 +36,23 @@ class DashboardControllerMain extends Controller
         if ($clientCode)       $auditQuery->where('client_code', $clientCode);
         if ($ldaIds !== null)  $auditQuery->whereIn('lda_id', $ldaIds);
         if ($excludeCalibration) $auditQuery->where('is_calibration', false);
+        $this->excludeInactiveLdaAudits($auditQuery);
         $auditCount = $auditQuery->count();
 
         // Data uses the position label "LDA"; accept the long form too for safety.
         // When a supervisor/manager is selected, scope the LDA count to their subtree.
+        // Inactive LDAs don't count toward the headcount — note this is separate
+        // from $ldaIds itself, which stays inclusive of inactive LDAs so their
+        // pre-leave-date audits still filter correctly elsewhere in this method.
         if ($ldaIds !== null) {
-            $total_lda = count($ldaIds);
+            $total_lda = DB::table('users')
+                ->whereIn('employeeid', $ldaIds)
+                ->where('status', '!=', 'inactive')
+                ->count();
         } else {
             $total_lda = DB::table('users')
                 ->whereIn('position', self::LDA_POSITIONS)
+                ->where('status', '!=', 'inactive')
                 ->count();
         }
 
@@ -72,6 +80,7 @@ class DashboardControllerMain extends Controller
         if ($clientCode)       $scoresQuery->where('a.client_code', $clientCode);
         if ($ldaIds !== null)  $scoresQuery->whereIn('a.lda_id', $ldaIds);
         if ($excludeCalibration) $scoresQuery->where('a.is_calibration', false);
+        $this->excludeInactiveLdaAudits($scoresQuery, 'a');
         $scores = $scoresQuery->get();
 
         $aboveAverage = 0;
@@ -120,6 +129,7 @@ class DashboardControllerMain extends Controller
                 'ticket.audit_id',
                 'ticket.audit_date_1',
                 'ticket.audit_date_2',
+                'ticket.is_calibration',
                 'emp.employeeid as employee_id',
                 DB::raw("CONCAT(emp.first_name, ' ', COALESCE(emp.last_name, '')) as employee_name"),
                 'ticket.invoice_id',
@@ -275,6 +285,7 @@ class DashboardControllerMain extends Controller
         if ($clientCode)       $datesQuery->where('client_code', $clientCode);
         if ($ldaIds !== null)  $datesQuery->whereIn('lda_id', $ldaIds);
         if ($excludeCalibration) $datesQuery->where('is_calibration', false);
+        $this->excludeInactiveLdaAudits($datesQuery);
         $dates = $datesQuery->pluck('audit_date_1');
 
         foreach ($dates as $d) {
@@ -350,6 +361,29 @@ class DashboardControllerMain extends Controller
         if ($clientCode)       $query->where("$alias.client_code", $clientCode);
         if ($ldaIds !== null)  $query->whereIn("$alias.lda_id", $ldaIds);
         if ($excludeCalibration) $query->where("$alias.is_calibration", false);
+
+        $this->excludeInactiveLdaAudits($query, $alias);
+    }
+
+    /**
+     * Exclude an audit if its LDA is now inactive and this audit is dated
+     * on/after their effectivity_date_leaver — audits from while they were
+     * still active still count. $alias is the alias of user_input_audits in
+     * the query, or null for an unaliased query (columns referenced bare).
+     */
+    private function excludeInactiveLdaAudits($query, ?string $alias = null): void
+    {
+        $ldaCol  = $alias ? "$alias.lda_id" : 'lda_id';
+        $dateCol = $alias ? "$alias.audit_date_1" : 'audit_date_1';
+
+        $query->whereNotExists(function ($sub) use ($ldaCol, $dateCol) {
+            $sub->select(DB::raw(1))
+                ->from('users')
+                ->whereColumn('users.employeeid', $ldaCol)
+                ->where('users.status', 'inactive')
+                ->whereNotNull('users.effectivity_date_leaver')
+                ->whereColumn($dateCol, '>=', 'users.effectivity_date_leaver');
+        });
     }
 
 }

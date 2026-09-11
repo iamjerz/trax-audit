@@ -103,6 +103,12 @@
                                                     <td class="text-muted">{{ $user->role }}</td>
                                                 </tr>
                                                 <!-- end tr -->
+                                                 <tr>
+                                                    <th class="fw-bold">
+                                                        Leaver Date :</th>
+                                                    <td class="text-muted">{{ $user->effectivity_date_leaver }}</td>
+                                                </tr>
+                                                <!-- end tr -->
                                             </tbody><!-- end tbody -->
                                         </table>
                                     </div>

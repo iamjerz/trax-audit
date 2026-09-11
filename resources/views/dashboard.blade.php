@@ -233,17 +233,7 @@
                 </div>
 
                 <div class="row h-100">
-                    <div class="col-xl-6 d-flex">
-                        <div class="card flex-fill" id="recent-ticket-card">
-                            <div class="card-header">
-                                <h4 class="card-title">Recent Audit Ticket</h4>
-                            </div>
-                            <div class="card-body pb-0">
-                                <div id="table-gridjs"></div>
-                            </div>
-                        </div>
-                    </div>
-
+                
                     <div class="col-xl-6 d-flex">
                         <div class="card flex-fill">
                             <div class="card-header">
@@ -251,20 +241,6 @@
                             </div>
                             <div class="card-body pb-0">
                                 <div id="simple_pie_chart" data-colors='["#1f58c7", "#28b765","#f4c238", "#ed5555","#974be0"]' class="apex-charts" dir="ltr"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row h-100">
-                    <div class="col-xl-6 d-flex">
-                        <div class="card flex-fill">
-                            <div class="card-header">
-                                <h4 class="card-title">Cause Issue</h4>
-                            </div>
-                            <div class="card-body pb-0">
-                                <div id="custom_datalabels_bar" data-colors='["#52c6ea", "#495057", "#e83e8c", "#28b765", "#ed5555", "#2b908f", "#f9a3a4", "#974be0",
-                                        "#f1734f", "#1f58c7"]' class="apex-charts" dir="ltr"></div>
                             </div>
                         </div>
                     </div>
@@ -279,6 +255,33 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div class="row h-100">
+                    <div class="col-xl-12 d-flex">
+                        <div class="card flex-fill">
+                            <div class="card-header">
+                                <h4 class="card-title">Cause Issue</h4>
+                            </div>
+                            <div class="card-body pb-0">
+                                <div id="custom_datalabels_bar" data-colors='["#52c6ea", "#495057", "#e83e8c", "#28b765", "#ed5555", "#2b908f", "#f9a3a4", "#974be0",
+                                        "#f1734f", "#1f58c7"]' class="apex-charts" dir="ltr"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-12 d-flex">
+                        <div class="card flex-fill" id="recent-ticket-card">
+                            <div class="card-header">
+                                <h4 class="card-title">Recent Audit Ticket</h4>
+                            </div>
+                            <div class="card-body pb-0">
+                                <div id="table-gridjs"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
                 </div>
 
             </div>
@@ -530,6 +533,7 @@
                 url: url,
                 headers: { 'Accept': 'application/json' },
                 then: data => data.recent_ticket.map(row => [
+                    row.audit_id,
                     gridjs.html(`
                         <a href="/ticket/view/${row.audit_id}"
                         target="_blank"
@@ -539,7 +543,8 @@
                     `),
                     row.employee_name,
                     row.audit_date_1,
-                    row.created_by_name ?? '—'
+                    row.created_by_name ?? '—',
+                    row.is_calibration
                 ])
             };
 
@@ -547,7 +552,12 @@
                 recentGrid.updateConfig({ server }).forceRender();
             } else {
                 recentGrid = new gridjs.Grid({
-                    columns: ["Invoice ID", "Employee Name", "Audit Date 1", "Created By"],
+                    columns: ["Audit ID","Invoice ID", "Employee Name", "Audit Date", "Auditor Name",
+                        {
+                            name: "Is Calibration?",
+                            formatter: (cell) => cell ? 'Yes' : 'No'
+                        }
+                    ],
                     pagination: { limit: 20 },
                     search: false,
                     sort: false,

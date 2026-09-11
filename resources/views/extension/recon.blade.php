@@ -24,6 +24,44 @@
                     </div>
                     <!-- <h4 class="mb-0">Recon Call Action Register</h4> -->
                     <hr>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Is the Recon Call cancelled?</label>
+                            </br>
+                            <input type="checkbox" id="isCancelled" name="is-cancelled" switch="primary"/>
+                            <label for="isCancelled" data-on-label="Yes" data-off-label="No"></label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3" hidden id="cancel-section-1">
+                        <div class="mb-3">
+                            <label for="choices-single-default" class="form-label font-size-13">Who cancelled the Recon Call?</label>
+                            <select class="form-control choices-js" data-trigger name="who-cancel" id="who-cancel" placeholder="This is a search placeholder" required>
+                                <option value="" disabled selected></option>
+                                <option value="Carrier">Carrier</option>
+                                <option value="Customer">Customer</option>
+                                <option value="Trax">Trax</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3" hidden id="cancel-section-2">
+                        <div class="mb-3">
+                            <label for="choices-single-default" class="form-label font-size-13">Cancellation Reason</label>
+                            <select class="form-control choices-js" data-trigger name="cancellation-reason" id="cancellation-reason" placeholder="This is a search placeholder" required>
+                                <option value="" disabled selected></option>
+                                <option>Carrier-No Show: LSP / Carrier / SCAC did not dial in to the call so the call was cancelled.</option>
+                                <option>Carrier-Request: LSP / Carrier / SCAC requested the call to be cancelled.</option>
+                                <option>Shipper-No Show: Shipper / Customer did not dial in to the call so the call was cancelled.</option>
+                                <option>Shipper-Request: Shipper / Customer requested the call to be cancelled.</option>
+                                <option>TRAX-Request: A Trax Employee such as the CAM / Data Analyst / CRM requested the call to be cancelled.</option>
+                                <option>No Issue: The call was cancelled because there were no open issues to discuss.</option>
+                                <option>Late SOA Submission: The SOA was received late, so the call was cancelled.</option>
+                                <option>No SOA Provided: There was no SOA received, so the call was cancelled.</option>
+                            </select>
+                        </div>
+                    </div>
+                    <hr>
+                    <!-- This is for cancelled -->
                     <div class="mb-3">
                         <label class="form-label">Recon Call Date</label>
                         <input type="text" name="reconCallDate" class="form-control datetime-js" id="recon-call-date">
@@ -50,8 +88,8 @@
                             <label for="choices-single-default" class="form-label font-size-13">Client Code</label>
                             <select class="form-control choices-js" data-trigger name="clientCode" id="client-code" placeholder="This is a search placeholder" required>
                                 <option value="" disabled selected></option>
-                                @foreach($carrier_code_dr as $item)
-                                    <option value="{{ $item['client_code'] }}">{{ $item['client_code'] }}</option>
+                                @foreach($clientCodes as $item)
+                                    <option value="{{ $item->name }}">{{ $item->name }}</option>
                                 @endforeach
                             </select>
                         </div>

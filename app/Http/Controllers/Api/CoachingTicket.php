@@ -85,10 +85,37 @@ class CoachingTicket extends Controller
 
         $usersData = $this->getUsersData();
 
+        $user_email = auth()->user()->email;
+        $user_position = auth()->user()->position;
+        $user_employeeid = auth()->user()->employeeid;
 
-        $data = DB::table('coachings')
-            ->where('reference_id', $id)
-            ->first();
+        // 👤 LEVEL FILTER — same own/team/all scope as displayTicket(), so
+        // this detail page can't be used to bypass what a Position is
+        // scoped to see on the /coaching-ticket list.
+        $scope = PositionScope::forPosition($user_position);
+
+        $query = DB::table('coachings')->where('reference_id', $id);
+
+        if ($scope === 'own') {
+            $query->where(function ($q) use ($user_email, $user_employeeid) {
+                $q->where('created_by', $user_email)
+                  ->orWhere('created_by', $user_employeeid);
+            });
+        } elseif ($scope === 'team') {
+            $query->where(function ($q) use ($user_employeeid) {
+                $q->whereIn('created_by', function ($sub) use ($user_employeeid) {
+                    $sub->select('email')->from('users')->where('supervisor_id', $user_employeeid);
+                })->orWhereIn('created_by', function ($sub) use ($user_employeeid) {
+                    $sub->select('employeeid')->from('users')->where('supervisor_id', $user_employeeid);
+                });
+            });
+        }
+
+        $data = $query->first();
+
+        if (! $data) {
+            abort(403, 'You do not have access to this ticket.');
+        }
 
         $created_by = DB::table('users as u')
         ->join('coachings as r', 'r.created_by', '=', 'u.employeeid')

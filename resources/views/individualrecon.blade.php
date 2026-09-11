@@ -48,7 +48,7 @@
                                         <small class="text-muted">Recon Call Date</small>
                                         <div class="fw-semibold">
                                             {{ $data->recon_call_date }}
-                                            <!-- {{ \Carbon\Carbon::parse($data->recon_call_date)->format('F d, Y') }} -->
+                                            {{-- \Carbon\Carbon::parse($data->recon_call_date)->format('F d, Y') --}}
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -96,11 +96,21 @@
                                     <div class="col-md-6">
                                         <small class="text-muted">Target Completion Date</small>
                                         <div class="fw-semibold">
-                                            {{ \Carbon\Carbon::parse($data->completion_date)->format('F d, Y') }}
+                                            @php
+                                                $completionDateDisplay = 'N/A';
+                                                if (!empty($data->completion_date)) {
+                                                    try {
+                                                        $completionDateDisplay = \Carbon\Carbon::parse($data->completion_date)->format('F d, Y');
+                                                    } catch (\Exception $e) {
+                                                        $completionDateDisplay = $data->completion_date;
+                                                    }
+                                                }
+                                            @endphp
+                                            {{ $completionDateDisplay }}
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <small class="text-muted">Action Owner Owner</small>
+                                        <small class="text-muted">Action Owner</small>
                                         <div class="fw-semibold">
                                             {{ $data->action_owner }}
                                         </div>
@@ -109,6 +119,24 @@
                                         <small class="text-muted">Invoice Status</small>
                                         <div class="fw-semibold">
                                             {{ $data->invoice_status }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">Is the Recon Call cancelled?</small>
+                                        <div class="fw-semibold">
+                                            {{ $data->is_recon_cancelled }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">Who cancelled the Recon Call?</small>
+                                        <div class="fw-semibold">
+                                            {{ $data->who_cancelled }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">Cancellation Reason</small>
+                                        <div class="fw-semibold">
+                                            {{ $data->reason_cancelled }}
                                         </div>
                                     </div>
                                 </div>

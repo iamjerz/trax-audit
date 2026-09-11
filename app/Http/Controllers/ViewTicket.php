@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
+use App\Models\Dispute;
 use App\Models\UserInputAudit;
 use App\Support\AccessRoles;
+use App\Support\PositionScope;
 
 
 
@@ -15,7 +17,11 @@ class ViewTicket extends Controller
     public function viewTicket($id)
     {
         $ticketid = $id;
-        $data = UserInputAudit::with([
+
+        $user_position   = auth()->user()->position;
+        $user_employeeid = auth()->user()->employeeid;
+
+        $query = UserInputAudit::with([
             'verification',
             'processCompliance',
             'engagement',
@@ -46,8 +52,24 @@ class ViewTicket extends Controller
             DB::raw("CONCAT(o.first_name, ' ', o.last_name) as lda_auditors_name")
         )
 
-        ->where('audit.audit_id', $ticketid)
-        ->first();   // 👈 cleaner than get()->first()
+        ->where('audit.audit_id', $ticketid);
+
+        // 👤 LEVEL FILTER — same own/team/all scope as the monitoring-ticket
+        // list (MonitoringTicket::displayTicket), so this shared detail page
+        // can't be used to bypass what a Position is scoped to see there.
+        $scope = PositionScope::forPosition($user_position);
+
+        if ($scope === 'own') {
+            $query->where('audit.lda_id', $user_employeeid);
+        } elseif ($scope === 'team') {
+            $query->where('a.supervisor_id', $user_employeeid);
+        }
+
+        $data = $query->first();   // 👈 cleaner than get()->first()
+
+        if (! $data) {
+            abort(403, 'You do not have access to this ticket.');
+        }
 
         $triad_exists = DB::table('triad_items')
             ->where('reference', $ticketid)
@@ -73,6 +95,16 @@ class ViewTicket extends Controller
                 ->first();
         }
 
+        // Open dispute on this evaluation, if any — same check as
+        // MyEvaluationController::show() so this shared view stays
+        // consistent regardless of which route rendered it.
+        $openDispute = Schema::hasTable('disputes')
+            ? Dispute::where('audit_id', $ticketid)
+                ->where('employeeid', $data->lda_id)
+                ->where('status', 'open')
+                ->exists()
+            : false;
+
         // "Is this Calibration?" is only editable by admins.
         $access = AccessRoles::expand(
             DB::table('extension_access')
@@ -82,7 +114,7 @@ class ViewTicket extends Controller
         );
         $isAdmin = in_array('admin', $access, true);
 
-        return view('viewticket', compact('ticketid', 'data', 'triad_exists', 'coaching_exists', 'acknowledgement', 'isAdmin'));
+        return view('viewticket', compact('ticketid', 'data', 'triad_exists', 'coaching_exists', 'acknowledgement', 'openDispute', 'isAdmin'));
 
 
     }

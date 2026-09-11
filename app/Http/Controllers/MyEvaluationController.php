@@ -131,6 +131,16 @@ class MyEvaluationController extends Controller
                 ->first();
         }
 
+        // Open dispute on this evaluation, if any — takes priority over the
+        // Acknowledge button / "Awaiting acknowledgement" badge, since the
+        // acknowledge() action itself already refuses while one is open.
+        $openDispute = Schema::hasTable('disputes')
+            ? Dispute::where('audit_id', $ticketid)
+                ->where('employeeid', $data->lda_id)
+                ->where('status', 'open')
+                ->exists()
+            : false;
+
         // viewticket.blade.php is shared with ViewTicket::viewTicket() and expects
         // $isAdmin (controls the "Is this Calibration?" edit button, admin-only).
         $access = AccessRoles::expand(
@@ -141,7 +151,7 @@ class MyEvaluationController extends Controller
         );
         $isAdmin = in_array('admin', $access, true);
 
-        return view('viewticket', compact('ticketid', 'data', 'triad_exists', 'coaching_exists', 'acknowledgement', 'isAdmin'));
+        return view('viewticket', compact('ticketid', 'data', 'triad_exists', 'coaching_exists', 'acknowledgement', 'openDispute', 'isAdmin'));
     }
 
     /**

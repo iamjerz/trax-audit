@@ -82,9 +82,9 @@
                                         <!-- <input type="text" class="form-control" id="" name="carrier-name" placeholder="Enter Carrier Name"> -->
                                         <select class="form-control choices-js" data-trigger name="carrier-name" id="carrier-name" placeholder="This is a search placeholder">
                                             <option value="">Select Carrier Name</option>
-                                            @foreach($carrierCodeND as $item)
-                                                <option value="{{ $item['carrier_code'] }}">
-                                                    {{ $item['carrier_code'] }}
+                                            @foreach($carrierCodes as $item)
+                                                <option value="{{ $item->name }}">
+                                                    {{ $item->name }}
                                                 </option>
                                             @endforeach
                                         </select>
@@ -96,9 +96,9 @@
                                         <label class="form-label">Client Code <span class="text-danger">*</span></label>
                                         <select class="form-control choices-js" data-trigger name="client-code" id="client-code" placeholder="This is a search placeholder">
                                             <option value="">Select Client Code</option>
-                                            @foreach($clientCode as $item)
-                                                <option value="{{ $item['client_code'] }}">
-                                                    {{ $item['client_code'] }}
+                                            @foreach($clientCodes as $item)
+                                                <option value="{{ $item->name }}">
+                                                    {{ $item->name }}
                                                 </option>
                                             @endforeach
                                         </select>

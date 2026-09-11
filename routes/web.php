@@ -48,6 +48,7 @@ use App\Http\Controllers\Api\CoachingTicket;
 use App\Http\Controllers\Api\MonitoringTicket;
 use App\Http\Controllers\Api\PageAccessController;
 use App\Http\Controllers\Api\PositionController;
+use App\Http\Controllers\Api\ClientCarrierCodeController;
 /*
 |--------------------------------------------------------------------------
 | 
@@ -149,6 +150,19 @@ Route::middleware('auth')->group(function () {
         Route::get('/positions', [PositionController::class, 'index'])->name('positions');
         Route::post('/positions', [PositionController::class, 'store'])->name('positions.store');
         Route::put('/positions/{id}/scope', [PositionController::class, 'updateScope'])->name('positions.update-scope');
+
+        Route::get('/client-carrier-codes', [ClientCarrierCodeController::class, 'index'])->name('client-carrier-codes');
+        Route::get('/client-codes/data', [ClientCarrierCodeController::class, 'clientCodesData']);
+        Route::get('/client-codes/search', [ClientCarrierCodeController::class, 'searchClientCodes']);
+        Route::post('/client-codes/bulk', [ClientCarrierCodeController::class, 'bulkStoreClientCodes']);
+        Route::post('/client-codes', [ClientCarrierCodeController::class, 'storeClientCode']);
+        Route::put('/client-codes/{id}', [ClientCarrierCodeController::class, 'updateClientCode']);
+        Route::delete('/client-codes/{id}', [ClientCarrierCodeController::class, 'destroyClientCode']);
+        Route::get('/carrier-codes/data', [ClientCarrierCodeController::class, 'carrierCodesData']);
+        Route::post('/carrier-codes/bulk', [ClientCarrierCodeController::class, 'bulkStoreCarrierCodes']);
+        Route::post('/carrier-codes', [ClientCarrierCodeController::class, 'storeCarrierCode']);
+        Route::put('/carrier-codes/{id}', [ClientCarrierCodeController::class, 'updateCarrierCode']);
+        Route::delete('/carrier-codes/{id}', [ClientCarrierCodeController::class, 'destroyCarrierCode']);
     });
 
     /* -----------------------------------------------------------------

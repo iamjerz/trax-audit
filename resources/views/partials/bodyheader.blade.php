@@ -131,15 +131,6 @@
                 @endif
 
                 <li class="menu-title" data-key="t-menu">Dashboard</li>
-                @if($pageAccess->contains('dashboard-qa'))
-                    <li>
-                        <a href="/dashboard-qa">
-                            <i class="bx bx-receipt icon nav-icon"></i>
-                            <span class="menu-item" data-key="t-calendar">QA Monitoring</span>
-                        </a>
-
-                    </li>
-                @endif
                 @if($pageAccess->contains('dashboard-recon'))
                     <li>
                         <a href="/dashboard-recon">
@@ -148,11 +139,11 @@
                         </a>
                     </li>
                 @endif
-                @if($pageAccess->contains('dashboard-triad'))
+                @if($pageAccess->contains('dashboard-qa'))
                     <li>
-                        <a href="/dashboard-triad">
+                        <a href="/dashboard-qa">
                             <i class="bx bx-receipt icon nav-icon"></i>
-                            <span class="menu-item" data-key="t-calendar">Triad</span>
+                            <span class="menu-item" data-key="t-calendar">QA Monitoring</span>
                         </a>
 
                     </li>
@@ -166,6 +157,16 @@
 
                     </li>
                 @endif
+                @if($pageAccess->contains('dashboard-triad'))
+                    <li>
+                        <a href="/dashboard-triad">
+                            <i class="bx bx-receipt icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-calendar">Triad</span>
+                        </a>
+
+                    </li>
+                @endif
+                
                 <!-- Dashboard End -->
                 @if($pageAccess->contains('monitoring-form'))
                 <!-- <li class="menu-title" data-key="t-menu">Forms</li>
@@ -212,6 +213,31 @@
                     || $pageAccess->contains('recon-overdue')
                     || $pageAccess->contains('client-carrier-health'))
                 <li class="menu-title" data-key="t-applications">Reports </li>
+                    @if($pageAccess->contains('recon-ticket'))
+                    <li>
+                        <a href="/recon-ticket">
+                            <i class="bx bx-receipt icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-calendar">Action Register Ticket</span>
+                        </a>
+
+                    </li>
+                    @endif
+                    @if($pageAccess->contains('recon-overdue'))
+                    <li>
+                        <a href="/recon-overdue">
+                            <i class="bx bx-time-five icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-recon-overdue">Overdue Items</span>
+                        </a>
+                    </li>
+                    @endif
+                    @if($pageAccess->contains('client-carrier-health'))
+                    <li>
+                        <a href="/analytics/client-carrier-health">
+                            <i class="bx bx-pulse icon nav-icon"></i>
+                            <span class="menu-item" data-key="t-client-health">Client/Carrier Health</span>
+                        </a>
+                    </li>
+                    @endif
                     @if($pageAccess->contains('eval-individual'))
                     <li>
                         <a href="/eval-individual">
@@ -246,31 +272,7 @@
 
                     </li>
                     @endif
-                    @if($pageAccess->contains('recon-ticket'))
-                    <li>
-                        <a href="/recon-ticket">
-                            <i class="bx bx-receipt icon nav-icon"></i>
-                            <span class="menu-item" data-key="t-calendar">Action Register Ticket</span>
-                        </a>
-
-                    </li>
-                    @endif
-                    @if($pageAccess->contains('recon-overdue'))
-                    <li>
-                        <a href="/recon-overdue">
-                            <i class="bx bx-time-five icon nav-icon"></i>
-                            <span class="menu-item" data-key="t-recon-overdue">Overdue Items</span>
-                        </a>
-                    </li>
-                    @endif
-                    @if($pageAccess->contains('client-carrier-health'))
-                    <li>
-                        <a href="/analytics/client-carrier-health">
-                            <i class="bx bx-pulse icon nav-icon"></i>
-                            <span class="menu-item" data-key="t-client-health">Client/Carrier Health</span>
-                        </a>
-                    </li>
-                    @endif
+                    
                 @endif
                 <!-- Name Divider -->
                 @if($pageAccess->contains('lda-scorecard')
@@ -353,6 +355,12 @@
                         <li><a href="/page-access" data-key="t-page-access">Page Access</a></li>
                         <li><a href="/positions" data-key="t-positions">Positions</a></li>
                     </ul>
+                </li>
+                <li>
+                    <a href="/client-carrier-codes">
+                        <i class="bx bx-barcode icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-client-carrier-codes">Client &amp; Carrier Codes</span>
+                    </a>
                 </li>
                 <li>
                     <a href="/audit-trail">
