@@ -3,6 +3,18 @@
 <link rel="stylesheet" href="assets/libs/gridjs/theme/mermaid.min.css">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 @include('partials.header')
+<style>
+    /* Grid.js's own search box (rendered dynamically, class
+       gridjs-search-input — there's no template tag for it to hook here
+       directly). text-transform only changes how it's displayed, not the
+       stored value, but that's enough: Grid.js's built-in search already
+       lowercases both the typed keyword and each cell's text before
+       comparing them, so matching is already case-insensitive regardless —
+       this just keeps what's shown consistent with that. */
+    #table-gridjs .gridjs-search-input {
+        text-transform: lowercase;
+    }
+</style>
 
 
 <body>
@@ -23,7 +35,10 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="mb-3  text-end">
+                        <div class="mb-3 text-end">
+                            <a href="{{ route('export.users') }}" class="btn btn-success waves-effect waves-light me-2">
+                                <i class="bx bx-download font-size-16 align-middle me-2"></i> Export to Excel
+                            </a>
                             <button type="button" class="btn btn-primary waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#add-user">
                                 <i class="bx bx-user-plus font-size-16 align-middle me-2"></i> Add new user
                             </button>

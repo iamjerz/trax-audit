@@ -35,7 +35,7 @@
                                         <div class="mb-3">
                                             <label class="form-label" for="email">Email</label>
                                             <div class="position-relative input-custom-icon">
-                                                <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
+                                                <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required style="text-transform: lowercase;">
                                                  <span class="bx bx-user"></span>
                                             </div>
                                         </div>
@@ -106,6 +106,14 @@
     </div>
     @include('partials.script')
     <script>
+        // Email is always lowercase as it's typed — matches how email is
+        // normalized elsewhere in this app (e.g. the Edit User form), and
+        // the style="text-transform:lowercase" above only changes display,
+        // not the actual submitted value, so this covers the real value too.
+        document.getElementById('email').addEventListener('input', function () {
+            this.value = this.value.toLowerCase();
+        });
+
         // Show / hide password toggle (works for every .auth-pass-inputgroup on the page)
         document.querySelectorAll('.auth-pass-inputgroup').forEach(function (group) {
             var btn = group.querySelector('button');

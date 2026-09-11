@@ -6,11 +6,17 @@ use App\Exports\AuditTrailExport;
 use App\Exports\EvaluationsExport;
 use App\Exports\ReconExport;
 use App\Exports\TriadExport;
+use App\Exports\UsersExport;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ExportController extends Controller
 {
+    public function users()
+    {
+        return Excel::download(new UsersExport(), 'users_' . now()->format('Ymd_His') . '.xlsx');
+    }
+
     public function evaluations(Request $request)
     {
         $file = 'evaluations_' . now()->format('Ymd_His') . '.xlsx';

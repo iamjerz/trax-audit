@@ -138,6 +138,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/users', [UserListMonitoringPage::class, 'UserPageList']);
         Route::get('/users/data', [UserController::class, 'usersCallApi'])->name('users.data');
+        Route::get('/export/users', [ExportController::class, 'users'])->name('export.users');
         Route::get('/check-email', [UserPageController::class, 'check']);
         Route::post('/insert-user', [UserPageController::class, 'store']);
         Route::get('/edit-user/{employeeid}', [UserPageController::class, 'index']);
