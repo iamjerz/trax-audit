@@ -54,6 +54,12 @@ class LoginVerifyController extends Controller
                 ->where('email', strtolower($email))
                 ->first();
 
+            // A valid Microsoft token isn't enough on its own — a
+            // deactivated local account still can't get in.
+            if ($dbUser && $dbUser->status === 'inactive') {
+                return response()->json(['error' => 'This account has been deactivated.'], 401);
+            }
+
             $actorName = $dbUser
                 ? trim(($dbUser->first_name ?? '') . ' ' . ($dbUser->last_name ?? ''))
                 : $email;
