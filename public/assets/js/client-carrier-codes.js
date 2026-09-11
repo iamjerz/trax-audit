@@ -29,6 +29,59 @@ document.addEventListener('DOMContentLoaded', () => {
         return (err && err.message) || 'Something went wrong';
     }
 
+    // Splits a large bulk-add paste into fixed-size chunks sent one at a
+    // time (never in parallel — duplicate-detection reads the DB fresh on
+    // each request, so concurrent requests could both miss the same
+    // not-yet-committed duplicate and insert it twice). At ~2,000 rows per
+    // request, even a very large paste (tens of thousands of rows) stays
+    // well clear of PHP's post_max_size and keeps each request fast, rather
+    // than sending everything in one giant request.
+    const BULK_BATCH_SIZE = 2000;
+
+    function chunkArray(arr, size) {
+        const out = [];
+        for (let i = 0; i < arr.length; i += size) {
+            out.push(arr.slice(i, i + size));
+        }
+        return out;
+    }
+
+    // Runs one bulk-add request per batch, sequentially, updating the
+    // button label with progress. If a batch fails, stops there and
+    // reports how many rows made it in before the error — re-running with
+    // the same input is safe since already-added rows are skipped as
+    // duplicates, not re-inserted.
+    async function submitBulkInBatches({ items, endpoint, buildPayload, btn, noun }) {
+        const batches = chunkArray(items, BULK_BATCH_SIZE);
+        const originalLabel = btn.textContent;
+        btn.disabled = true;
+        let totalAdded = 0;
+        let totalSkipped = 0;
+
+        try {
+            for (let i = 0; i < batches.length; i++) {
+                btn.textContent = batches.length > 1
+                    ? `Uploading ${i + 1}/${batches.length}...`
+                    : 'Uploading...';
+                const res = await fetchJson(endpoint, 'POST', buildPayload(batches[i]));
+                totalAdded += res.added || 0;
+                totalSkipped += res.skipped || 0;
+            }
+            notifySuccess(
+                `Added ${totalAdded} ${noun}(s)` + (totalSkipped > 0 ? `, skipped ${totalSkipped} duplicate(s).` : '.')
+            );
+            return true;
+        } catch (err) {
+            notifyError(
+                (totalAdded > 0 ? `Added ${totalAdded} before this error: ` : '') + errorMessage(err)
+            );
+            return false;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalLabel;
+        }
+    }
+
     function paginationServerConfig() {
         return {
             url: (prev, page, limit) => {
@@ -243,23 +296,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const bulkAddClientBtn = document.getElementById('bulk-add-client-codes-btn');
     if (bulkAddClientBtn) {
-        bulkAddClientBtn.addEventListener('click', function () {
+        bulkAddClientBtn.addEventListener('click', async function () {
             const raw = document.getElementById('bulk-client-codes-text').value;
             const names = raw.split('\n').map(s => s.trim()).filter(Boolean);
             if (!names.length) {
                 notifyWarning('Paste at least one client code.');
                 return;
             }
-            const btn = this;
-            btn.disabled = true;
-            fetchJson('/client-codes/bulk', 'POST', { names })
-                .then(res => {
-                    notifySuccess(res.message);
-                    bulkClientModal && bulkClientModal.hide();
-                    clientGrid.forceRender();
-                })
-                .catch(err => notifyError(errorMessage(err)))
-                .finally(() => { btn.disabled = false; });
+            const ok = await submitBulkInBatches({
+                items: names,
+                endpoint: '/client-codes/bulk',
+                buildPayload: (batch) => ({ names: batch }),
+                btn: this,
+                noun: 'client code',
+            });
+            clientGrid.forceRender();
+            if (ok) {
+                bulkClientModal && bulkClientModal.hide();
+            }
         });
     }
 
@@ -277,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const bulkAddCarrierBtn = document.getElementById('bulk-add-carrier-codes-btn');
     if (bulkAddCarrierBtn) {
-        bulkAddCarrierBtn.addEventListener('click', function () {
+        bulkAddCarrierBtn.addEventListener('click', async function () {
             const raw = document.getElementById('bulk-carrier-codes-text').value;
             const rows = raw.split('\n')
                 .map(line => line.trim())
@@ -295,16 +349,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 notifyWarning('Paste at least one carrier code.');
                 return;
             }
-            const btn = this;
-            btn.disabled = true;
-            fetchJson('/carrier-codes/bulk', 'POST', { rows })
-                .then(res => {
-                    notifySuccess(res.message);
-                    bulkCarrierModal && bulkCarrierModal.hide();
-                    carrierGrid.forceRender();
-                })
-                .catch(err => notifyError(errorMessage(err)))
-                .finally(() => { btn.disabled = false; });
+            const ok = await submitBulkInBatches({
+                items: rows,
+                endpoint: '/carrier-codes/bulk',
+                buildPayload: (batch) => ({ rows: batch }),
+                btn: this,
+                noun: 'carrier code',
+            });
+            carrierGrid.forceRender();
+            if (ok) {
+                bulkCarrierModal && bulkCarrierModal.hide();
+            }
         });
     }
 

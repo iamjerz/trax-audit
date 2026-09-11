@@ -7,6 +7,7 @@ use App\Models\AuditTrail;
 use App\Models\CarrierCode;
 use App\Models\ClientCode;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 /**
  * Client & Carrier Codes admin page — the canonical lookup lists behind the
@@ -107,15 +108,21 @@ class ClientCarrierCodeController extends Controller
             'names.*' => 'string|max:255',
         ]);
 
-        $names = collect($validated['names'])
+        $rawNames = collect($validated['names'])
             ->map(fn ($n) => trim($n))
             ->filter()
-            ->unique()
             ->values();
 
-        if ($names->isEmpty()) {
+        if ($rawNames->isEmpty()) {
             return response()->json(['success' => false, 'message' => 'No valid names found.'], 422);
         }
+
+        // Track how many were repeated within THIS SAME paste separately
+        // from how many already existed in the table — ->unique() here
+        // used to silently collapse the former without counting them,
+        // so "added" + "skipped" didn't add up to what was submitted.
+        $names = $rawNames->unique()->values();
+        $withinPasteDuplicates = $rawNames->count() - $names->count();
 
         $existing = collect();
         foreach ($names->chunk(1000) as $chunk) {
@@ -133,27 +140,52 @@ class ClientCarrierCodeController extends Controller
             ClientCode::insert($chunk);
         }
 
-        $skipped = $names->count() - count($rows);
+        $alreadyExisted = $names->count() - count($rows);
+        $skipped = $withinPasteDuplicates + $alreadyExisted;
+        $detail = $this->skipDetail($withinPasteDuplicates, $alreadyExisted);
 
         AuditTrail::record([
             'event'          => 'client_codes_bulk_created',
-            'description'    => 'Bulk-added ' . count($rows) . ' client code(s)' . ($skipped > 0 ? ", skipped {$skipped} duplicate(s)" : ''),
+            'description'    => 'Bulk-added ' . count($rows) . ' client code(s)' . ($skipped > 0 ? ", skipped {$skipped} duplicate(s){$detail}" : ''),
             'auditable_type' => 'client_codes',
             'auditable_id'   => null,
-            'new_values'     => ['added' => count($rows), 'skipped' => $skipped],
+            'new_values'     => ['added' => count($rows), 'skipped' => $skipped, 'within_paste_duplicates' => $withinPasteDuplicates, 'already_existed' => $alreadyExisted],
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Added ' . count($rows) . ' client code(s)' . ($skipped > 0 ? ", skipped {$skipped} duplicate(s)." : '.'),
+            'message' => 'Added ' . count($rows) . ' client code(s)' . ($skipped > 0 ? ", skipped {$skipped} duplicate(s){$detail}." : '.'),
             'added'   => count($rows),
             'skipped' => $skipped,
         ]);
     }
 
     /**
+     * "(N repeated in your paste, M already existed)" — or blank if there's
+     * nothing to break down. Shared by both bulk methods so the two
+     * duplicate categories (within the paste vs. already in the table)
+     * are never silently merged into one unexplained number again.
+     */
+    private function skipDetail(int $withinPaste, int $alreadyExisted): string
+    {
+        $parts = [];
+        if ($withinPaste > 0) {
+            $parts[] = "{$withinPaste} repeated in your paste";
+        }
+        if ($alreadyExisted > 0) {
+            $parts[] = "{$alreadyExisted} already existed";
+        }
+
+        return $parts ? ' (' . implode(', ', $parts) . ')' : '';
+    }
+
+    /**
      * Bulk-add carrier codes from a pasted list: one per line, each either
-     * "name" or "name,client_name". Same skip-duplicates + single summary
+     * "name" or "name,client_name". A carrier code can legitimately serve
+     * more than one client, so "already exists" is judged on the
+     * (name, client_name) PAIR, not on the name alone — otherwise a second,
+     * distinct client for an already-known carrier code gets wrongly
+     * skipped as a duplicate. Same skip-duplicates + single summary
      * audit-trail row approach as bulkStoreClientCodes().
      */
     public function bulkStoreCarrierCodes(Request $request)
@@ -164,55 +196,72 @@ class ClientCarrierCodeController extends Controller
             'rows.*.client_name' => 'nullable|string|max:255',
         ]);
 
-        // Keyed by name so a repeated name within the same paste just keeps
-        // the last client_name seen for it, rather than erroring.
-        $byName = [];
+        // Keyed by "name\x1Fclient_name" so two rows only collapse when
+        // BOTH the carrier code and the client code match — a repeated
+        // carrier code paired with a different client is a distinct,
+        // valid combination, not a duplicate. Collapsing still has to be
+        // COUNTED (as $withinPasteDuplicates) or "added" + "skipped"
+        // silently stop adding up to what was pasted.
+        $totalSubmitted = 0;
+        $byKey = [];
         foreach ($validated['rows'] as $row) {
             $name = trim($row['name']);
             if ($name === '') {
                 continue;
             }
+            $totalSubmitted++;
             $clientName = trim((string) ($row['client_name'] ?? ''));
-            $byName[$name] = $clientName !== '' ? $clientName : null;
+            $clientName = $clientName !== '' ? $clientName : null;
+            $key = $name . "\x1F" . ($clientName ?? '');
+            $byKey[$key] = ['name' => $name, 'client_name' => $clientName];
         }
 
-        if (empty($byName)) {
+        if (empty($byKey)) {
             return response()->json(['success' => false, 'message' => 'No valid rows found.'], 422);
         }
 
-        $names = array_keys($byName);
-        $existing = collect();
+        $withinPasteDuplicates = $totalSubmitted - count($byKey);
+
+        // Pull every existing (name, client_name) pair for the distinct
+        // names in this paste, then match on the pair in PHP — a plain
+        // whereIn('name') would treat "same carrier, different client" as
+        // already existing, which is exactly the bug this fixes.
+        $names = collect($byKey)->pluck('name')->unique()->values()->all();
+        $existingSet = [];
         foreach (array_chunk($names, 1000) as $chunk) {
-            $existing = $existing->merge(CarrierCode::whereIn('name', $chunk)->pluck('name'));
+            foreach (CarrierCode::whereIn('name', $chunk)->get(['name', 'client_name']) as $row) {
+                $existingSet[$row->name . "\x1F" . ($row->client_name ?? '')] = true;
+            }
         }
-        $existingSet = $existing->flip();
 
         $addedBy = auth()->user()->email;
         $rows = [];
-        foreach ($byName as $name => $clientName) {
-            if ($existingSet->has($name)) {
+        foreach ($byKey as $key => $pair) {
+            if (isset($existingSet[$key])) {
                 continue;
             }
-            $rows[] = ['name' => $name, 'client_name' => $clientName, 'added_by' => $addedBy];
+            $rows[] = ['name' => $pair['name'], 'client_name' => $pair['client_name'], 'added_by' => $addedBy];
         }
 
         foreach (array_chunk($rows, 500) as $chunk) {
             CarrierCode::insert($chunk);
         }
 
-        $skipped = count($byName) - count($rows);
+        $alreadyExisted = count($byKey) - count($rows);
+        $skipped = $withinPasteDuplicates + $alreadyExisted;
+        $detail = $this->skipDetail($withinPasteDuplicates, $alreadyExisted);
 
         AuditTrail::record([
             'event'          => 'carrier_codes_bulk_created',
-            'description'    => 'Bulk-added ' . count($rows) . ' carrier code(s)' . ($skipped > 0 ? ", skipped {$skipped} duplicate(s)" : ''),
+            'description'    => 'Bulk-added ' . count($rows) . ' carrier code(s)' . ($skipped > 0 ? ", skipped {$skipped} duplicate(s){$detail}" : ''),
             'auditable_type' => 'carrier_codes',
             'auditable_id'   => null,
-            'new_values'     => ['added' => count($rows), 'skipped' => $skipped],
+            'new_values'     => ['added' => count($rows), 'skipped' => $skipped, 'within_paste_duplicates' => $withinPasteDuplicates, 'already_existed' => $alreadyExisted],
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Added ' . count($rows) . ' carrier code(s)' . ($skipped > 0 ? ", skipped {$skipped} duplicate(s)." : '.'),
+            'message' => 'Added ' . count($rows) . ' carrier code(s)' . ($skipped > 0 ? ", skipped {$skipped} duplicate(s){$detail}." : '.'),
             'added'   => count($rows),
             'skipped' => $skipped,
         ]);
@@ -292,14 +341,26 @@ class ClientCarrierCodeController extends Controller
 
     public function storeCarrierCode(Request $request)
     {
+        // A carrier code can legitimately serve more than one client, so
+        // uniqueness is on the (name, client_name) PAIR, not name alone.
+        $clientName = trim((string) $request->input('client_name', ''));
+        $clientName = $clientName !== '' ? $clientName : null;
+
         $validated = $request->validate([
-            'name'        => 'required|string|max:255|unique:carrier_codes,name',
+            'name' => [
+                'required', 'string', 'max:255',
+                Rule::unique('carrier_codes', 'name')->where(
+                    fn ($query) => $query->where('client_name', $clientName)
+                ),
+            ],
             'client_name' => 'nullable|string|max:255',
+        ], [
+            'name.unique' => 'This carrier code already exists for that client code.',
         ]);
 
         $code = CarrierCode::create([
             'name'        => $validated['name'],
-            'client_name' => $validated['client_name'] ?: null,
+            'client_name' => $clientName,
             'added_by'    => auth()->user()->email,
         ]);
 
@@ -322,15 +383,26 @@ class ClientCarrierCodeController extends Controller
     {
         $code = CarrierCode::findOrFail($id);
 
+        // Same (name, client_name) pair uniqueness as storeCarrierCode().
+        $clientName = trim((string) $request->input('client_name', ''));
+        $clientName = $clientName !== '' ? $clientName : null;
+
         $validated = $request->validate([
-            'name'        => 'required|string|max:255|unique:carrier_codes,name,' . $code->id,
+            'name' => [
+                'required', 'string', 'max:255',
+                Rule::unique('carrier_codes', 'name')->where(
+                    fn ($query) => $query->where('client_name', $clientName)
+                )->ignore($code->id),
+            ],
             'client_name' => 'nullable|string|max:255',
+        ], [
+            'name.unique' => 'This carrier code already exists for that client code.',
         ]);
 
         $old = ['name' => $code->name, 'client_name' => $code->client_name];
         $code->update([
             'name'        => $validated['name'],
-            'client_name' => $validated['client_name'] ?: null,
+            'client_name' => $clientName,
         ]);
 
         AuditTrail::record([
