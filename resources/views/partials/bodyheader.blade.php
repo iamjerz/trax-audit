@@ -375,6 +375,13 @@
                     </a>
                 </li>
                 @endif
+                <li class="menu-title" data-key="t-applications">Support </li>
+                <li>
+                    <a href="/jira-ticket">
+                        <i class="bx bx-question-mark icon nav-icon"></i>
+                        <span class="menu-item" data-key="t-extension-details">Feedback/Feature Request</span>
+                    </a>
+                </li>
 
             </ul>
         </div>

@@ -14,6 +14,9 @@ use App\Http\Controllers\Api\DropdownController;
 use App\Http\Controllers\Api\QaMonitoringFormController;
 use App\Http\Controllers\Api\DataSourceController;
 use App\Http\Controllers\Api\ConnectorController;
+use App\Http\Controllers\Api\JiraApiController;
+use App\Http\Controllers\JiraIssueController;
+
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -77,3 +80,31 @@ Route::match(['get', 'post'], '/v2/data/qa-monitoring', [DataSourceController::c
 Route::match(['get', 'post'], '/v2/data/action-register', [DataSourceController::class, 'action_register']);
 Route::match(['get', 'post'], '/v2/data/triad', [DataSourceController::class, 'triad']);
 Route::match(['get', 'post'], '/v2/data/coaching', [DataSourceController::class, 'coaching']);
+
+Route::prefix('jira/users')->group(function () {
+
+    Route::get('/myself', [
+        JiraApiController::class,
+        'myself'
+    ]);
+
+    Route::get('/search/{query}', [
+        JiraApiController::class,
+        'search'
+    ]);
+
+    Route::get('/picker/{query}', [
+        JiraApiController::class,
+        'picker'
+    ]);
+
+    Route::get('/assignable/{projectKey}/{query}', [
+        JiraApiController::class,
+        'assignable'
+    ]);
+});
+
+Route::post(
+    '/jira/issues',
+    [JiraIssueController::class, 'store']
+);

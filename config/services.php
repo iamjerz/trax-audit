@@ -49,4 +49,10 @@ return [
         'client_id' => env('MICROSOFT_CLIENT_ID'),
     ],
 
+    'jira' => [
+        'url' => env('JIRA_URL'),
+        'email' => env('JIRA_EMAIL'),
+        'token' => env('JIRA_API_TOKEN'),
+    ],
+
 ];

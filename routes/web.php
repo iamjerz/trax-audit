@@ -49,6 +49,10 @@ use App\Http\Controllers\Api\MonitoringTicket;
 use App\Http\Controllers\Api\PageAccessController;
 use App\Http\Controllers\Api\PositionController;
 use App\Http\Controllers\Api\ClientCarrierCodeController;
+use App\Http\Controllers\JiraController;
+use App\Http\Controllers\JiraIssueController;
+
+
 /*
 |--------------------------------------------------------------------------
 | 
@@ -92,6 +96,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/homepage', function () {
         return view('homepage');
     })->name('homepage');
+    Route::get('/jira-ticket', [JiraController::class, 'index']);
+    
+
 
     // Force password change (default-password users are redirected here by middleware)
     Route::get('/password/change', [ChangePasswordController::class, 'show'])
