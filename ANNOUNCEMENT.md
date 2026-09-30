@@ -1,45 +1,31 @@
-# 📢 Audit Ops — Update (v1.0.0.26, includes v1.0.0.25)
+# 📢 Audit Ops — Update (v1.0.0.27)
 
 Hi everyone,
 
-This release brings a big round of improvements: a self-service experience for analysts, a fair dispute-and-appeal process with admin-approved corrections, a full set of management reports, and simpler role-based access. Here's everything that's new.
+A smaller round of updates this time — mostly QA dashboard accuracy, a couple of admin tools, a new way to send us feedback, and one login bug fix.
 
-> 🚀 **Heads up:** these updates will be deployed to Production **this weekend or next week**.
+## 📝 New: Feedback / Feature Request
 
-## 👤 For Everyone (Analysts)
-- **My Evaluations** — a new menu item where you can see every evaluation recorded for you and open the full details (the same view your supervisor sees).
-- **Acknowledge** — after reviewing an evaluation, confirm you've seen it. It's recorded with the date.
-- **Dispute** — if you disagree with an evaluation, raise a dispute with a reason; your supervisor will review it. You'll see the outcome (and a "Corrected" tag if your scores were changed) right on My Evaluations.
-- **One path per evaluation** — you can acknowledge *or* dispute, not both. Once acknowledged it can't be disputed, and while a dispute is open it can't be acknowledged.
+- A new page for submitting feedback, bug reports, or feature requests — describe what's going on, tag which application (Web App / Chrome Extension) and category (QA Monitoring, Coaching, Triad, Recon Call Register, Others), and it's filed directly as a ticket for the team to triage.
 
-## 🧑‍💼 For Supervisors & Managers
-- **Disputes review** — review raised disputes and **Resolve** or **Reject** them with a note.
-- **Score corrections now require approval** — when you correct a disputed evaluation's scores, it becomes a **pending request**. Scores change only after an approver acts on the new **Manager Tools → Score Approvals** page, which shows exactly **what changed** before approving. The full before/after is always kept on record, and the dispute is locked until the decision is made.
-- **New reports & analytics:**
-  - **Pending Acknowledgements** — evaluations not yet acknowledged, with how long they've waited.
-  - **Overdue Action Items** — open reconciliation tickets 7+ days old.
-  - **LDA Scorecard** — per-analyst QA score, pass rate, Triad pass rate, coaching count, open items.
-  - **Auditor Productivity** — output, average score, and pass rate per auditor.
-  - **Client / Carrier Health** — recon volume / open / overdue by client and carrier.
-  - **Root Cause Analytics** — most common issues (Pareto) and a 12-month trend.
-  - **Audit Coverage** — % of LDAs evaluated, and who hasn't been audited.
-  - **Activity Timeline** — the full history of any single evaluation.
-- Report pages now have cleaner filters, including filtering by a specific auditor or LDA.
+## 🧑‍💼 For Admins
 
-## 🔐 Simpler Access Roles
-Admins can assign a single **role** instead of many individual permissions:
-- **Manager** — everything except admin
-- **Supervisor** — Dashboards, Forms, all Reports (+ extension tools)
-- **SME** — Dashboards, Forms, Reports except Triad (+ extension tools)
-- **LDA** — Home and My Evaluations (+ Action Register in the extension)
+- **Leaver Date is now directly editable** on the Edit User page (same date picker used on the dashboards), instead of only being auto-set when you flip someone's Status to Inactive.
+- **New: Export to Excel on /users** — a button next to "Add new user" downloads the full user directory (employee ID, name, email, position, department, role, status, both supervisors, leaver date, created date).
+- **Inactive users can no longer log in** — enforced on both the website login and the Chrome extension's Microsoft sign-in, even with a still-valid password or token.
 
-These apply consistently across the web app and the Chrome extension.
+## 📊 QA Dashboard (`/dashboard-qa`)
+
+- **"Total LDA" is now historically accurate.** It reflects who was actually part of the team during the date range you selected, not just who's active today — so a report for a past month still counts someone who has since left.
+- **Two new coverage cards:** **Audited LDAs** (how many of that expected team actually have evaluations on file for the period) and **LDAs With No Audits** (the gap between them).
+- **Evaluations Trend chart** now has a second, dashed line — **Acknowledged** — showing how many of each period's evaluations have been acknowledged by their LDA.
+
+## 🐛 Fixed
+
+- Chrome extension sign-in could fail in production with "Invalid audience" — a Laravel config-caching issue, not anything wrong with your Microsoft account. Resolved.
 
 ## ✅ What you need to do
-- **Analysts:** review and acknowledge anything pending in **My Evaluations**.
-- **Supervisors/Managers:** explore the new reports.
-- Nothing else is required.
 
-Questions or anything not working as expected? Reach out to your administrator.
+Nothing required. Admins may want to check out the new Export button on /users.
 
 Thank you!

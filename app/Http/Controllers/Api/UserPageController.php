@@ -47,6 +47,14 @@ class UserPageController extends Controller
 
     public function store(Request $request)
     {
+        // Email is always lowercase — the Add User form already forces this
+        // as you type, this is the server-side backstop (also matches
+        // updateUser()/login, and keeps the unique:users,email check below
+        // from letting "John@x.com" and "john@x.com" both through).
+        if ($request->has('email')) {
+            $request->merge(['email' => strtolower(trim((string) $request->input('email')))]);
+        }
+
         // 1. Validate based on your schema
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|string|max:255',

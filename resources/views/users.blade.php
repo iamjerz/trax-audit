@@ -79,7 +79,7 @@
                 <div class="modal-body row">
                     <div class="mb-3 col-lg-12">
                         <label for="email" class="form-label">Email Address</label>
-                        <input type="text" class="form-control" placeholder="Email Address" id="email">
+                        <input type="text" class="form-control" placeholder="Email Address" id="email" style="text-transform: lowercase;">
                         <span id="email-feedback"></span>
                     </div>
                     <div class="mb-3 col-lg-6">

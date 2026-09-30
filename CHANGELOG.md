@@ -4,6 +4,31 @@ All notable changes to the Trax Audit Ops platform are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.0.27] - 2026-09-25
+
+### Added
+- **Feedback / Feature Request (Jira integration).** New `/jira-ticket` page (`JiraController`) lets any authenticated user file a ticket directly into Jira — summary, application (Web App / Chrome Extension), category (QA Monitoring / Coaching / Triad / Recon Call Register / Others), and a rich-text description (Quill editor, converted to Jira's ADF format via `JiraDescriptionService`). Backed by `App\Services\Jira\{JiraService,JiraUserService,JiraIssueService}` and `JiraApiController` / `JiraIssueController`.
+- **Leaver Date is now admin-editable** directly on the Edit User page (`UserPageController::updateUser`), using the same `daterangepicker.com` widget (single-date mode) as the dashboards. An explicit admin-provided value now always overrides the Status-driven auto-stamp/auto-clear default.
+- **`/users` — Export to Excel** (admin-only): new `ExportController::users` + `App\Exports\UsersExport` download the full user directory (employee ID, name, email, position, department, role, status, both supervisors with email, leaver date, created date).
+- **QA Dashboard coverage metrics:** **Audited LDAs** (distinct LDAs with a filtered/scored audit row) and **LDAs With No Audits** (Total LDA − Audited LDAs), computed from the same filtered audit rows used for scoring — never a separate query.
+- **Evaluations Trend chart:** second series, **Acknowledged** (dashed line), bucketed by the same audit date and filters as the Evaluations line.
+
+### Changed
+- **Total LDA** on `/dashboard-qa` is now a true historical population count (`DashboardControllerMain::scopeExpectedLdaPopulation`) instead of a live headcount: a leaver counts toward the selected range unless their Leaver Date falls on or before the range's start date. No longer derived from, or coupled to, audit-row counts.
+- Login email input and the `/users` search box are now always lowercased as typed, for consistency with how email is normalized elsewhere in the app.
+
+### Fixed
+- **Chrome extension Microsoft SSO** (`/api/login/verify`) could fail in production with `"Invalid audience"` while working fine in dev. Root cause: `MICROSOFT_CLIENT_ID` was read via a bare `env()` call in `LoginVerifyController` / `VerifyMicrosoftToken` rather than through `config()` — once production's config is cached (`php artisan config:cache`), `env()` calls outside `config/*.php` silently return `null`. Added `services.microsoft.client_id` to `config/services.php` and switched both call sites to `config()`.
+- Row-level Leaver Date boundary on `/dashboard-qa`: an audit dated exactly on an LDA's Leaver Date is now correctly excluded from counts/scoring (their last active day is the day *before* the Leaver Date).
+
+### Security
+- **Inactive users can no longer authenticate** — enforced in both `LoginController::authenticate()` (web login, logs the session back out immediately if `status === 'inactive'`) and `LoginVerifyController::validateMicrosoftToken()` (Chrome extension SSO), even with a valid password or Microsoft token.
+
+### Notes / Follow-ups
+- The new Jira integration's API routes (`POST /api/jira/issues`, `/api/jira/users/*`) currently have no auth middleware — anyone who can reach them can file Jira tickets or enumerate Jira users using the app's service-account credentials. Should be restricted (e.g. `auth`/`auth:sanctum`) before wider exposure.
+- `JiraService`'s HTTP client currently calls `->withoutVerifying()`, disabling TLS certificate verification on Jira API calls — should be removed or replaced with a trusted CA.
+- Production deploys that add new routes/config keys need `php artisan route:clear` and `config:clear` (or re-`cache`) afterward — this bit both the Jira page (404) and the Microsoft audience check (silent `null`) this release.
+
 ## [1.0.0.26] - 2026-06-06
 
 _Combined release — includes everything originally drafted as 1.0.0.25._

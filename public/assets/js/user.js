@@ -130,6 +130,9 @@ let debounceTimer;
 let currentRequest = 0;
 
 emailInput.addEventListener("input", function() {
+    // Email is always lowercase — matches the Edit User page and login form.
+    this.value = this.value.toLowerCase();
+
     const email = this.value;
 
     clearTimeout(debounceTimer);
@@ -190,7 +193,7 @@ document.getElementById("update-assigned-to").addEventListener("click", function
 
     // Collect form data
     const data = {
-        email: document.getElementById("email").value.trim(),
+        email: document.getElementById("email").value.trim().toLowerCase(),
         first_name: document.getElementById("first-name").value.trim(),
         last_name: document.getElementById("last-name").value.trim(),
         department: document.getElementById("department").value,
