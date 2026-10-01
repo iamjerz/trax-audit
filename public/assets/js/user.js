@@ -201,6 +201,7 @@ document.getElementById("update-assigned-to").addEventListener("click", function
         role: document.getElementById("role").value,
         supervisor_id: document.getElementById("supervisor").value,
         second_supervisor_id: document.getElementById("second-supervisor").value,
+        login_method: document.getElementById("login-method").value,
     };
 
 
@@ -253,6 +254,11 @@ document.getElementById("update-assigned-to").addEventListener("click", function
                     instance.removeActiveItems(); // remove selected
                     instance.setChoiceByValue(''); // reset placeholder
                 });
+
+                // Login Method has no blank placeholder option (it's never
+                // meant to be "unset") — put it back on the Microsoft-only
+                // default instead of leaving it blank after the generic reset above.
+                choicesInstances['login-method']?.setChoiceByValue('microsoft');
 
                 // Remove validation classes
                 document.querySelectorAll("#add-user .form-control").forEach(el => {

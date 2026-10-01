@@ -140,6 +140,15 @@
                             @endforeach
                         </select>
                     </div>
+                    <div class="mb-3 col-lg-6">
+                        <label for="login-method" class="form-label">Login Method</label>
+                        <select class="form-control dropdown-choices" data-trigger id="login-method" placeholder="This is a search placeholder">
+                            <option value="password">Password only</option>
+                            <option value="microsoft" selected>Microsoft only</option>
+                            <option value="both">Both</option>
+                        </select>
+                        <small class="text-muted font-size-12">Defaults to Microsoft-only for new accounts.</small>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>

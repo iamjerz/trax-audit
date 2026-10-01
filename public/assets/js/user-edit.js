@@ -59,7 +59,8 @@ document.getElementById("edit-user").addEventListener("click", function() {
         second_supervisor_id: document.getElementById("second-supervisor").value,
         status: document.getElementById("status").value,
         position: document.getElementById("position").value,
-        effectivity_date_leaver: leaverDateValue.value || null
+        effectivity_date_leaver: leaverDateValue.value || null,
+        login_method: document.getElementById("login-method").value
     };
 
     console.log("DATA :: :: ", data)
@@ -102,7 +103,17 @@ document.getElementById('reset-password-btn').addEventListener('click', function
 
     const employeeid = document.getElementById('employeeid').value;
 
-    if (!confirm("Reset this user's password to the default? They will be required to change it at next login.")) {
+    // Reading the live select value (not the stale DB value) so this
+    // reflects an unsaved in-progress change too — this account is set
+    // Microsoft-only, so a password reset quietly reopens a login path it
+    // isn't supposed to have. Not blocked outright (admins need an escape
+    // hatch), just flagged before it happens.
+    const loginMethod = document.getElementById('login-method').value;
+    const warning = loginMethod === 'microsoft'
+        ? "This user is set to Microsoft-only login — resetting their password will let them sign in with a password again too. "
+        : "";
+
+    if (!confirm(warning + "Reset this user's password to the default? They will be required to change it at next login.")) {
         return;
     }
 

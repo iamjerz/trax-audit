@@ -7,7 +7,10 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Pagination\Paginator;
+use SocialiteProviders\Manager\SocialiteWasCalled;
+use SocialiteProviders\Microsoft\MicrosoftExtendSocialite;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -25,6 +28,11 @@ class AppServiceProvider extends ServiceProvider
     {
         // Render Laravel's paginator with Bootstrap 5 markup (matches the theme)
         Paginator::useBootstrapFive();
+
+        // Wires up the "microsoft" driver for Socialite (web "Sign in with
+        // Microsoft" — see LoginController). Required by the
+        // socialiteproviders/microsoft package's own install convention.
+        Event::listen(SocialiteWasCalled::class, [MicrosoftExtendSocialite::class, 'handle']);
 
         View::composer(['partials.bodyheader', 'homepage'], function ($view) {
             $user = auth()->user();

@@ -27,6 +27,7 @@ class User extends Authenticatable
         'department',
         'role',
         'status',
+        'login_method',
         'effectivity_date_leaver',
         'profile_photo_path',
         'supervisor_id',

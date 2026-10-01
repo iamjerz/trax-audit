@@ -81,6 +81,11 @@ Route::middleware('guest')->group(function () {
 
     Route::post('/login', [LoginController::class, 'authenticate'])
         ->name('login.attempt');
+
+    Route::get('/auth/microsoft/redirect', [LoginController::class, 'redirectToMicrosoft'])
+        ->name('login.microsoft');
+    Route::get('/auth/microsoft/callback', [LoginController::class, 'handleMicrosoftCallback'])
+        ->name('login.microsoft.callback');
 });
 
 /*

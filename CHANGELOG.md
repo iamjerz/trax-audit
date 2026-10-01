@@ -4,6 +4,16 @@ All notable changes to the Trax Audit Ops platform are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.0.28] - 2026-10-01
+
+### Added
+- **Sign in with Microsoft (web).** New `LoginController::redirectToMicrosoft` / `handleMicrosoftCallback`, using `laravel/socialite` + `socialiteproviders/microsoft` against the same Azure App Registration the Chrome extension already uses. Does not auto-provision accounts — only succeeds for a Microsoft account whose email already matches an existing `users` row. A still-on-the-default-password account gets its password rotated to a random value on first Microsoft login so `ForcePasswordChange` never catches it in a loop.
+- **Per-user Login Method control.** New `users.login_method` column (`password` / `microsoft` / `both`, default `both`), enforced in both `LoginController::authenticate()` and `handleMicrosoftCallback()`. Admin-editable on Add User / Edit User (`/users`). Existing accounts backfilled to `microsoft`, except admins (`extension_access.access_type = 'admin'`), who stay on `both` as a break-glass fallback in case Microsoft/Azure sign-in is ever unavailable. New accounts default to `microsoft`, overridable at creation.
+- Resetting a user's password now warns the admin first if that account is set to Microsoft-only, since it quietly reopens a password-login path the account isn't supposed to have.
+
+### Fixed
+- **Microsoft web login: tenant and audience mismatches.** Three issues surfaced while bringing the new flow up: (1) Socialite defaulted to the `/common` multi-tenant endpoint, which Azure rejects outright (`AADSTS50194`) for this single-tenant App Registration — fixed by adding `services.microsoft.tenant` (`MICROSOFT_TENANT_ID`). (2) `MICROSOFT_CLIENT_ID` was stored as the `api://`-prefixed Application ID URI (correct for the Chrome extension's access-token audience) but Socialite's OAuth/OIDC flow needs the bare GUID — fixed by normalizing it once in `config/services.php` instead of changing the stored value, so the extension's own audience check (which reconstructs the `api://` prefix explicitly) keeps working unchanged. (3) The callback's error handler was silently swallowing the real exception — it now logs the full underlying error, including Azure's actual error body instead of Guzzle's truncated summary.
+
 ## [1.0.0.27] - 2026-09-25
 
 ### Added

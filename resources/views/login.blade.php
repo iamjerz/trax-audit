@@ -62,35 +62,23 @@
                                         <div class="mt-3">
                                             <button class="btn btn-primary w-100 waves-effect waves-light" type="submit">Log In</button>
                                         </div>
-
-                                        <!-- <div class="mt-4 text-center">
-                                            <div class="signin-other-title">
-                                                <h5 class="font-size-14 mb-3 mt-2 title"> Sign in with </h5>
-                                            </div>
-            
-                                            <ul class="list-inline mt-2">
-                                                <li class="list-inline-item">
-                                                    <a href="javascript:void()" class="social-list-item bg-primary text-white border-primary">
-                                                        <i class="bx bxl-facebook"></i>
-                                                    </a>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <a href="javascript:void()" class="social-list-item bg-info text-white border-info">
-                                                        <i class="bx bxl-linkedin"></i>
-                                                    </a>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <a href="javascript:void()" class="social-list-item bg-danger text-white border-danger">
-                                                        <i class="bx bxl-google"></i>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div> -->
-
-                                        <!-- <div class="mt-4 text-center">
-                                            <p class="mb-0">Don't have an account ? <a href="auth-register.html" class="fw-medium text-primary"> Signup now </a> </p>
-                                        </div> -->
                                     </form>
+
+                                    <div class="mt-4 text-center">
+                                        <div class="signin-other-title">
+                                            <h5 class="font-size-14 mb-3 mt-2 title"> Or </h5>
+                                        </div>
+
+                                        <a href="{{ route('login.microsoft') }}" class="btn btn-outline-secondary w-100 waves-effect d-flex align-items-center justify-content-center">
+                                            <svg width="18" height="18" viewBox="0 0 21 21" class="me-2" aria-hidden="true">
+                                                <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+                                                <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+                                                <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+                                                <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+                                            </svg>
+                                            Sign in with Microsoft
+                                        </a>
+                                    </div>
                                 </div>
             
                             </div>

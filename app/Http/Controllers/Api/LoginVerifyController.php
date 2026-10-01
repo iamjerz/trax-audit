@@ -44,8 +44,12 @@ class LoginVerifyController extends Controller
             // Validate audience (read via config(), not env() directly — see
             // config/services.php's 'microsoft' entry for why: a raw env()
             // call here would silently return null once config is cached,
-            // which is what was happening on production).
-            if ($user['aud'] !== config('services.microsoft.client_id')) {
+            // which is what was happening on production). The config value
+            // is normalized to the bare client ID (for the web Socialite
+            // flow's sake), but this extension token's own 'aud' claim is
+            // the "api://" Application ID URI form — see the comment in
+            // config/services.php.
+            if ($user['aud'] !== 'api://' . config('services.microsoft.client_id')) {
                 return response()->json(['error' => 'Invalid audience'], 401);
             }
 

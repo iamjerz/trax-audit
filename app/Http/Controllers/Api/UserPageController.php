@@ -66,6 +66,7 @@ class UserPageController extends Controller
             'email' => 'required|email|unique:users,email',
             'role' => 'nullable|string',
             'status' => 'nullable|string',
+            'login_method' => 'nullable|string|in:password,microsoft,both',
         ]);
 
         if ($validator->fails()) {
@@ -91,6 +92,11 @@ class UserPageController extends Controller
             // Optional fields (with defaults)
             'role' => $request->role ?? 'user',
             'status' => $request->status ?? 'active',
+            // New accounts default to Microsoft-only — the company's pushing
+            // everyone onto SSO, and a brand-new user here is never admin
+            // yet (that's granted afterward on the Access tab), so there's
+            // no break-glass case to protect at creation time.
+            'login_method' => $request->login_method ?? 'microsoft',
             'profile_photo_path' => $request->profile_photo_path ?? null,
         ]);
 
@@ -228,6 +234,7 @@ class UserPageController extends Controller
             'status' => 'required|string',
             'position' => 'required|string|exists:positions,name',
             'effectivity_date_leaver' => 'nullable|date',
+            'login_method' => 'required|string|in:password,microsoft,both',
         ]);
 
         // ✅ Find user

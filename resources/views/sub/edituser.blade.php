@@ -276,6 +276,22 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="mb-3">
+                                            <label for="formrow-firstname-input" class="form-label">Login Method</label>
+                                            <select class="form-control dropdown-choices" data-trigger id="login-method" placeholder="This is a search placeholder">
+                                                <option value="password" {{ ($user->login_method ?? 'both') == 'password' ? 'selected' : '' }}>
+                                                    Password only
+                                                </option>
+                                                <option value="microsoft" {{ ($user->login_method ?? 'both') == 'microsoft' ? 'selected' : '' }}>
+                                                    Microsoft only
+                                                </option>
+                                                <option value="both" {{ ($user->login_method ?? 'both') == 'both' ? 'selected' : '' }}>
+                                                    Both
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
                                             <button type="submit" id="edit-user" class="btn btn-primary w-md">Update</button>
                                         </div>
                                     </div>
