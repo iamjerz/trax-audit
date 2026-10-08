@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 use App\Models\UserInputAudit;
 use App\Models\Verification;
@@ -19,33 +20,105 @@ class AuditController extends Controller
 
     public function store(Request $request)
     {
+        // Validate the whole payload shape up front. Previously every field
+        // was pulled straight out of raw arrays with no check that the
+        // top-level keys (userInputData, verificationData, etc.) — or their
+        // nested fields — even existed. A missing userInputData used to
+        // throw a fatal, uncaught TypeError (array access on null) before
+        // the try/catch below even started; a missing/malformed outcome
+        // score used to silently become 0 via the (int) casts further down
+        // instead of failing. Both now return a clean 422 instead.
+        $validator = Validator::make($request->all(), [
+            'userInputData' => 'required|array',
+            'userInputData.AuditBy' => 'required|string',
+            'userInputData.ldaName' => 'nullable|string',
+            'userInputData.AuditDate1' => 'required|date',
+            'userInputData.AuditSupName' => 'nullable|string',
+            'userInputData.AuditorsName' => 'nullable|string',
+            'userInputData.AuditDate2' => 'nullable|date',
+            'userInputData.InvoiceID' => 'nullable|string',
+            'userInputData.CarrierName' => 'nullable|string',
+            'userInputData.ClientCode' => 'nullable|string',
+            'userInputData.ExceptionStatus' => 'nullable|string',
+            'userInputData.ExceptionOwner' => 'nullable|string',
+            'userInputData.IsCalibration' => 'nullable|boolean',
+
+            'verificationData' => 'required|array',
+            'verificationData.VerIden1Comment' => 'nullable|string',
+            'verificationData.VerIden1Outcome' => 'required|numeric',
+            'verificationData.VerIden2Comment' => 'nullable|string',
+            'verificationData.VerIden2Outcome' => 'required|numeric',
+
+            'processComplianceData' => 'required|array',
+            'processComplianceData.ProCom1Comment' => 'nullable|string',
+            'processComplianceData.ProCom1Outcome' => 'required|numeric',
+            'processComplianceData.ProCom2Comment' => 'nullable|string',
+            'processComplianceData.ProCom2Outcome' => 'required|numeric',
+            'processComplianceData.ProCom3Comment' => 'nullable|string',
+            'processComplianceData.ProCom3Outcome' => 'required|numeric',
+            'processComplianceData.ProCom4Comment' => 'nullable|string',
+            'processComplianceData.ProCom4Outcome' => 'required|numeric',
+
+            'engagementData' => 'required|array',
+            'engagementData.engagement1Comment' => 'nullable|string',
+            'engagementData.engagement1Outcome' => 'required|numeric',
+            'engagementData.engagement2Comment' => 'nullable|string',
+            'engagementData.engagement2Outcome' => 'required|numeric',
+            'engagementData.engagement3Comment' => 'nullable|string',
+            'engagementData.engagement3Outcome' => 'required|numeric',
+            'engagementData.engagement4Comment' => 'nullable|string',
+            'engagementData.engagement4Outcome' => 'required|numeric',
+
+            'businessAnalyticsData' => 'required|array',
+            'businessAnalyticsData.signCarrier' => 'nullable|string',
+            'businessAnalyticsData.followUp' => 'nullable|string',
+            'businessAnalyticsData.manyDays' => 'nullable|numeric',
+            'businessAnalyticsData.causeIssue' => 'nullable|string',
+            'businessAnalyticsData.impactArea' => 'nullable|string',
+            'businessAnalyticsData.impactFactor' => 'nullable|string',
+            'businessAnalyticsData.accountableFactors' => 'nullable|string',
+            'businessAnalyticsData.rootCause' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
         $user = $request->input('userInputData');
 
-        $raw_identifier = $user['AuditBy'];
+        // Resolve AuditBy -> a real employeeid, whether it was sent as an
+        // email or as an employeeid directly. Previously: an email that
+        // didn't match any user silently became created_by = null, and
+        // anything that *didn't* look like an email was trusted as-is with
+        // no existence check at all. Both now reject the request instead —
+        // ownership (My Evaluations, acknowledgements, scorecards) depends
+        // on created_by always being a real employeeid.
+        $raw_identifier = trim((string) $user['AuditBy']);
 
-        $validator = Validator::make(
+        $looksLikeEmail = !Validator::make(
             ['value' => $raw_identifier],
             ['value' => 'email']
-        );
+        )->fails();
 
-        if (!$validator->fails()) {
-
-            $user_fetch = DB::table('users')
-                ->select('employeeid')
-                ->where('email', $raw_identifier)
-                ->first(); // ✅ FIXED
-
-            if ($user_fetch) {
-                $employeeId = $user_fetch->employeeid;
-            } else {
-                $employeeId = null; // or fallback
-            }
-
+        if ($looksLikeEmail) {
+            $employeeId = DB::table('users')
+                ->where('email', strtolower($raw_identifier))
+                ->value('employeeid');
         } else {
-            $employeeId = $raw_identifier;
+            $employeeId = DB::table('users')
+                ->where('employeeid', $raw_identifier)
+                ->value('employeeid');
         }
-        
 
+        if (!$employeeId) {
+            return response()->json([
+                'success' => false,
+                'errors' => ['userInputData.AuditBy' => ["Could not match \"{$raw_identifier}\" to an existing user."]],
+            ], 422);
+        }
 
         DB::beginTransaction();
 
@@ -162,6 +235,17 @@ class AuditController extends Controller
 
         } catch (\Throwable $e) {
             DB::rollBack();
+
+            // Previously nothing was ever logged here — a real production
+            // failure would only ever be visible in whatever the extension
+            // did with the raw JSON error response, with zero server-side
+            // trace of it happening at all.
+            Log::error('QA form submission failed: ' . $e->getMessage(), [
+                'exception' => get_class($e),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'audit_id' => $auditId ?? null,
+            ]);
 
             return response()->json([
                 'error' => $e->getMessage(),

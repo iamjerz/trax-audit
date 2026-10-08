@@ -574,7 +574,7 @@
             } else {
                 dcRecentGrid = new gridjs.Grid({
                     columns: ['Coaching ID', 'Coached Employee', 'Coach', 'Type', 'Date'],
-                    pagination: { limit: 20 },
+                    pagination: false,
                     search: false,
                     sort: false,
                     width: '100%',
