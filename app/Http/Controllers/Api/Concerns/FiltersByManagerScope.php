@@ -78,15 +78,25 @@ trait FiltersByManagerScope
     }
 
     /**
-     * Every LDA user record beneath the given scope, or null if scope is
-     * empty (no filter at all):
+     * Every user record beneath the given scope (plus the root themselves),
+     * or null if scope is empty (no filter at all):
      *  - scope empty ("All"): null.
-     *  - scope = "my_team": every LDA beneath the current user in the org
-     *    tree (a manager gets their supervisors' LDAs too, all levels down).
+     *  - scope = "my_team": every descendant of the current user in the org
+     *    tree (a manager gets their supervisors' reports too, all levels down).
      *  - scope = a specific employeeid (picked from the Manager/SME/
-     *    Supervisor dropdown): every LDA beneath THAT person instead.
+     *    Supervisor dropdown): every descendant of THAT person instead.
      * Keyed by employeeid so both consumers below can pick whichever field
      * (employeeid or email) their own table filters on.
+     *
+     * Deliberately NOT filtered down to Position === 'LDA': audits are
+     * attributed by employeeid (user_input_audits.lda_id /
+     * recon_action_items.lda_email), not by Position, and Position can
+     * drift independently of audit history (promotions, re-titling, teams
+     * whose members were never labeled "LDA" to begin with). Filtering by
+     * Position here used to silently return an empty team — and therefore
+     * zero audits — for any manager whose reports don't carry that exact
+     * position string, even though their team plainly has audits on file
+     * (e.g. jogel.cabatas's team, none of whom are Position = LDA).
      */
     private function resolveScopeLdaUsers(?string $scope): ?array
     {
@@ -101,36 +111,28 @@ trait FiltersByManagerScope
             if (! $user) {
                 return [];
             }
-            $rootId       = $user->employeeid;
-            $rootPosition = $user->position ?? null;
+            $rootId = $user->employeeid;
         } else {
             // A specific manager/SME/supervisor employeeid was selected.
             $root = DB::table('users')->where('employeeid', $scope)->first();
             if (! $root) {
                 return []; // unknown id — show nothing rather than everything
             }
-            $rootId       = $root->employeeid;
-            $rootPosition = $root->position ?? null;
+            $rootId = $root->employeeid;
         }
 
-        $users    = $this->allUsersMinimal();
-        $ldaUsers = [];
+        $users     = $this->allUsersMinimal();
+        $teamUsers = $this->descendants($rootId, $users);
 
-        foreach ($this->descendants($rootId, $users) as $eid => $u) {
-            if ($this->isLda($u->position)) {
-                $ldaUsers[$eid] = $u;
-            }
+        // Include the root's own record too — if they themselves have
+        // audits attributed to them directly, selecting them as the scope
+        // should surface those as well, not just their reports'.
+        $rootUser = $users->firstWhere('employeeid', $rootId);
+        if ($rootUser) {
+            $teamUsers[$rootId] = $rootUser;
         }
 
-        // If the root themselves is an LDA, include their own records too.
-        if ($this->isLda($rootPosition)) {
-            $rootUser = $users->firstWhere('employeeid', $rootId);
-            if ($rootUser) {
-                $ldaUsers[$rootId] = $rootUser;
-            }
-        }
-
-        return array_values($ldaUsers);
+        return array_values($teamUsers);
     }
 
     /**
@@ -164,23 +166,28 @@ trait FiltersByManagerScope
     private function allUsersMinimal()
     {
         return DB::table('users')
-            ->select('employeeid', 'supervisor_id', 'position', 'first_name', 'last_name', 'email')
+            ->select('employeeid', 'supervisor_id', 'second_supervisor_id', 'position', 'first_name', 'last_name', 'email')
             ->get();
     }
 
     /**
-     * All employees strictly beneath $root in the supervisor_id tree,
-     * keyed by employeeid.
+     * All employees strictly beneath $root in the org tree, following EITHER
+     * supervisor_id or second_supervisor_id — keyed by employeeid. Matches
+     * managerPickerOptions()'s "has a report" check above, which already
+     * counts both fields; this used to only follow supervisor_id, so anyone
+     * linked to a root purely via second_supervisor_id silently never
+     * showed up when that root was selected as the scope.
      */
     private function descendants(string $root, $users): array
     {
         $childrenBySup = [];
         foreach ($users as $u) {
-            $sup = $u->supervisor_id;
-            if ($sup === null || $sup === '') {
-                continue;
+            foreach ([$u->supervisor_id, $u->second_supervisor_id ?? null] as $sup) {
+                if ($sup === null || $sup === '') {
+                    continue;
+                }
+                $childrenBySup[$sup][] = $u;
             }
-            $childrenBySup[$sup][] = $u;
         }
 
         $out   = [];
@@ -198,8 +205,4 @@ trait FiltersByManagerScope
         return $out;
     }
 
-    private function isLda(?string $position): bool
-    {
-        return in_array($position, self::LDA_POSITIONS, true);
-    }
 }
