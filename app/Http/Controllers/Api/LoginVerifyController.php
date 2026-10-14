@@ -75,7 +75,12 @@ class LoginVerifyController extends Controller
                 'description'    => $actorName . ' logged in on the Chrome extension',
                 'auditable_type' => 'auth',
                 'ip_address'     => $userip,   // IP from the Microsoft token (the user's address)
-                'new_values'     => ['email' => $email, 'channel' => 'chrome_extension'],
+                // 'method' matches the same key now set on the two website
+                // login paths (EventServiceProvider's Login listener) — the
+                // extension only ever authenticates via Microsoft, but
+                // being explicit keeps the audit trail's method/channel
+                // shape consistent across all three entry points.
+                'new_values'     => ['email' => $email, 'channel' => 'chrome_extension', 'method' => 'microsoft'],
             ]);
 
             return response()->json([

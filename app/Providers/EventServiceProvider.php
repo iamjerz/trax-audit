@@ -24,16 +24,26 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Successful login
+        // Successful login. Password (route "login.attempt") and Microsoft
+        // SSO (route "login.microsoft.callback") both call into Laravel's
+        // auth internals (Auth::attempt() / Auth::login()) and fire this
+        // exact same event identically otherwise — same guard, same
+        // everything — so the route name is what actually tells them apart
+        // here, not anything on the event itself.
         Event::listen(Login::class, function (Login $event) {
             $user = $event->user;
+            $name = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+
+            $viaMicrosoft = request()->routeIs('login.microsoft.callback');
+            $method       = $viaMicrosoft ? 'microsoft' : 'password';
 
             AuditTrail::record([
                 'employeeid'     => $user->employeeid ?? null,
-                'actor_name'     => trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')),
+                'actor_name'     => $name,
                 'event'          => 'login',
-                'description'    => trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) . ' logged in on the website',
+                'description'    => $name . ' logged in on the website using ' . ($viaMicrosoft ? 'Microsoft' : 'email and password'),
                 'auditable_type' => 'auth',
+                'new_values'     => ['channel' => 'website', 'method' => $method],
             ]);
         });
 
