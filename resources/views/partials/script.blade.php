@@ -10,6 +10,7 @@
         <script src="{{ asset('assets/libs/flatpickr/flatpickr.min.js') }}"></script>
         <script src="{{ asset('assets/libs/sweetalert2/sweetalert2.min.js') }}"></script>
         <script src="{{ asset('assets/js/sweetalert-helpers.js') }}"></script>
+        <script src="{{ asset('assets/js/impersonation.js') }}"></script>
         <script src="{{ asset('assets/js/app.js') }}"></script>
 
         

@@ -29,7 +29,12 @@ class UserController extends Controller
             'u.role',
             'u.status',
             \DB::raw("CONCAT(s.first_name, ' ', s.last_name) as supervisor_name"),
-            's.employeeid as supervisor_employeeid'
+            's.employeeid as supervisor_employeeid',
+            // Lets the Grid.js Actions column (user.js) hide "View as" for
+            // other admin accounts — ImpersonationController enforces the
+            // same rule server-side regardless, this is just so the button
+            // isn't shown somewhere it's guaranteed to be rejected.
+            \DB::raw("EXISTS (SELECT 1 FROM extension_access ea WHERE ea.employeeid = u.employeeid AND ea.access_type = 'admin') as is_admin")
         )
         ->orderBy('u.id', 'desc')
         ->get();

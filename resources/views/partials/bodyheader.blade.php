@@ -1,3 +1,13 @@
+@if($impersonating ?? null)
+<div id="impersonation-banner" class="alert alert-warning mb-0 d-flex justify-content-between align-items-center flex-wrap">
+    <span>
+        <i class="bx bx-show align-middle me-1"></i>
+        <strong>{{ $impersonating['adminName'] }}</strong> is viewing as <strong>{{ $impersonating['targetName'] }}</strong> — any actions taken are recorded under both names in the audit trail.
+    </span>
+    <input type="hidden" id="impersonation-csrf-token" value="{{ csrf_token() }}">
+    <button type="button" class="btn btn-sm btn-dark" onclick="stopViewingAs()">Return to my account</button>
+</div>
+@endif
 <header id="page-topbar" class="isvertical-topbar">
     <div class="navbar-header">
         <div class="d-flex">

@@ -24,6 +24,14 @@ class ForcePasswordChange
             return $next($request);
         }
 
+        // An admin "viewing as" this account (see ImpersonationController)
+        // should never be walked into THIS account's forced password-change
+        // screen — that's a prompt to set a new password for someone else's
+        // login, which makes no sense and would strand the admin mid-view.
+        if (session('impersonator_id')) {
+            return $next($request);
+        }
+
         // Always let the change-password screen and logout through to avoid a redirect loop.
         if ($request->routeIs('password.change', 'password.update', 'logout')) {
             return $next($request);

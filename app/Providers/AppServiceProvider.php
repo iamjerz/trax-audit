@@ -65,6 +65,15 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with('access', $access);
             $view->with('pageAccess', $pageAccess);
+
+            // "View as" banner data (see ImpersonationController). $user
+            // here already IS the target while impersonating — Auth::user()
+            // was swapped at the start of the session — so only the real
+            // admin's name needs to come from session().
+            $view->with('impersonating', session('impersonator_id') ? [
+                'adminName' => session('impersonator_name'),
+                'targetName' => $user ? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) : null,
+            ] : null);
         });
     }
 }

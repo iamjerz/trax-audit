@@ -23,7 +23,8 @@ function mapUsers(data) {
         user.department ?? '—',
         user.supervisor_name,
         user.role,
-        user.status
+        user.status,
+        user.is_admin ? 1 : 0
     ]);
 }
 
@@ -52,11 +53,32 @@ function initUserTable() {
                     `);
                 }
             },
+            { name: "Is Admin", hidden: true },
             {
                 name: "Actions",
                 sort: false,
                 formatter: (_, row) => {
                     const userId = row.cells[1].data;
+                    const fullName = `${row.cells[3].data} ${row.cells[4].data}`;
+                    const status = row.cells[9].data;
+                    const isAdminRow = !!row.cells[10].data;
+                    const isSelf = window.currentEmployeeId && userId === window.currentEmployeeId;
+
+                    // "View as" — hidden for the admin's own row, other
+                    // admin rows, and inactive users (ImpersonationController
+                    // rejects all three anyway; this just avoids showing a
+                    // button that's guaranteed to fail). viewAsUser() lives
+                    // in impersonation.js, loaded globally.
+                    const viewAsButton = (!isSelf && !isAdminRow && status === 'active')
+                        ? `<li class="list-inline-item">
+                               <a href="javascript:void(0)"
+                                  onclick="viewAsUser('${userId}', '${fullName.replace(/'/g, "\\'")}')"
+                                  class="px-2 text-warning"
+                                  title="View as this user">
+                                   <i class="bx bx-show font-size-18"></i>
+                               </a>
+                           </li>`
+                        : '';
 
                     return gridjs.html(`
                         <ul class="list-inline mb-0">
@@ -67,7 +89,7 @@ function initUserTable() {
                                     <i class="bx bx-pencil font-size-18"></i>
                                 </a>
                             </li>
-                            
+                            ${viewAsButton}
                         </ul>
                     `);
                 }

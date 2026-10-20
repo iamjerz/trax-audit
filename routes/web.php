@@ -24,6 +24,7 @@ use App\Http\Controllers\FormInsertController;
 use App\Http\Controllers\FormBuilderController;
 use App\Http\Controllers\UserListMonitoringPage;
 use App\Http\Controllers\Api\UserBulkImportController;
+use App\Http\Controllers\Api\ImpersonationController;
 use App\Http\Controllers\Api\AuditController;
 use App\Http\Controllers\Api\DashboardControllerMain;
 use App\Http\Controllers\EvalIndividual;
@@ -129,6 +130,14 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('login');
     })->name('logout');
 
+    // "View as" — return leg only. Deliberately NOT inside the
+    // 'access:admin' group below: once impersonating, Auth::user() resolves
+    // to the TARGET, so a route gated on the current user being an admin
+    // would lock the admin out of their own way back if the target isn't
+    // one. ImpersonationController::stop() does the real authorization
+    // itself (session('impersonator_id') must actually be set).
+    Route::post('/stop-viewing-as', [ImpersonationController::class, 'stop'])->name('stop-viewing-as');
+
     /* -----------------------------------------------------------------
      | Administrator only
      | ----------------------------------------------------------------*/
@@ -160,6 +169,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/users/bulk-edit/template', [UserBulkImportController::class, 'template'])->name('users.bulk.template');
         Route::post('/users/bulk-edit/preview', [UserBulkImportController::class, 'preview'])->name('users.bulk.preview');
         Route::post('/users/bulk-edit/commit', [UserBulkImportController::class, 'commit'])->name('users.bulk.commit');
+
+        // "View as" — start leg only (admin-only, matches the rest of this
+        // group). The return leg (/stop-viewing-as) lives outside this
+        // group — see the comment next to it above.
+        Route::post('/users/{employeeid}/view-as', [ImpersonationController::class, 'start'])->name('users.view-as');
         Route::get('/check-email', [UserPageController::class, 'check']);
         Route::post('/insert-user', [UserPageController::class, 'store']);
         Route::get('/edit-user/{employeeid}', [UserPageController::class, 'index']);

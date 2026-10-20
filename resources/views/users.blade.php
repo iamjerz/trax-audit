@@ -208,6 +208,7 @@
 
     <!-- gridjs js -->
     <script src="assets/libs/gridjs/gridjs.umd.js"></script>
+    <script>window.currentEmployeeId = @json(auth()->user()->employeeid);</script>
     <script src="{{ asset('assets/js/user.js') }}"></script>
     <script src="{{ asset('assets/js/user-bulk-import.js') }}"></script>
 

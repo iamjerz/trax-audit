@@ -20,8 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         // Force users still on the default password to change it before using the app.
+        // EndStaleImpersonation must run every request too, so an admin who
+        // forgets to end a "View as" session isn't left in it indefinitely.
         $middleware->web(append: [
             \App\Http\Middleware\ForcePasswordChange::class,
+            \App\Http\Middleware\EndStaleImpersonation::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
