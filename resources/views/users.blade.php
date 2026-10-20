@@ -39,6 +39,9 @@
                             <a href="{{ route('export.users') }}" class="btn btn-success waves-effect waves-light me-2">
                                 <i class="bx bx-download font-size-16 align-middle me-2"></i> Export to Excel
                             </a>
+                            <button type="button" class="btn btn-info waves-effect waves-light me-2" data-bs-toggle="modal" data-bs-target="#bulk-edit-modal">
+                                <i class="bx bx-spreadsheet font-size-16 align-middle me-2"></i> Bulk Edit (Excel)
+                            </button>
                             <button type="button" class="btn btn-primary waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#add-user">
                                 <i class="bx bx-user-plus font-size-16 align-middle me-2"></i> Add new user
                             </button>
@@ -157,9 +160,56 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="bulk-edit-modal" data-bs-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="bulkEditModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkEditModalLabel">Bulk Edit Users (Excel)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ol class="font-size-13 text-muted ps-3">
+                        <li>Download the template below — it includes every current user.</li>
+                        <li>Edit it in Excel: change a field to update that user, or add a new row with Employee ID left blank to create a new user.</li>
+                        <li>Upload the edited file. Nothing is saved yet — you'll see exactly what will be created/updated/skipped first, and confirm before anything changes.</li>
+                    </ol>
+                    <p class="text-muted font-size-12">
+                        Supervisor / 2nd Supervisor are set by Employee ID and must already exist — the "(reference only)" name columns are just for your own reference and aren't re-imported. On an existing user, leaving a cell blank keeps that field unchanged rather than clearing it. Passwords and admin access can't be changed this way.
+                    </p>
+
+                    <a href="{{ route('users.bulk.template') }}" class="btn btn-outline-secondary btn-sm mb-3">
+                        <i class="bx bx-download align-middle me-1"></i> Download template
+                    </a>
+
+                    <div class="mb-3">
+                        <input type="file" class="form-control" id="bulk-edit-file" accept=".xlsx,.xls,.csv">
+                    </div>
+                    <button type="button" class="btn btn-primary btn-sm" id="bulk-edit-preview-btn">Upload &amp; Preview</button>
+
+                    <div id="bulk-edit-results" class="mt-3" style="display:none;">
+                        <div id="bulk-edit-summary" class="mb-2 fw-semibold"></div>
+                        <div class="table-responsive" style="max-height: 320px;">
+                            <table class="table table-sm table-bordered mb-0">
+                                <thead>
+                                    <tr><th>Row</th><th>Employee ID</th><th>Name</th><th>Action</th><th>Details</th></tr>
+                                </thead>
+                                <tbody id="bulk-edit-rows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" id="bulk-edit-confirm-btn" disabled>Confirm Import</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- gridjs js -->
     <script src="assets/libs/gridjs/gridjs.umd.js"></script>
     <script src="{{ asset('assets/js/user.js') }}"></script>
+    <script src="{{ asset('assets/js/user-bulk-import.js') }}"></script>
 
 </body>
 

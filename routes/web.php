@@ -22,8 +22,8 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\DisplayFormListController;
 use App\Http\Controllers\FormInsertController;
 use App\Http\Controllers\FormBuilderController;
-use App\Http\Controllers\UserImportController;
 use App\Http\Controllers\UserListMonitoringPage;
+use App\Http\Controllers\Api\UserBulkImportController;
 use App\Http\Controllers\Api\AuditController;
 use App\Http\Controllers\Api\DashboardControllerMain;
 use App\Http\Controllers\EvalIndividual;
@@ -63,8 +63,6 @@ Route::get('/', function () {
         ? redirect()->route('homepage')
         : redirect()->route('login');
 });
-
-Route::get('/import-users', [UserImportController::class, 'import']);
 
 /*
 |--------------------------------------------------------------------------
@@ -151,6 +149,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/users', [UserListMonitoringPage::class, 'UserPageList']);
         Route::get('/users/data', [UserController::class, 'usersCallApi'])->name('users.data');
         Route::get('/export/users', [ExportController::class, 'users'])->name('export.users');
+
+        // Bulk Edit (Excel): export a round-trippable template, preview an
+        // uploaded file (validate only, no writes), then commit the
+        // already-validated plan. See UserBulkEditService for the rules.
+        // Supersedes the old unauthenticated GET /import-users route (no
+        // middleware at all, hardcoded to a server-side users.csv, and its
+        // importer force-reset every row's password/status/role) — that
+        // route, UserImportController, and UsersImport have been removed.
+        Route::get('/users/bulk-edit/template', [UserBulkImportController::class, 'template'])->name('users.bulk.template');
+        Route::post('/users/bulk-edit/preview', [UserBulkImportController::class, 'preview'])->name('users.bulk.preview');
+        Route::post('/users/bulk-edit/commit', [UserBulkImportController::class, 'commit'])->name('users.bulk.commit');
         Route::get('/check-email', [UserPageController::class, 'check']);
         Route::post('/insert-user', [UserPageController::class, 'store']);
         Route::get('/edit-user/{employeeid}', [UserPageController::class, 'index']);
