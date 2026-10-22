@@ -102,12 +102,21 @@ class CoachingTicket extends Controller
                   ->orWhere('created_by', $user_employeeid);
             });
         } elseif ($scope === 'team') {
-            $query->where(function ($q) use ($user_employeeid) {
-                $q->whereIn('created_by', function ($sub) use ($user_employeeid) {
-                    $sub->select('email')->from('users')->where('supervisor_id', $user_employeeid);
-                })->orWhereIn('created_by', function ($sub) use ($user_employeeid) {
-                    $sub->select('employeeid')->from('users')->where('supervisor_id', $user_employeeid);
-                });
+            // Same fix as displayTicket(): include this person's own
+            // tickets (not just their direct reports'), and follow
+            // second_supervisor_id as well as the primary supervisor.
+            $query->where(function ($q) use ($user_email, $user_employeeid) {
+                $q->where('created_by', $user_email)
+                  ->orWhere('created_by', $user_employeeid)
+                  ->orWhereIn('created_by', function ($sub) use ($user_employeeid) {
+                      $sub->select('email')->from('users')
+                          ->where('supervisor_id', $user_employeeid)
+                          ->orWhere('second_supervisor_id', $user_employeeid);
+                  })->orWhereIn('created_by', function ($sub) use ($user_employeeid) {
+                      $sub->select('employeeid')->from('users')
+                          ->where('supervisor_id', $user_employeeid)
+                          ->orWhere('second_supervisor_id', $user_employeeid);
+                  });
             });
         }
 
@@ -212,7 +221,18 @@ class CoachingTicket extends Controller
                     ->orWhere('coachings.created_by', $user_employeeid);
                 });
             } elseif ($scope === 'team') {
-                $query->where('users.supervisor_id', $user_employeeid);
+                // "Team" = this person's own tickets PLUS their direct
+                // reports' — previously only matched reports (via
+                // users.supervisor_id), so a team-scoped Supervisor who
+                // created a ticket themselves would never see it in their
+                // own list. Also now follows second_supervisor_id, not just
+                // the primary supervisor.
+                $query->where(function ($q) use ($user_email, $user_employeeid) {
+                    $q->where('coachings.created_by', $user_email)
+                      ->orWhere('coachings.created_by', $user_employeeid)
+                      ->orWhere('users.supervisor_id', $user_employeeid)
+                      ->orWhere('users.second_supervisor_id', $user_employeeid);
+                });
             }
 
             // ✅ COUNT
