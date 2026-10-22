@@ -32,7 +32,8 @@ class DashboardTriadController extends Controller
 
     /**
      * Base query honoring the all / team scope.
-     * "team" = triads created by people who report to the logged-in user.
+     * "team" = triads created by the logged-in user, plus people who
+     * report to them (directly or as second supervisor).
      */
     private function scoped(Request $request)
     {
@@ -42,8 +43,18 @@ class DashboardTriadController extends Controller
         $query = DB::table('triad_items as t');
 
         if ($scope === 'team' && $user) {
+            // "Team" = triads created by this person PLUS their direct
+            // reports' — previously only matched reports (via
+            // u.supervisor_id), so a manager who also personally
+            // evaluates triads never saw their own evaluations counted
+            // in their team's numbers. Also now follows
+            // second_supervisor_id, not just the primary supervisor.
             $query->join('users as u', 't.created_by', '=', 'u.employeeid')
-                  ->where('u.supervisor_id', $user->employeeid);
+                  ->where(function ($q) use ($user) {
+                      $q->where('u.employeeid', $user->employeeid)
+                        ->orWhere('u.supervisor_id', $user->employeeid)
+                        ->orWhere('u.second_supervisor_id', $user->employeeid);
+                  });
         }
 
         return $query;

@@ -104,12 +104,21 @@ class TriadTicket extends Controller
                   ->orWhere('created_by', $user_employeeid);
             });
         } elseif ($scope === 'team') {
-            $query->where(function ($q) use ($user_employeeid) {
-                $q->whereIn('created_by', function ($sub) use ($user_employeeid) {
-                    $sub->select('email')->from('users')->where('supervisor_id', $user_employeeid);
-                })->orWhereIn('created_by', function ($sub) use ($user_employeeid) {
-                    $sub->select('employeeid')->from('users')->where('supervisor_id', $user_employeeid);
-                });
+            // Same fix as displayTicket(): include this person's own
+            // tickets (not just their direct reports'), and follow
+            // second_supervisor_id as well as the primary supervisor.
+            $query->where(function ($q) use ($user_email, $user_employeeid) {
+                $q->where('created_by', $user_email)
+                  ->orWhere('created_by', $user_employeeid)
+                  ->orWhereIn('created_by', function ($sub) use ($user_employeeid) {
+                      $sub->select('email')->from('users')
+                          ->where('supervisor_id', $user_employeeid)
+                          ->orWhere('second_supervisor_id', $user_employeeid);
+                  })->orWhereIn('created_by', function ($sub) use ($user_employeeid) {
+                      $sub->select('employeeid')->from('users')
+                          ->where('supervisor_id', $user_employeeid)
+                          ->orWhere('second_supervisor_id', $user_employeeid);
+                  });
             });
         }
 
@@ -184,11 +193,23 @@ class TriadTicket extends Controller
             $offset = $request->input('offset', 0);
             $search = $request->input('search');
 
+            // 🆕 Filter bar inputs — same pattern as CoachingTicket::displayTicket().
+            // No reference_type/status/client-code equivalent exists on
+            // triad_items, so unlike Coaching/Monitoring there's no dropdown
+            // filter here, just identifiers + name + date range.
+            $f_reference_id = $request->input('reference_id');
+            $f_reference    = $request->input('reference');
+            $f_name         = $request->input('name');
+            $f_date_from    = $request->input('date_from');
+            $f_date_to      = $request->input('date_to');
+
             $query = DB::table('triad_items')
                 ->leftJoin('users', 'triad_items.created_by', '=', 'users.employeeid')
+                ->leftJoin('users as triaded', 'triad_items.employee_id', '=', 'triaded.employeeid')
                 ->select(
                     'triad_items.*',
-                    DB::raw("users.first_name || ' ' || users.last_name as full_name")
+                    DB::raw("users.first_name || ' ' || users.last_name as full_name"),
+                    DB::raw("triaded.first_name || ' ' || triaded.last_name as triaded_employee_name")
                 );
 
             // 🔍 SEARCH (PostgreSQL-safe with ILIKE)
@@ -204,6 +225,36 @@ class TriadTicket extends Controller
                 });
             }
 
+            // 🆕 TRIAD REFERENCE ID
+            if ($f_reference_id) {
+                $query->where('triad_items.reference_id', 'ilike', "%{$f_reference_id}%");
+            }
+
+            // 🆕 REFERENCE (the originating audit/recon ticket)
+            if ($f_reference) {
+                $query->where('triad_items.reference', 'ilike', "%{$f_reference}%");
+            }
+
+            // 🆕 NAME FILTER (the triad'd employee's first, last, or full
+            // name — not the creator, which the global search above already
+            // covers)
+            if ($f_name) {
+                $query->where(function ($q) use ($f_name) {
+                    $q->where('triaded.first_name', 'ilike', "%{$f_name}%")
+                      ->orWhere('triaded.last_name', 'ilike', "%{$f_name}%")
+                      ->orWhere(DB::raw("triaded.first_name || ' ' || triaded.last_name"), 'ilike', "%{$f_name}%");
+                });
+            }
+
+            // 🆕 DATE RANGE (on created_at — the same value the grid already
+            // labels "Triad Date"; there's no separate date column)
+            if ($f_date_from) {
+                $query->whereDate('triad_items.created_at', '>=', $f_date_from);
+            }
+            if ($f_date_to) {
+                $query->whereDate('triad_items.created_at', '<=', $f_date_to);
+            }
+
             // 👤 LEVEL FILTER — scope comes from the positions table (see
             // App\Support\PositionScope), not a hardcoded string match.
             $scope = PositionScope::forPosition($user_position);
@@ -214,7 +265,18 @@ class TriadTicket extends Controller
                     ->orWhere('triad_items.created_by', $user_employeeid);
                 });
             } elseif ($scope === 'team') {
-                $query->where('users.supervisor_id', $user_employeeid);
+                // "Team" = this person's own tickets PLUS their direct
+                // reports' — previously only matched reports (via
+                // users.supervisor_id), so a team-scoped Supervisor who
+                // created a ticket themselves would never see it in their
+                // own list. Also now follows second_supervisor_id, not just
+                // the primary supervisor.
+                $query->where(function ($q) use ($user_email, $user_employeeid) {
+                    $q->where('triad_items.created_by', $user_email)
+                      ->orWhere('triad_items.created_by', $user_employeeid)
+                      ->orWhere('users.supervisor_id', $user_employeeid)
+                      ->orWhere('users.second_supervisor_id', $user_employeeid);
+                });
             }
 
             // ✅ COUNT

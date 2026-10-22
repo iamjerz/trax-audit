@@ -62,7 +62,15 @@ class ViewTicket extends Controller
         if ($scope === 'own') {
             $query->where('audit.lda_id', $user_employeeid);
         } elseif ($scope === 'team') {
-            $query->where('a.supervisor_id', $user_employeeid);
+            // Same fix as MonitoringTicket::displayTicket(): include this
+            // person's own audit (if they're also an audited LDA) PLUS
+            // their direct reports' audits, and follow
+            // second_supervisor_id as well as the primary supervisor.
+            $query->where(function ($q) use ($user_employeeid) {
+                $q->where('audit.lda_id', $user_employeeid)
+                  ->orWhere('a.supervisor_id', $user_employeeid)
+                  ->orWhere('a.second_supervisor_id', $user_employeeid);
+            });
         }
 
         $data = $query->first();   // 👈 cleaner than get()->first()

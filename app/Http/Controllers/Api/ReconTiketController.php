@@ -165,12 +165,22 @@ class ReconTiketController extends Controller
                   ->orWhere('assigned_to', $userEmployeeid);
             });
         } elseif ($scope === 'team') {
-            $query->where(function ($q) use ($userEmployeeid) {
-                $q->whereIn('lda_email', function ($sub) use ($userEmployeeid) {
-                    $sub->select('email')->from('users')->where('supervisor_id', $userEmployeeid);
-                })->orWhereIn('assigned_to', function ($sub) use ($userEmployeeid) {
-                    $sub->select('employeeid')->from('users')->where('supervisor_id', $userEmployeeid);
-                });
+            // Same fix as displayTicket(): include this person's own
+            // ticket (whether as primary LDA or assigned/secondary owner)
+            // in addition to their reports', and follow
+            // second_supervisor_id as well as the primary supervisor.
+            $query->where(function ($q) use ($userEmail, $userEmployeeid) {
+                $q->where('lda_email', $userEmail)
+                  ->orWhere('assigned_to', $userEmployeeid)
+                  ->orWhereIn('lda_email', function ($sub) use ($userEmployeeid) {
+                      $sub->select('email')->from('users')
+                          ->where('supervisor_id', $userEmployeeid)
+                          ->orWhere('second_supervisor_id', $userEmployeeid);
+                  })->orWhereIn('assigned_to', function ($sub) use ($userEmployeeid) {
+                      $sub->select('employeeid')->from('users')
+                          ->where('supervisor_id', $userEmployeeid)
+                          ->orWhere('second_supervisor_id', $userEmployeeid);
+                  });
             });
         }
 
@@ -273,12 +283,25 @@ class ReconTiketController extends Controller
                   ->orWhere('recon_action_items.assigned_to', $user_employeeid);
             });
         } elseif ($scope === 'team') {
-            $query->where(function ($q) use ($user_employeeid) {
-                $q->whereIn('recon_action_items.lda_email', function ($sub) use ($user_employeeid) {
-                    $sub->select('email')->from('users')->where('supervisor_id', $user_employeeid);
-                })->orWhereIn('recon_action_items.assigned_to', function ($sub) use ($user_employeeid) {
-                    $sub->select('employeeid')->from('users')->where('supervisor_id', $user_employeeid);
-                });
+            // "Team" = this person's own ticket (as primary LDA or
+            // assigned/secondary owner) PLUS their direct reports' —
+            // previously only matched reports, so a team-scoped LDA/
+            // Supervisor who is themselves the lda_email/assigned_to on a
+            // ticket would never see it in their own list. Also now
+            // follows second_supervisor_id, not just the primary
+            // supervisor.
+            $query->where(function ($q) use ($user_email, $user_employeeid) {
+                $q->where('recon_action_items.lda_email', $user_email)
+                  ->orWhere('recon_action_items.assigned_to', $user_employeeid)
+                  ->orWhereIn('recon_action_items.lda_email', function ($sub) use ($user_employeeid) {
+                      $sub->select('email')->from('users')
+                          ->where('supervisor_id', $user_employeeid)
+                          ->orWhere('second_supervisor_id', $user_employeeid);
+                  })->orWhereIn('recon_action_items.assigned_to', function ($sub) use ($user_employeeid) {
+                      $sub->select('employeeid')->from('users')
+                          ->where('supervisor_id', $user_employeeid)
+                          ->orWhere('second_supervisor_id', $user_employeeid);
+                  });
             });
         }
 
@@ -334,12 +357,21 @@ class ReconTiketController extends Controller
                     ->orWhere('assigned_to', $user_employeeid);
                 });
             } elseif ($scope === 'team') {
-                $base->where(function ($q) use ($user_employeeid) {
-                    $q->whereIn('lda_email', function ($sub) use ($user_employeeid) {
-                        $sub->select('email')->from('users')->where('supervisor_id', $user_employeeid);
-                    })->orWhereIn('assigned_to', function ($sub) use ($user_employeeid) {
-                        $sub->select('employeeid')->from('users')->where('supervisor_id', $user_employeeid);
-                    });
+                // Same fix as displayTicket(): include this person's own
+                // ticket (as lda_email or assigned_to), and follow
+                // second_supervisor_id as well as the primary supervisor.
+                $base->where(function ($q) use ($user_email, $user_employeeid) {
+                    $q->where('lda_email', $user_email)
+                      ->orWhere('assigned_to', $user_employeeid)
+                      ->orWhereIn('lda_email', function ($sub) use ($user_employeeid) {
+                          $sub->select('email')->from('users')
+                              ->where('supervisor_id', $user_employeeid)
+                              ->orWhere('second_supervisor_id', $user_employeeid);
+                      })->orWhereIn('assigned_to', function ($sub) use ($user_employeeid) {
+                          $sub->select('employeeid')->from('users')
+                              ->where('supervisor_id', $user_employeeid)
+                              ->orWhere('second_supervisor_id', $user_employeeid);
+                      });
                 });
             }
 

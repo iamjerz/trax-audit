@@ -304,6 +304,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('page:monitoring-ticket')->group(function () {
         Route::get('/monitoring-ticket', [MonitoringTicket::class, 'index']);
         Route::get('/monitoring-data', [MonitoringTicket::class, 'displayTicket']);
+        Route::get('/monitoring-filter-options', [MonitoringTicket::class, 'filterOptions']);
     });
     // Deleting a QA Monitoring ticket stays admin-only regardless of page access.
     Route::delete('/monitoring-ticket/{id}', [MonitoringTicket::class, 'destroy'])
@@ -379,6 +380,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/coaching', [CoachingController::class, 'store']);
         Route::get('/coaching-ticket', [CoachingTicket::class, 'index']);
         Route::get('/coaching-data', [CoachingTicket::class, 'displayTicket']);
+        Route::get('/coaching-filter-options', [CoachingTicket::class, 'filterOptions']);
         Route::get('/coaching-ticket-view/{id}', [CoachingTicket::class, 'fullDetails']);
         Route::get('/api/coaching-ticket', [CoachingFormController::class, 'coachingTicketInformation']);
         Route::post('/coaching/assign-employee/{id}', [CoachingTicket::class, 'updateEmployee']);

@@ -191,11 +191,21 @@ class CoachingTicket extends Controller
             $offset = $request->input('offset', 0);
             $search = $request->input('search');
 
+            // 🆕 Filter bar inputs — same pattern as MonitoringTicket::displayTicket().
+            $f_reference_id   = $request->input('reference_id');
+            $f_reference      = $request->input('reference');
+            $f_name           = $request->input('name');
+            $f_reference_type = $request->input('reference_type');
+            $f_date_from      = $request->input('date_from');
+            $f_date_to        = $request->input('date_to');
+
             $query = DB::table('coachings')
                 ->leftJoin('users', 'coachings.created_by', '=', 'users.employeeid')
+                ->leftJoin('users as coached', 'coachings.employee_id', '=', 'coached.employeeid')
                 ->select(
                     'coachings.*',
-                    DB::raw("users.first_name || ' ' || users.last_name as full_name")
+                    DB::raw("users.first_name || ' ' || users.last_name as full_name"),
+                    DB::raw("coached.first_name || ' ' || coached.last_name as coached_employee_name")
                 );
 
             // 🔍 SEARCH (PostgreSQL-safe with ILIKE)
@@ -209,6 +219,41 @@ class CoachingTicket extends Controller
                     ->orWhere('users.last_name', 'ilike', "%{$search}%")
                     ->orWhere(DB::raw("users.first_name || ' ' || users.last_name"), 'ilike', "%{$search}%");
                 });
+            }
+
+            // 🆕 COACHING REFERENCE ID
+            if ($f_reference_id) {
+                $query->where('coachings.reference_id', 'ilike', "%{$f_reference_id}%");
+            }
+
+            // 🆕 COACHING REFERENCE (the originating audit/recon/triad ticket)
+            if ($f_reference) {
+                $query->where('coachings.reference', 'ilike', "%{$f_reference}%");
+            }
+
+            // 🆕 NAME FILTER (the coached employee's first, last, or full
+            // name — not the creator, which the global search above already
+            // covers)
+            if ($f_name) {
+                $query->where(function ($q) use ($f_name) {
+                    $q->where('coached.first_name', 'ilike', "%{$f_name}%")
+                      ->orWhere('coached.last_name', 'ilike', "%{$f_name}%")
+                      ->orWhere(DB::raw("coached.first_name || ' ' || coached.last_name"), 'ilike', "%{$f_name}%");
+                });
+            }
+
+            // 🆕 COACHING TYPE
+            if ($f_reference_type) {
+                $query->where('coachings.reference_type', $f_reference_type);
+            }
+
+            // 🆕 DATE RANGE (on created_at — the same value the grid already
+            // labels "Coaching Date"; there's no separate date column)
+            if ($f_date_from) {
+                $query->whereDate('coachings.created_at', '>=', $f_date_from);
+            }
+            if ($f_date_to) {
+                $query->whereDate('coachings.created_at', '<=', $f_date_to);
             }
 
             // 👤 LEVEL FILTER — scope comes from the positions table (see
@@ -253,6 +298,56 @@ class CoachingTicket extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Dropdown options for the filter bar — distinct values actually present
+     * on tickets this user can see (same PositionScope own/team/all logic as
+     * displayTicket()). Mirrors MonitoringTicket::filterOptions().
+     */
+    public function filterOptions(Request $request)
+    {
+        try {
+            $user_email      = auth()->user()->email;
+            $user_position   = auth()->user()->position;
+            $user_employeeid = auth()->user()->employeeid;
+
+            $base = DB::table('coachings')
+                ->leftJoin('users', 'coachings.created_by', '=', 'users.employeeid');
+
+            // 👤 LEVEL FILTER — same logic as displayTicket
+            $scope = PositionScope::forPosition($user_position);
+
+            if ($scope === 'own') {
+                $base->where(function ($q) use ($user_email, $user_employeeid) {
+                    $q->where('coachings.created_by', $user_email)
+                      ->orWhere('coachings.created_by', $user_employeeid);
+                });
+            } elseif ($scope === 'team') {
+                $base->where(function ($q) use ($user_email, $user_employeeid) {
+                    $q->where('coachings.created_by', $user_email)
+                      ->orWhere('coachings.created_by', $user_employeeid)
+                      ->orWhere('users.supervisor_id', $user_employeeid)
+                      ->orWhere('users.second_supervisor_id', $user_employeeid);
+                });
+            }
+
+            $reference_types = (clone $base)
+                ->whereNotNull('coachings.reference_type')
+                ->where('coachings.reference_type', '!=', '')
+                ->distinct()
+                ->orderBy('coachings.reference_type')
+                ->pluck('coachings.reference_type');
+
+            return response()->json([
+                'reference_types' => $reference_types,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
