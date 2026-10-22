@@ -63,9 +63,18 @@
                                         <label class="form-label">Coaching Reference</label>
                                         <input type="text" id="filter-reference" class="form-control" placeholder="Search reference...">
                                     </div>
-                                    <div class="col-md-4 col-lg-3">
-                                        <label class="form-label">Name</label>
-                                        <input type="text" id="filter-name" class="form-control" placeholder="Search coached employee...">
+                                    <div class="col-md-4 col-lg-2">
+                                        <label class="form-label">LDA</label>
+                                        <select id="filter-lda" class="form-select dropdown-choices">
+                                            <option value="">All</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 col-lg-2">
+                                        <label class="form-label">Supervisor/Manager</label>
+                                        <select id="filter-manager-scope" class="form-select dropdown-choices">
+                                            <option value="">All</option>
+                                            <option value="my_team">My Team</option>
+                                        </select>
                                     </div>
                                     <div class="col-md-4 col-lg-2">
                                         <label class="form-label">Coaching Type</label>
@@ -135,7 +144,8 @@
         const filters = {
             reference_id: '',
             reference: '',
-            name: '',
+            lda: '',
+            manager_scope: '',
             reference_type: '',
             date_from: '',
             date_to: ''
@@ -150,7 +160,8 @@
             if (extra.search) params.set('search', extra.search);
             if (filters.reference_id) params.set('reference_id', filters.reference_id);
             if (filters.reference) params.set('reference', filters.reference);
-            if (filters.name) params.set('name', filters.name);
+            if (filters.lda) params.set('lda', filters.lda);
+            if (filters.manager_scope) params.set('manager_scope', filters.manager_scope);
             if (filters.reference_type) params.set('reference_type', filters.reference_type);
             if (filters.date_from) params.set('date_from', filters.date_from);
             if (filters.date_to) params.set('date_to', filters.date_to);
@@ -315,7 +326,7 @@
             }).forceRender();
         }
 
-        // Coaching Reference ID / Coaching Reference / Name (debounced text inputs)
+        // Coaching Reference ID / Coaching Reference (debounced text inputs)
         document.getElementById('filter-reference-id').addEventListener('input', debounce((e) => {
             filters.reference_id = e.target.value.trim();
             reloadGrid();
@@ -326,17 +337,12 @@
             reloadGrid();
         }, 500));
 
-        document.getElementById('filter-name').addEventListener('input', debounce((e) => {
-            filters.name = e.target.value.trim();
-            reloadGrid();
-        }, 500));
-
         // Selects - reload immediately on change
         // Note: Choices.js dispatches 'change' on the underlying <select>, so this works for both.
         // Date range is handled separately below (daterangepicker.com), since
         // filter-date-from/filter-date-to are now hidden inputs driven by the
         // picker's own events, not something a user types/changes directly.
-        ['filter-reference-type'].forEach(id => {
+        ['filter-lda', 'filter-manager-scope', 'filter-reference-type'].forEach(id => {
             document.getElementById(id).addEventListener('change', (e) => {
                 const key = id.replace('filter-', '').replace(/-/g, '_');
                 filters[key] = e.target.value;
@@ -402,7 +408,6 @@
             // Plain inputs
             document.getElementById('filter-reference-id').value = '';
             document.getElementById('filter-reference').value = '';
-            document.getElementById('filter-name').value = '';
 
             // Date range picker: clear the visible input + hidden fields, and
             // reset the picker's own internal state back to today so
@@ -417,7 +422,7 @@
             }
 
             // Choices.js dropdowns - reset to empty value
-            ['filter-reference-type'].forEach(id => {
+            ['filter-lda', 'filter-manager-scope', 'filter-reference-type'].forEach(id => {
                 if (choicesInstances[id]) {
                     choicesInstances[id].setChoiceByValue('');
                 } else {
@@ -429,13 +434,35 @@
         });
 
         // ============================================================
-        // Populate Coaching Type dropdown from server
+        // Populate LDA / Supervisor-Manager / Coaching Type dropdowns
         // Endpoint /coaching-filter-options returns:
-        //   { reference_types: [...] }
+        //   { reference_types: [...], ldas: [{value,label}, ...],
+        //     managers: {"Managers": [{value,label}, ...], "SMEs": [...], ...} }
         // ============================================================
         fetch('/coaching-filter-options')
             .then(res => res.ok ? res.json() : Promise.reject(res))
             .then(opts => {
+                if (choicesInstances['filter-lda'] && Array.isArray(opts.ldas)) {
+                    choicesInstances['filter-lda'].setChoices(
+                        opts.ldas,
+                        'value',
+                        'label',
+                        false // false = append to existing "All" option
+                    );
+                }
+
+                if (choicesInstances['filter-manager-scope'] && opts.managers) {
+                    // opts.managers is {"Managers": [{value,label}, ...], "SMEs": [...], ...}
+                    // Choices.js groups need {label, id, choices: [...]} — same
+                    // conversion as the QA dashboard's Manager/Supervisor picker.
+                    const groups = Object.keys(opts.managers).map((groupName, idx) => ({
+                        label: groupName,
+                        id: idx + 1,
+                        choices: opts.managers[groupName]
+                    }));
+                    choicesInstances['filter-manager-scope'].setChoices(groups, 'value', 'label', false);
+                }
+
                 if (choicesInstances['filter-reference-type'] && Array.isArray(opts.reference_types)) {
                     choicesInstances['filter-reference-type'].setChoices(
                         opts.reference_types.map(t => ({

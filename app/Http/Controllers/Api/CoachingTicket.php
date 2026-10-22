@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\Concerns\FiltersByManagerScope;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\AuditTrail;
@@ -12,6 +13,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 class CoachingTicket extends Controller
 {
+    // Reuses the QA/Recon dashboards' Manager/Supervisor picker
+    // (managerPickerOptions()) and org-tree subtree walk
+    // (resolveScopeLdaIds()) for the Supervisor/Manager filter below.
+    use FiltersByManagerScope;
+
     //
     public function getUsersData()
     {
@@ -194,7 +200,8 @@ class CoachingTicket extends Controller
             // 🆕 Filter bar inputs — same pattern as MonitoringTicket::displayTicket().
             $f_reference_id   = $request->input('reference_id');
             $f_reference      = $request->input('reference');
-            $f_name           = $request->input('name');
+            $f_lda            = $request->input('lda');
+            $f_manager_scope  = $request->input('manager_scope');
             $f_reference_type = $request->input('reference_type');
             $f_date_from      = $request->input('date_from');
             $f_date_to        = $request->input('date_to');
@@ -231,15 +238,22 @@ class CoachingTicket extends Controller
                 $query->where('coachings.reference', 'ilike', "%{$f_reference}%");
             }
 
-            // 🆕 NAME FILTER (the coached employee's first, last, or full
-            // name — not the creator, which the global search above already
-            // covers)
-            if ($f_name) {
-                $query->where(function ($q) use ($f_name) {
-                    $q->where('coached.first_name', 'ilike', "%{$f_name}%")
-                      ->orWhere('coached.last_name', 'ilike', "%{$f_name}%")
-                      ->orWhere(DB::raw("coached.first_name || ' ' || coached.last_name"), 'ilike', "%{$f_name}%");
-                });
+            // 🆕 LDA (the coached employee — a dropdown of actual people,
+            // replacing the old free-text Name filter)
+            if ($f_lda) {
+                $query->where('coachings.employee_id', $f_lda);
+            }
+
+            // 🆕 SUPERVISOR/MANAGER — reuses the QA/Recon dashboards' org-tree
+            // picker: selecting a manager/SME/supervisor (or "My Team")
+            // scopes results to every LDA beneath them, not just direct
+            // reports. Scoped to the COACHED employee's hierarchy (not the
+            // creator's), same role LDA/Coachee plays above. Combines with
+            // (never widens past) the own/team/all LEVEL FILTER below, since
+            // both are ANDed together.
+            $managerLdaIds = $this->resolveScopeLdaIds($f_manager_scope);
+            if ($managerLdaIds !== null) {
+                $query->whereIn('coachings.employee_id', $managerLdaIds);
             }
 
             // 🆕 COACHING TYPE
@@ -315,7 +329,8 @@ class CoachingTicket extends Controller
             $user_employeeid = auth()->user()->employeeid;
 
             $base = DB::table('coachings')
-                ->leftJoin('users', 'coachings.created_by', '=', 'users.employeeid');
+                ->leftJoin('users', 'coachings.created_by', '=', 'users.employeeid')
+                ->leftJoin('users as coached', 'coachings.employee_id', '=', 'coached.employeeid');
 
             // 👤 LEVEL FILTER — same logic as displayTicket
             $scope = PositionScope::forPosition($user_position);
@@ -341,8 +356,30 @@ class CoachingTicket extends Controller
                 ->orderBy('coachings.reference_type')
                 ->pluck('coachings.reference_type');
 
+            // LDA (coached employee) — {value,label} pairs (employeeid +
+            // name), since this is a people picker, not a free-text code.
+            $ldas = (clone $base)
+                ->whereNotNull('coachings.employee_id')
+                ->where('coachings.employee_id', '!=', '')
+                ->select(
+                    'coachings.employee_id as value',
+                    DB::raw("TRIM(COALESCE(coached.first_name, '') || ' ' || COALESCE(coached.last_name, '')) as label")
+                )
+                ->distinct()
+                ->orderBy('label')
+                ->get();
+
             return response()->json([
                 'reference_types' => $reference_types,
+                'ldas'            => $ldas,
+                // Unscoped on purpose — same as the QA/Recon dashboards' own
+                // Manager/Supervisor picker (FiltersByManagerScope): this
+                // just lists who's pickable, it doesn't by itself widen what
+                // displayTicket() returns. Picking an unrelated manager here
+                // can only narrow the result (via an AND with the existing
+                // own/team/all LEVEL FILTER) down to nothing, never expose
+                // rows outside this viewer's normal access.
+                'managers'        => $this->managerPickerOptions(),
             ]);
 
         } catch (\Exception $e) {

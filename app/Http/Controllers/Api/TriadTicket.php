@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\Concerns\FiltersByManagerScope;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\AuditTrail;
@@ -13,6 +14,11 @@ use Illuminate\Support\Facades\Schema;
 
 class TriadTicket extends Controller
 {
+    // Reuses the QA/Recon dashboards' Manager/Supervisor picker
+    // (managerPickerOptions()) and org-tree subtree walk
+    // (resolveScopeLdaIds()) for the Supervisor/Manager filter below.
+    use FiltersByManagerScope;
+
     //
     public function getUsersData()
     {
@@ -195,13 +201,15 @@ class TriadTicket extends Controller
 
             // 🆕 Filter bar inputs — same pattern as CoachingTicket::displayTicket().
             // No reference_type/status/client-code equivalent exists on
-            // triad_items, so unlike Coaching/Monitoring there's no dropdown
-            // filter here, just identifiers + name + date range.
-            $f_reference_id = $request->input('reference_id');
-            $f_reference    = $request->input('reference');
-            $f_name         = $request->input('name');
-            $f_date_from    = $request->input('date_from');
-            $f_date_to      = $request->input('date_to');
+            // triad_items, so unlike Coaching/Monitoring there's no Type
+            // dropdown here — just identifiers, the LDA/Supervisor-Manager
+            // people pickers below, and date range.
+            $f_reference_id  = $request->input('reference_id');
+            $f_reference     = $request->input('reference');
+            $f_lda           = $request->input('lda');
+            $f_manager_scope = $request->input('manager_scope');
+            $f_date_from     = $request->input('date_from');
+            $f_date_to       = $request->input('date_to');
 
             $query = DB::table('triad_items')
                 ->leftJoin('users', 'triad_items.created_by', '=', 'users.employeeid')
@@ -235,15 +243,22 @@ class TriadTicket extends Controller
                 $query->where('triad_items.reference', 'ilike', "%{$f_reference}%");
             }
 
-            // 🆕 NAME FILTER (the triad'd employee's first, last, or full
-            // name — not the creator, which the global search above already
-            // covers)
-            if ($f_name) {
-                $query->where(function ($q) use ($f_name) {
-                    $q->where('triaded.first_name', 'ilike', "%{$f_name}%")
-                      ->orWhere('triaded.last_name', 'ilike', "%{$f_name}%")
-                      ->orWhere(DB::raw("triaded.first_name || ' ' || triaded.last_name"), 'ilike', "%{$f_name}%");
-                });
+            // 🆕 LDA (the triad'd employee — a dropdown of actual people,
+            // replacing the old free-text Name filter)
+            if ($f_lda) {
+                $query->where('triad_items.employee_id', $f_lda);
+            }
+
+            // 🆕 SUPERVISOR/MANAGER — reuses the QA/Recon dashboards' org-tree
+            // picker: selecting a manager/SME/supervisor (or "My Team")
+            // scopes results to every LDA beneath them, not just direct
+            // reports. Scoped to the TRIAD'D employee's hierarchy (not the
+            // creator's), same role LDA plays above. Combines with (never
+            // widens past) the own/team/all LEVEL FILTER below, since both
+            // are ANDed together.
+            $managerLdaIds = $this->resolveScopeLdaIds($f_manager_scope);
+            if ($managerLdaIds !== null) {
+                $query->whereIn('triad_items.employee_id', $managerLdaIds);
             }
 
             // 🆕 DATE RANGE (on created_at — the same value the grid already
@@ -297,6 +312,71 @@ class TriadTicket extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Dropdown options for the filter bar — distinct values actually present
+     * on tickets this user can see (same PositionScope own/team/all logic as
+     * displayTicket()). Mirrors CoachingTicket::filterOptions().
+     */
+    public function filterOptions(Request $request)
+    {
+        try {
+            $user_email      = auth()->user()->email;
+            $user_position   = auth()->user()->position;
+            $user_employeeid = auth()->user()->employeeid;
+
+            $base = DB::table('triad_items')
+                ->leftJoin('users', 'triad_items.created_by', '=', 'users.employeeid')
+                ->leftJoin('users as triaded', 'triad_items.employee_id', '=', 'triaded.employeeid');
+
+            // 👤 LEVEL FILTER — same logic as displayTicket
+            $scope = PositionScope::forPosition($user_position);
+
+            if ($scope === 'own') {
+                $base->where(function ($q) use ($user_email, $user_employeeid) {
+                    $q->where('triad_items.created_by', $user_email)
+                      ->orWhere('triad_items.created_by', $user_employeeid);
+                });
+            } elseif ($scope === 'team') {
+                $base->where(function ($q) use ($user_email, $user_employeeid) {
+                    $q->where('triad_items.created_by', $user_email)
+                      ->orWhere('triad_items.created_by', $user_employeeid)
+                      ->orWhere('users.supervisor_id', $user_employeeid)
+                      ->orWhere('users.second_supervisor_id', $user_employeeid);
+                });
+            }
+
+            // LDA (triad'd employee) — {value,label} pairs (employeeid +
+            // name), since this is a people picker, not a free-text code.
+            $ldas = (clone $base)
+                ->whereNotNull('triad_items.employee_id')
+                ->where('triad_items.employee_id', '!=', '')
+                ->select(
+                    'triad_items.employee_id as value',
+                    DB::raw("TRIM(COALESCE(triaded.first_name, '') || ' ' || COALESCE(triaded.last_name, '')) as label")
+                )
+                ->distinct()
+                ->orderBy('label')
+                ->get();
+
+            return response()->json([
+                'ldas'     => $ldas,
+                // Unscoped on purpose — same as the QA/Recon dashboards' own
+                // Manager/Supervisor picker (FiltersByManagerScope): this
+                // just lists who's pickable, it doesn't by itself widen what
+                // displayTicket() returns. Picking an unrelated manager here
+                // can only narrow the result (via an AND with the existing
+                // own/team/all LEVEL FILTER) down to nothing, never expose
+                // rows outside this viewer's normal access.
+                'managers' => $this->managerPickerOptions(),
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

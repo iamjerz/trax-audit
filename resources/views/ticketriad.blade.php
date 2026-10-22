@@ -2,6 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <link rel="stylesheet" href="assets/libs/gridjs/theme/mermaid.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.css">
 @include('partials.header')
 <style>
@@ -67,9 +68,18 @@
                                         <label class="form-label">Reference</label>
                                         <input type="text" id="filter-reference" class="form-control" placeholder="Search reference...">
                                     </div>
-                                    <div class="col-md-4 col-lg-3">
-                                        <label class="form-label">Name</label>
-                                        <input type="text" id="filter-name" class="form-control" placeholder="Search triad'd employee...">
+                                    <div class="col-md-4 col-lg-2">
+                                        <label class="form-label">LDA</label>
+                                        <select id="filter-lda" class="form-select dropdown-choices">
+                                            <option value="">All</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 col-lg-2">
+                                        <label class="form-label">Supervisor/Manager</label>
+                                        <select id="filter-manager-scope" class="form-select dropdown-choices">
+                                            <option value="">All</option>
+                                            <option value="my_team">My Team</option>
+                                        </select>
                                     </div>
                                     <div class="col-md-6 col-lg-3">
                                         <label class="form-label">Date Range (Triad Date)</label>
@@ -112,6 +122,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.js"></script>
     <script src="assets/libs/gridjs/gridjs.umd.js"></script>
     <script>
+        // ============================================================
+        // Initialize Choices.js on all .dropdown-choices selects
+        // ============================================================
+        const choicesInstances = {};
+        document.querySelectorAll('.dropdown-choices').forEach((el) => {
+            choicesInstances[el.id] = new Choices(el, {
+                searchEnabled: true,
+                itemSelectText: '',
+                shouldSort: false,
+                allowHTML: false
+            });
+        });
+
         const limit = 10;
         const canDelete = @json($canDelete ?? false);
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -120,7 +143,8 @@
         const filters = {
             reference_id: '',
             reference: '',
-            name: '',
+            lda: '',
+            manager_scope: '',
             date_from: '',
             date_to: ''
         };
@@ -134,7 +158,8 @@
             if (extra.search) params.set('search', extra.search);
             if (filters.reference_id) params.set('reference_id', filters.reference_id);
             if (filters.reference) params.set('reference', filters.reference);
-            if (filters.name) params.set('name', filters.name);
+            if (filters.lda) params.set('lda', filters.lda);
+            if (filters.manager_scope) params.set('manager_scope', filters.manager_scope);
             if (filters.date_from) params.set('date_from', filters.date_from);
             if (filters.date_to) params.set('date_to', filters.date_to);
 
@@ -295,7 +320,7 @@
             }).forceRender();
         }
 
-        // Triad Reference ID / Reference / Name (debounced text inputs)
+        // Triad Reference ID / Reference (debounced text inputs)
         document.getElementById('filter-reference-id').addEventListener('input', debounce((e) => {
             filters.reference_id = e.target.value.trim();
             reloadGrid();
@@ -306,10 +331,14 @@
             reloadGrid();
         }, 500));
 
-        document.getElementById('filter-name').addEventListener('input', debounce((e) => {
-            filters.name = e.target.value.trim();
-            reloadGrid();
-        }, 500));
+        // LDA / Supervisor-Manager dropdowns
+        ['filter-lda', 'filter-manager-scope'].forEach(id => {
+            document.getElementById(id).addEventListener('change', (e) => {
+                const key = id.replace('filter-', '').replace(/-/g, '_');
+                filters[key] = e.target.value;
+                reloadGrid();
+            });
+        });
 
         // ============================================================
         // Date Range picker (daterangepicker.com) — same widget/config as
@@ -369,7 +398,15 @@
             // Plain inputs
             document.getElementById('filter-reference-id').value = '';
             document.getElementById('filter-reference').value = '';
-            document.getElementById('filter-name').value = '';
+
+            // Dropdowns (Choices.js)
+            ['filter-lda', 'filter-manager-scope'].forEach(id => {
+                if (choicesInstances[id]) {
+                    choicesInstances[id].setChoiceByValue('');
+                } else {
+                    document.getElementById(id).value = '';
+                }
+            });
 
             // Date range picker: clear the visible input + hidden fields, and
             // reset the picker's own internal state back to today so
@@ -385,6 +422,27 @@
 
             reloadGrid();
         });
+
+        // ============================================================
+        // Populate LDA / Supervisor-Manager dropdowns from the server
+        // ============================================================
+        fetch('/triad-filter-options')
+            .then(res => res.json())
+            .then(opts => {
+                if (choicesInstances['filter-lda'] && Array.isArray(opts.ldas)) {
+                    choicesInstances['filter-lda'].setChoices(opts.ldas, 'value', 'label', false);
+                }
+
+                if (choicesInstances['filter-manager-scope'] && opts.managers) {
+                    const groups = Object.keys(opts.managers).map((groupName, idx) => ({
+                        label: groupName,
+                        id: idx + 1,
+                        choices: opts.managers[groupName]
+                    }));
+                    choicesInstances['filter-manager-scope'].setChoices(groups, 'value', 'label', false);
+                }
+            })
+            .catch(err => console.warn('Could not load filter options:', err));
     </script>
 
 

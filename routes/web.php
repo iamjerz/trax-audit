@@ -396,6 +396,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/viewtriad', [UserListMonitoringPage::class, 'CoachingTriadData']);
         Route::get('/triad-ticket', [TriadTicket::class, 'index']);
         Route::get('/triad-data', [TriadTicket::class, 'displayTicket']);
+        Route::get('/triad-filter-options', [TriadTicket::class, 'filterOptions']);
         Route::get('/triad-ticket-view/{id}', [TriadTicket::class, 'fullDetails']);
         Route::get('/api/coaching-triad', [CoachingTriadController::class, 'coachingRef']);
         Route::get('/api/triad-ticket', [CoachingTriadController::class, 'triadTicketInformation']);
