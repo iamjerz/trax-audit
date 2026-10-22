@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\Concerns\FiltersByManagerScope;
 use App\Models\AuditTrail;
 use App\Support\AccessRoles;
 use App\Support\PositionScope;
@@ -12,6 +13,11 @@ use Illuminate\Support\Facades\Schema;
 
 class MonitoringTicket extends Controller
 {
+    // Reuses the QA/Recon dashboards' Manager/Supervisor picker
+    // (managerPickerOptions()) and org-tree subtree walk
+    // (resolveScopeLdaIds()) for the Supervisor/Manager filter below.
+    use FiltersByManagerScope;
+
     public function index()
     {
         $access = AccessRoles::expand(
@@ -134,7 +140,9 @@ class MonitoringTicket extends Controller
             // 🆕 Filter bar inputs — same pattern as ReconTiketController::displayTicket().
             $f_audit_id          = $request->input('audit_id');
             $f_invoice_id        = $request->input('invoice_id');
-            $f_name              = $request->input('name');
+            $f_coachee           = $request->input('coachee');
+            $f_coach             = $request->input('coach');
+            $f_manager_scope     = $request->input('manager_scope');
             $f_client_code       = $request->input('client_code');
             $f_carrier_name      = $request->input('carrier_name');
             $f_exception_status  = $request->input('exception_status');
@@ -172,13 +180,27 @@ class MonitoringTicket extends Controller
                 $query->where('a.invoice_id', 'ilike', "%{$f_invoice_id}%");
             }
 
-            // 🆕 NAME FILTER (the audited LDA's first, last, or full name)
-            if ($f_name) {
-                $query->where(function ($q) use ($f_name) {
-                    $q->where('lda.first_name', 'ilike', "%{$f_name}%")
-                      ->orWhere('lda.last_name', 'ilike', "%{$f_name}%")
-                      ->orWhere(DB::raw("lda.first_name || ' ' || lda.last_name"), 'ilike', "%{$f_name}%");
-                });
+            // 🆕 COACHEE (the audited LDA — replaces the old free-text Name
+            // filter with a dropdown of actual people, same idea as before
+            // just picked rather than typed)
+            if ($f_coachee) {
+                $query->where('a.lda_id', $f_coachee);
+            }
+
+            // 🆕 COACH (auditors_name — who performed the audit; distinct
+            // from created_by, which stays its own "Created By" column)
+            if ($f_coach) {
+                $query->where('a.auditors_name', $f_coach);
+            }
+
+            // 🆕 SUPERVISOR/MANAGER — reuses the QA/Recon dashboards' org-tree
+            // picker: selecting a manager/SME/supervisor (or "My Team")
+            // scopes results to every LDA beneath them, not just direct
+            // reports. Combines with (never widens past) the own/team/all
+            // LEVEL FILTER below, since both are ANDed together.
+            $managerLdaIds = $this->resolveScopeLdaIds($f_manager_scope);
+            if ($managerLdaIds !== null) {
+                $query->whereIn('a.lda_id', $managerLdaIds);
             }
 
             // 🆕 CLIENT CODE
@@ -262,7 +284,8 @@ class MonitoringTicket extends Controller
             $user_employeeid = auth()->user()->employeeid;
 
             $base = DB::table('user_input_audits as a')
-                ->leftJoin('users as lda', 'a.lda_id', '=', 'lda.employeeid');
+                ->leftJoin('users as lda', 'a.lda_id', '=', 'lda.employeeid')
+                ->leftJoin('users as auditor', 'a.auditors_name', '=', 'auditor.employeeid');
 
             // 👤 LEVEL FILTER — same logic as displayTicket
             $scope = PositionScope::forPosition($user_position);
@@ -298,10 +321,45 @@ class MonitoringTicket extends Controller
                 ->orderBy('a.exception_status')
                 ->pluck('a.exception_status');
 
+            // Coachee (audited LDA) and Coach (auditors_name) — {value,label}
+            // pairs (employeeid + name) rather than plain strings, since
+            // these are people pickers, not free-text codes.
+            $coachees = (clone $base)
+                ->whereNotNull('a.lda_id')
+                ->where('a.lda_id', '!=', '')
+                ->select(
+                    'a.lda_id as value',
+                    DB::raw("TRIM(COALESCE(lda.first_name, '') || ' ' || COALESCE(lda.last_name, '')) as label")
+                )
+                ->distinct()
+                ->orderBy('label')
+                ->get();
+
+            $coaches = (clone $base)
+                ->whereNotNull('a.auditors_name')
+                ->where('a.auditors_name', '!=', '')
+                ->select(
+                    'a.auditors_name as value',
+                    DB::raw("TRIM(COALESCE(auditor.first_name, '') || ' ' || COALESCE(auditor.last_name, '')) as label")
+                )
+                ->distinct()
+                ->orderBy('label')
+                ->get();
+
             return response()->json([
                 'client_codes'       => $client_codes,
                 'carrier_names'      => $carrier_names,
                 'exception_statuses' => $exception_statuses,
+                'coachees'           => $coachees,
+                'coaches'            => $coaches,
+                // Unscoped on purpose — same as the QA/Recon dashboards'
+                // own Manager/Supervisor picker (FiltersByManagerScope):
+                // this just lists who's pickable, it doesn't by itself
+                // widen what displayTicket() returns. Picking an unrelated
+                // manager here can only narrow the result (via an AND with
+                // the existing own/team/all LEVEL FILTER) down to nothing,
+                // never expose rows outside this viewer's normal access.
+                'managers'           => $this->managerPickerOptions(),
             ]);
 
         } catch (\Exception $e) {

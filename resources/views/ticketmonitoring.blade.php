@@ -62,9 +62,24 @@
                                         <label class="form-label">Invoice ID</label>
                                         <input type="text" id="filter-invoice-id" class="form-control" placeholder="Search invoice ID...">
                                     </div>
-                                    <div class="col-md-4 col-lg-3">
-                                        <label class="form-label">Name</label>
-                                        <input type="text" id="filter-name" class="form-control" placeholder="Search name...">
+                                    <div class="col-md-4 col-lg-2">
+                                        <label class="form-label">Coachee</label>
+                                        <select id="filter-coachee" class="form-select dropdown-choices">
+                                            <option value="">All</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 col-lg-2">
+                                        <label class="form-label">Coach</label>
+                                        <select id="filter-coach" class="form-select dropdown-choices">
+                                            <option value="">All</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 col-lg-2">
+                                        <label class="form-label">Supervisor/Manager</label>
+                                        <select id="filter-manager-scope" class="form-select dropdown-choices">
+                                            <option value="">All</option>
+                                            <option value="my_team">My Team</option>
+                                        </select>
                                     </div>
                                     <div class="col-md-4 col-lg-2">
                                         <label class="form-label">Client Code</label>
@@ -146,7 +161,9 @@
         const filters = {
             audit_id: '',
             invoice_id: '',
-            name: '',
+            coachee: '',
+            coach: '',
+            manager_scope: '',
             client_code: '',
             carrier_name: '',
             exception_status: '',
@@ -163,7 +180,9 @@
             if (extra.search) params.set('search', extra.search);
             if (filters.audit_id) params.set('audit_id', filters.audit_id);
             if (filters.invoice_id) params.set('invoice_id', filters.invoice_id);
-            if (filters.name) params.set('name', filters.name);
+            if (filters.coachee) params.set('coachee', filters.coachee);
+            if (filters.coach) params.set('coach', filters.coach);
+            if (filters.manager_scope) params.set('manager_scope', filters.manager_scope);
             if (filters.client_code) params.set('client_code', filters.client_code);
             if (filters.carrier_name) params.set('carrier_name', filters.carrier_name);
             if (filters.exception_status) params.set('exception_status', filters.exception_status);
@@ -330,7 +349,7 @@
             }).forceRender();
         }
 
-        // Audit ID / Invoice ID / Name (debounced text inputs)
+        // Audit ID / Invoice ID (debounced text inputs)
         document.getElementById('filter-audit-id').addEventListener('input', debounce((e) => {
             filters.audit_id = e.target.value.trim();
             reloadGrid();
@@ -341,17 +360,12 @@
             reloadGrid();
         }, 500));
 
-        document.getElementById('filter-name').addEventListener('input', debounce((e) => {
-            filters.name = e.target.value.trim();
-            reloadGrid();
-        }, 500));
-
         // Selects - reload immediately on change
         // Note: Choices.js dispatches 'change' on the underlying <select>, so this works for both.
         // Date range is handled separately below (daterangepicker.com), since
         // filter-date-from/filter-date-to are now hidden inputs driven by the
         // picker's own events, not something a user types/changes directly.
-        ['filter-client-code', 'filter-carrier-name', 'filter-exception-status'].forEach(id => {
+        ['filter-coachee', 'filter-coach', 'filter-manager-scope', 'filter-client-code', 'filter-carrier-name', 'filter-exception-status'].forEach(id => {
             document.getElementById(id).addEventListener('change', (e) => {
                 const key = id.replace('filter-', '').replace(/-/g, '_');
                 filters[key] = e.target.value;
@@ -419,7 +433,6 @@
             // Plain inputs
             document.getElementById('filter-audit-id').value = '';
             document.getElementById('filter-invoice-id').value = '';
-            document.getElementById('filter-name').value = '';
 
             // Date range picker: clear the visible input + hidden fields, and
             // reset the picker's own internal state back to today so
@@ -434,7 +447,7 @@
             }
 
             // Choices.js dropdowns - reset to empty value
-            ['filter-client-code', 'filter-carrier-name', 'filter-exception-status'].forEach(id => {
+            ['filter-coachee', 'filter-coach', 'filter-manager-scope', 'filter-client-code', 'filter-carrier-name', 'filter-exception-status'].forEach(id => {
                 if (choicesInstances[id]) {
                     choicesInstances[id].setChoiceByValue('');
                 } else {
@@ -446,13 +459,46 @@
         });
 
         // ============================================================
-        // Populate Client Code / Carrier / Exception Status dropdowns
+        // Populate Coachee / Coach / Supervisor-Manager / Client Code /
+        // Carrier / Exception Status dropdowns.
         // Endpoint /monitoring-filter-options returns:
-        //   { client_codes: [...], carrier_names: [...], exception_statuses: [...] }
+        //   { client_codes: [...], carrier_names: [...], exception_statuses: [...],
+        //     coachees: [{value,label}, ...], coaches: [{value,label}, ...],
+        //     managers: {"Managers": [{value,label}, ...], "SMEs": [...], ...} }
         // ============================================================
         fetch('/monitoring-filter-options')
             .then(res => res.ok ? res.json() : Promise.reject(res))
             .then(opts => {
+                if (choicesInstances['filter-coachee'] && Array.isArray(opts.coachees)) {
+                    choicesInstances['filter-coachee'].setChoices(
+                        opts.coachees,
+                        'value',
+                        'label',
+                        false // false = append to existing "All" option
+                    );
+                }
+
+                if (choicesInstances['filter-coach'] && Array.isArray(opts.coaches)) {
+                    choicesInstances['filter-coach'].setChoices(
+                        opts.coaches,
+                        'value',
+                        'label',
+                        false
+                    );
+                }
+
+                if (choicesInstances['filter-manager-scope'] && opts.managers) {
+                    // opts.managers is {"Managers": [{value,label}, ...], "SMEs": [...], ...}
+                    // Choices.js groups need {label, id, choices: [...]} — same
+                    // conversion as the QA dashboard's Manager/Supervisor picker.
+                    const groups = Object.keys(opts.managers).map((groupName, idx) => ({
+                        label: groupName,
+                        id: idx + 1,
+                        choices: opts.managers[groupName]
+                    }));
+                    choicesInstances['filter-manager-scope'].setChoices(groups, 'value', 'label', false);
+                }
+
                 if (choicesInstances['filter-client-code'] && Array.isArray(opts.client_codes)) {
                     choicesInstances['filter-client-code'].setChoices(
                         opts.client_codes.map(code => ({
