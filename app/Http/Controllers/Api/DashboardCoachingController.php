@@ -255,7 +255,7 @@ class DashboardCoachingController extends Controller
             ")
             ->groupBy('c.created_by', 'coach.first_name', 'coach.last_name')
             ->orderByDesc('total')
-            ->limit(15)
+            ->limit(20)
             ->get()
             ->map(function ($row) {
                 $row->name = $row->name !== '' ? $row->name : ($row->employeeid ?: 'Unknown');
