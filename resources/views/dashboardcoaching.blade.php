@@ -451,7 +451,7 @@
                     const options = {
                         series: [{ data: values }],
                         chart: {
-                            type: 'bar', height: 380, toolbar: { show: false },
+                            type: 'bar', height: 420, toolbar: { show: false },
                             events: {
                                 dataPointSelection: function (event, chartContext, config) {
                                     const row = data[config.dataPointIndex];
@@ -482,7 +482,7 @@
                     const options = {
                         series: [{ data: values }],
                         chart: {
-                            type: 'bar', height: 380, toolbar: { show: false },
+                            type: 'bar', height: 420, toolbar: { show: false },
                             events: {
                                 dataPointSelection: function (event, chartContext, config) {
                                     const row = data[config.dataPointIndex];
