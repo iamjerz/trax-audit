@@ -285,7 +285,7 @@ class DashboardCoachingController extends Controller
             ")
             ->groupBy('c.employee_id', 'emp.first_name', 'emp.last_name')
             ->orderByDesc('total')
-            ->limit(15)
+            ->limit(20)
             ->get()
             ->map(function ($row) {
                 if (empty($row->employeeid)) {
