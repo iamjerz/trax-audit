@@ -459,11 +459,11 @@
                                                             <i class="mdi mdi-counter"></i> Not Met
                                                         </div>
 
-                                                    @elseif($pc_score2 === 5)
+                                                    @elseif($pc_score2 === 8)
                                                         <div class="badge bg-warning mb-2">
                                                             <i class="mdi mdi-star"></i> {{ $pc_score2 }}%
                                                         </div>
-                                                        <div class="badge bg-danger mb-2">
+                                                        <div class="badge bg-warning mb-2">
                                                             <i class="mdi mdi-counter"></i> Coached
                                                         </div>
 
@@ -539,7 +539,7 @@
                                                         <div class="badge bg-warning mb-2">
                                                             <i class="mdi mdi-star"></i> {{ $pc_score3 }}%
                                                         </div>
-                                                        <div class="badge bg-danger mb-2">
+                                                        <div class="badge bg-warning mb-2">
                                                             <i class="mdi mdi-counter"></i> Coached
                                                         </div>
 
@@ -607,7 +607,7 @@
                                                         <div class="badge bg-warning mb-2">
                                                             <i class="mdi mdi-star"></i> {{ $pc_score4 }}%
                                                         </div>
-                                                        <div class="badge bg-danger mb-2">
+                                                        <div class="badge bg-warning mb-2">
                                                             <i class="mdi mdi-counter"></i> Coached
                                                         </div>
 
