@@ -69,6 +69,8 @@
                                     <tr>
                                         <th>Invoice</th>
                                         <th>Requested By</th>
+                                        <th>Date Requested</th>
+                                        <th>Approver</th>
                                         <th>Overall (current → proposed)</th>
                                         <th>Reason</th>
                                         <th>Status</th>
@@ -93,6 +95,12 @@
                                                 <a href="/ticket/view/{{ $r->audit_id }}" target="_blank" class="d-block font-size-11">view evaluation</a>
                                             </td>
                                             <td class="font-size-13">{{ $r->requester ?: $r->changed_by }}</td>
+                                            <td class="font-size-13">
+                                                {{ $r->created_at ? \Carbon\Carbon::parse($r->created_at)->format('M j, Y') : '—' }}
+                                            </td>
+                                            <td class="font-size-13">
+                                                {{ trim($r->first_manager_name ?? '') ?: ($r->supervisor_id ?? '—') }}
+                                            </td>
                                             <td>
                                                 <span class="badge bg-secondary">{{ data_get($r->old_values, 'overall', '—') }}%</span>
                                                 →
@@ -132,7 +140,7 @@
                                             </td>
                                         </tr>
                                         <tr class="border-0">
-                                            <td colspan="6" class="p-0 border-0">
+                                            <td colspan="8" class="p-0 border-0">
                                                 <div class="collapse" id="chg{{ $r->id }}">
                                                     <div class="p-3 bg-light border-start border-3 border-primary">
                                                         <div class="fw-semibold mb-2 font-size-13">Proposed changes</div>
@@ -151,7 +159,7 @@
                                             </td>
                                         </tr>
                                     @empty
-                                        <tr><td colspan="6" class="text-center text-muted py-4">No corrections.</td></tr>
+                                        <tr><td colspan="8" class="text-center text-muted py-4">No corrections.</td></tr>
                                     @endforelse
                                 </tbody>
                             </table>

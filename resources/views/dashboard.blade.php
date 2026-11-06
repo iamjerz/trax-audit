@@ -275,8 +275,21 @@
                     </div>
                 </div>
 
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Score Breakdown (%)</h4>
+                            </div>
+                            <div class="card-body">
+                                <div id="scoreBreakdownChart"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row h-100">
-                
+
                     <div class="col-xl-6 d-flex">
                         <div class="card flex-fill">
                             <div class="card-header">
@@ -398,8 +411,82 @@
                 animateCount(document.getElementById("below-average"), 0, data.below_average || 0);
                 document.getElementById("overall-average").textContent =
                     (data.overall_average ?? 0) + "%";
+
+                // Score Breakdown bar chart reuses this same response --
+                // dashbaordCard() already computes all four percentages off
+                // one query, so no second network round trip for the chart.
+                renderScoreBreakdownChart(data);
             })
             .catch(err => console.error(err));
+        }
+
+        // ============================================================
+        // Score Breakdown bar chart (Risk Compliance, Process Compliance,
+        // Engagement, Overall Score -- all 0-100%)
+        // ============================================================
+        function renderScoreBreakdownChart(data) {
+            const categories = ["Risk Compliance", "Process Compliance", "Engagement", "Overall Score"];
+            const values = [
+                Number(data.risk_compliance_pct ?? 0),
+                Number(data.process_compliance_pct ?? 0),
+                Number(data.engagement_pct ?? 0),
+                Number(data.overall_score_pct ?? 0)
+            ];
+
+            const options = {
+                series: [{ name: "Score", data: values }],
+
+                chart: {
+                    type: "bar",
+                    height: 320,
+                    toolbar: { show: false },
+                    animations: {
+                        enabled: true,
+                        easing: "easeinout",
+                        speed: 800
+                    }
+                },
+
+                plotOptions: {
+                    bar: {
+                        columnWidth: "45%",
+                        distributed: true,
+                        dataLabels: { position: "top" }
+                    }
+                },
+
+                colors: chartColors,
+
+                dataLabels: {
+                    enabled: true,
+                    formatter: function (val) { return val + "%"; },
+                    offsetY: -20,
+                    style: {
+                        fontSize: "12px",
+                        fontWeight: "600",
+                        colors: ["#495057"]
+                    }
+                },
+
+                xaxis: { categories: categories },
+
+                yaxis: {
+                    max: 100,
+                    labels: {
+                        formatter: function (val) { return val + "%"; }
+                    }
+                },
+
+                legend: { show: false },
+
+                tooltip: {
+                    y: {
+                        formatter: function (val) { return val + "%"; }
+                    }
+                }
+            };
+
+            renderChart('scoreBreakdown', "#scoreBreakdownChart", options, true);
         }
 
         // Evaluations trend — re-rendered when filters change. With no date

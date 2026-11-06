@@ -20,10 +20,18 @@ class CorrectionApprovalController extends Controller
         $query = DB::table('score_corrections as c')
             ->leftJoin('users as u', 'u.employeeid', '=', 'c.changed_by')
             ->leftJoin('users as ap', 'ap.employeeid', '=', 'c.approved_by')
+            // 1st (primary) Supervisor of the requester (u.supervisor_id) --
+            // the designated approver for this correction, shown in its own
+            // "Approver" column. Distinct from `approver` above, which is
+            // whoever actually clicked Approve/Reject (c.approved_by), shown
+            // inline under Status once a decision's been made.
+            ->leftJoin('users as fm', 'fm.employeeid', '=', 'u.supervisor_id')
             ->leftJoin('user_input_audits as a', 'a.audit_id', '=', 'c.audit_id')
             ->select('c.*', 'a.invoice_id',
                 DB::raw("CONCAT(u.first_name, ' ', u.last_name) as requester"),
-                DB::raw("CONCAT(ap.first_name, ' ', ap.last_name) as approver"))
+                DB::raw("CONCAT(ap.first_name, ' ', ap.last_name) as approver"),
+                'u.supervisor_id',
+                DB::raw("CONCAT(fm.first_name, ' ', fm.last_name) as first_manager_name"))
             ->orderByDesc('c.id');
 
         if ($status !== 'all') {

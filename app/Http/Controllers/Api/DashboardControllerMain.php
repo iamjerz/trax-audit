@@ -92,6 +92,21 @@ class DashboardControllerMain extends Controller
         $overallCount = 0;
         $auditedLdaIds = [];
 
+        // Score Breakdown bar chart accumulators. Risk Compliance is the same
+        // zero-tolerance gate as $overall's own ($ver >= $verificationGate) --
+        // ver_outcome_1/2 are each 0 (Fail) or 100 (Pass), so $ver only ever
+        // lands on 0, 100, or 200, and a pass rate (not an average) is the
+        // meaningful "%" here, matching the binary PASSED/FAILED badge shown
+        // on the individual ticket view. Process Compliance and Engagement
+        // each max out at 50 (see DataSourceController::OUTCOME_SCALES: two
+        // 0/5/10-scale outcomes + two 0/8/15-scale outcomes = 50), so their
+        // average needs /50*100 to become a percentage -- $overallAverage
+        // below is already proc+eng on a 0-100 scale (50+50), so it doubles
+        // as the Overall Score % with no extra math.
+        $verPassCount = 0;
+        $procSum      = 0;
+        $engSum       = 0;
+
         foreach ($scores as $s) {
             $ver  = (float) ($s->ver ?? 0);
             $proc = (float) ($s->proc ?? 0);
@@ -108,6 +123,12 @@ class DashboardControllerMain extends Controller
             $overallSum += $overall;
             $overallCount++;
 
+            if ($ver >= $verificationGate) {
+                $verPassCount++;
+            }
+            $procSum += $proc;
+            $engSum  += $eng;
+
             if (! empty($s->lda_id)) {
                 $auditedLdaIds[$s->lda_id] = true;
             }
@@ -116,6 +137,10 @@ class DashboardControllerMain extends Controller
         $overallAverage = $overallCount > 0
             ? round($overallSum / $overallCount, 2)
             : 0;
+
+        $riskCompliancePct    = $overallCount > 0 ? round($verPassCount / $overallCount * 100, 2) : 0;
+        $processCompliancePct = $overallCount > 0 ? round(($procSum / $overallCount) / 50 * 100, 2) : 0;
+        $engagementPct        = $overallCount > 0 ? round(($engSum / $overallCount) / 50 * 100, 2) : 0;
 
         // Audited LDAs / LDAs With No Audits are coverage metrics, deliberately
         // distinct from Total LDA (the expected population above): Audited
@@ -138,6 +163,10 @@ class DashboardControllerMain extends Controller
             'above_average' => $aboveAverage,
             'below_average' => $belowAverage,
             'overall_average' => $overallAverage,
+            'risk_compliance_pct' => $riskCompliancePct,
+            'process_compliance_pct' => $processCompliancePct,
+            'engagement_pct' => $engagementPct,
+            'overall_score_pct' => $overallAverage,
         ]);
     }
 
