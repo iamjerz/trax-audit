@@ -82,4 +82,17 @@ return [
         'token' => env('JIRA_API_TOKEN'),
     ],
 
+    // Base URL used ONLY for links inside outbound emails (e.g. the "View
+    // Evaluation" button in QaEvaluationSubmitted) -- deliberately separate
+    // from app.url/APP_URL so a developer running locally doesn't have to
+    // choose between a working browser session (needs APP_URL to match
+    // localhost) and a clickable link in a real recipient's inbox (needs a
+    // real, publicly-reachable domain). Falls back to app.url when unset so
+    // existing local behavior is unchanged until this is explicitly
+    // configured. Read via config() here too, same reasoning as 'microsoft'
+    // above -- never env() directly outside config/*.php.
+    'audit_ops' => [
+        'public_url' => env('AUDIT_OPS_PUBLIC_URL'),
+    ],
+
 ];

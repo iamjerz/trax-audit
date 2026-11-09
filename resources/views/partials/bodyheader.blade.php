@@ -124,7 +124,7 @@
                 </li>
 
                 <!-- Hypercare Tool — admin only for now; more roles/access to come -->
-                @if($access->contains('access_type', 'admin'))
+                <!-- @if($access->contains('access_type', 'admin'))
                 <li class="menu-title" data-key="t-menu">Hypercare Tool</li>
                 <li>
                     <a href="/hypercare-dashboard">
@@ -138,7 +138,7 @@
                         <span class="menu-item" data-key="t-my-evaluations">Sign Off</span>
                     </a>
                 </li>
-                @endif
+                @endif -->
 
                 <li class="menu-title" data-key="t-menu">Dashboard</li>
                 @if($pageAccess->contains('dashboard-recon'))

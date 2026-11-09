@@ -12,7 +12,9 @@ use App\Models\Verification;
 use App\Models\ProcessCompliance;
 use App\Models\Engagement;
 use App\Models\BusinessAnalytic;
+use App\Mail\QaEvaluationSubmitted;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class AuditController extends Controller
@@ -227,6 +229,46 @@ class AuditController extends Controller
             ]);
 
             DB::commit();
+
+            // Email notification to the audited LDA -- disabled for now
+            // (not needed at the moment). Mailable, view templates, and the
+            // services.audit_ops.public_url config are all still in place
+            // untouched; to turn this back on, uncomment the block below.
+            //
+            // try {
+            //     $lda = DB::table('users')
+            //         ->where('employeeid', $user['ldaName'])
+            //         ->first(['email', 'first_name', 'last_name']);
+            //
+            //     if ($lda && !empty($lda->email)) {
+            //         $ldaName = trim(($lda->first_name ?? '') . ' ' . ($lda->last_name ?? '')) ?: $user['ldaName'];
+            //
+            //         // services.audit_ops.public_url (falls back to app.url)
+            //         // instead of route()/url(), which both resolve against
+            //         // APP_URL -- on a local dev box that's localhost, which
+            //         // is unreachable from a recipient's inbox AND a known
+            //         // trigger for link-reputation spam filtering. See
+            //         // config/services.php for the full reasoning.
+            //         $publicBase = rtrim(config('services.audit_ops.public_url') ?: config('app.url'), '/');
+            //
+            //         Mail::to($lda->email)->queue(new QaEvaluationSubmitted(
+            //             ldaName: $ldaName,
+            //             auditId: $auditId,
+            //             invoiceId: $user['InvoiceID'] ?? null,
+            //             viewUrl: $publicBase . '/ticket/view/' . $auditId,
+            //         ));
+            //     } else {
+            //         Log::warning('QA evaluation notification skipped: no email on file for LDA.', [
+            //             'audit_id' => $auditId,
+            //             'lda_id'   => $user['ldaName'],
+            //         ]);
+            //     }
+            // } catch (\Throwable $e) {
+            //     Log::error('QA evaluation notification failed to queue: ' . $e->getMessage(), [
+            //         'exception' => get_class($e),
+            //         'audit_id'  => $auditId,
+            //     ]);
+            // }
 
             return response()->json([
                 'message'  => 'Audit successfully created',
